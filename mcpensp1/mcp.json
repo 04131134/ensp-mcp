@@ -1,0 +1,14 @@
+﻿{
+    "mcpServers":  {
+                       "ensp":  {
+                                    "command":  "python",
+                                    "args":  [
+                                                 "mcp_server.py"
+                                             ],
+                                    "env":  {
+                                                "ENSP_SERVER_URL":  "http://127.0.0.1:5000"
+                                            },
+                                    "description":  "eNSP Device MCP Server - 知识库+心跳监控+拓扑理解。需先启动 app.py。"
+                                }
+                   }
+}

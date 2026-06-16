@@ -1,0 +1,582 @@
+﻿================================================================================
+                    校园网综合设计实训 — 配置详解文档
+                    东北大学 2024
+================================================================================
+
+一、网络拓扑与设备清单
+================================================================================
+
+设备名称        型号          端口    角色
+-----------     ----------    -----   ------------------------------------
+AR1             AR2220        2000    外网边界路由器（模拟ISP）
+FW1             USG6000V      2001    防火墙（安全区域划分+策略）
+SW1             S5700         2012    核心交换机1（MSTP主根实例1+VRRP主网关VLAN10/101）
+SW2             S5700         2013    核心交换机2（MSTP主根实例2+VRRP主网关VLAN20/30/40）
+LSW3            S5700         2014    汇聚交换机（宿舍+教学楼+AP1）
+LSW4            S5700         2015    汇聚交换机（图书馆+行政楼+AP2）
+LSW5            S3700         2016    接入交换机（宿舍楼 VLAN10）
+LSW6            S3700         2017    接入交换机（教学楼 VLAN20）
+LSW7            S3700         2018    接入交换机（图书馆 VLAN30）
+LSW8            S3700         2019    接入交换机（行政楼 VLAN40）
+LSW9            S3700         2020    服务器接入交换机
+LSW10           S3700         2021    外网接入交换机
+AC1             AC6605        2022    无线控制器
+AP1             AP3030DN      --      无线接入点1（宿舍/教学区域）
+AP2             AP3030DN      --      无线接入点2（图书馆/行政区域）
+Server1         --            --      DNS服务器 (192.168.0.1)
+Server2         --            --      Web服务器 (192.168.0.2)
+Server3         --            --      FTP服务器 (192.168.0.3)
+
+
+二、物理连接关系（基于拓扑文件解析）
+================================================================================
+
+连接名称            源设备.端口              目的设备.端口
+-----------         --------------          --------------
+FW1↔AR1             FW1 GE1/0/1             AR1 GE0/0/0
+FW1↔SW1             FW1 GE1/0/2             SW1 GE0/0/1
+FW1↔SW2             FW1 GE1/0/3             SW2 GE0/0/1
+FW1↔LSW9            FW1 GE1/0/0             LSW9 GE0/0/1
+SW1↔SW2             SW1 GE0/0/10+11         SW2 GE0/0/10+11 (LACP Eth-Trunk1)
+SW1↔LSW3            SW1 GE0/0/2             LSW3 GE0/0/1
+SW1↔LSW4            SW1 GE0/0/3             LSW4 GE0/0/1
+SW2↔LSW3            SW2 GE0/0/2             LSW3 GE0/0/2
+SW2↔LSW4            SW2 GE0/0/3             LSW4 GE0/0/2
+SW1↔AC1             SW1 GE0/0/19            AC1 GE0/0/18
+LSW3↔LSW4           LSW3 GE0/0/10+11        LSW4 GE0/0/10+11
+LSW3↔AP1            LSW3 GE0/0/3            AP1 (有线口)
+LSW3↔LSW5           LSW3 GE0/0/4            LSW5 Eth0/0/1
+LSW3↔LSW6           LSW3 GE0/0/5            LSW6 Eth0/0/1
+LSW4↔AP2            LSW4 GE0/0/5            AP2 (有线口)
+LSW4↔LSW7           LSW4 GE0/0/3            LSW7 Eth0/0/1
+LSW4↔LSW8           LSW4 GE0/0/4            LSW8 Eth0/0/1
+LSW5↔PC3/PC4        LSW5 Eth0/0/2-3         PC3/PC4
+LSW6↔PC5/PC6        LSW6 Eth0/0/2-3         PC5/PC6
+LSW7↔PC7/PC8        LSW7 Eth0/0/2-3         PC7/PC8
+LSW8↔PC9/PC10       LSW8 Eth0/0/2-3         PC9/PC10
+LSW9↔Server1-3      LSW9 Eth0/0/1-3         Server1/2/3
+LSW10↔PC1/PC2       LSW10 Eth0/0/2-3        PC1/PC2
+LSW10↔AR1           LSW10 Eth0/0/1          AR1 GE0/0/1
+
+
+三、VLAN 规划
+================================================================================
+
+VLAN ID    用途            网段                网关(VRRP VIP)
+-------    ----            ----                ---------------
+10         宿舍楼          192.168.1.0/24      192.168.1.254
+20         教学楼          192.168.2.0/24      192.168.2.254
+30         图书馆          192.168.3.0/24      192.168.3.254
+40         行政楼          192.168.4.0/24      192.168.4.254
+100        AP管理          192.168.100.0/24    192.168.100.100(AC)/1
+101        WiFi用户        192.168.101.0/24    192.168.101.254
+520        SW1↔FW1互联     192.168.50.0/24     --
+521        SW2↔FW1互联     192.168.51.0/24     --
+1000       服务器区         192.168.0.0/24      192.168.0.254(FW1)
+2011       外网区           201.1.1.0/24        201.1.1.254(AR1)
+
+
+四、各设备详细配置与联动关系
+================================================================================
+
+--------------------------------------------------------------------------------
+【SW1 — 核心交换机1】
+--------------------------------------------------------------------------------
+
+角色：核心层，MSTP实例1的主根桥，VLAN10/101的VRRP主网关
+
+1) MSTP配置
+   stp region-configuration
+    region-name huawei
+    revision-level 16
+    instance 1 vlan 10 100 to 101
+    instance 2 vlan 20 30 40
+    active region-configuration
+   stp instance 1 root primary       ← 实例1主根
+   stp instance 2 root secondary     ← 实例2备份根
+
+   【联动】LSW3/LSW4也配置相同的MSTP区域（region-name+revision-level一致），
+   否则不形成同一个MST域，STP计算会出错。
+
+2) VRRP配置（VLAN10/101为主，VLAN20/30/40为备）
+   interface Vlanif10
+    ip address 192.168.1.100 255.255.255.0
+    vrrp vrid 10 virtual-ip 192.168.1.254
+    vrrp vrid 10 priority 120        ← 优先级120，成为Master
+    dhcp select global
+   interface Vlanif20
+    ip address 192.168.2.100 255.255.255.0
+    vrrp vrid 20 virtual-ip 192.168.2.254
+    dhcp select global                ← 默认优先级100，成为Backup
+   （VLAN30/40同理为Backup）
+
+   interface Vlanif101
+    ip address 192.168.101.100 255.255.255.0
+    vrrp vrid 101 virtual-ip 192.168.101.254
+    vrrp vrid 101 priority 120       ← WiFi用户网关主设备
+    dhcp select global
+
+   【联动】SW2的VRRP配置相反：VLAN20/30/40优先级120（Master），VLAN10/101默认（Backup）。
+   两台核心交换机形成主备冗余，任何一台故障，另一台自动接管。
+
+3) DHCP地址池
+   ip pool vlan10
+    gateway-list 192.168.1.254
+    network 192.168.1.0 mask 255.255.255.0
+    dns-list 192.168.0.1
+   （vlan20/30/40/100/101同理）
+
+   【联动】各楼栋接入交换机的PC通过VRRP VIP获取IP。DNS指向Server1(192.168.0.1)，
+   实现域名解析。SW2也配置相同的地址池作为冗余。
+
+4) 互联接口
+   interface Vlanif520
+    ip address 192.168.50.1 255.255.255.0
+
+   interface GigabitEthernet0/0/1        ← 连FW1
+    port link-type hybrid
+    port hybrid pvid vlan 520
+    port hybrid untagged vlan 520
+
+   【联动】FW1的GE1/0/2配置IP 192.168.50.2，同属VLAN520子网。
+   Hybrid模式使VLAN520报文不带标签到达FW1。
+
+   interface GigabitEthernet0/0/2        ← 连LSW3
+    port link-type trunk
+    port trunk allow-pass vlan 2 to 4094
+
+   interface GigabitEthernet0/0/3        ← 连LSW4
+    port link-type trunk
+    port trunk allow-pass vlan 2 to 4094
+
+   【联动】LSW3/LSW4的上行口也配置为相同trunk，所有VLAN可通过。
+
+5) LACP链路聚合
+   interface GigabitEthernet0/0/10       ← 连SW2
+    eth-trunk 1
+   interface GigabitEthernet0/0/11
+    eth-trunk 1
+   interface Eth-Trunk 1
+    port link-type trunk
+    port trunk allow-pass vlan 2 to 4094
+    mode lacp-static
+
+   【联动】SW2做相同配置，两台核心交换机之间带宽翻倍+冗余。
+
+6) OSPF
+   ospf 1 router-id 1.1.1.1
+    area 0.0.0.0
+     network 192.168.0.0 0.0.255.255
+     silent-interface Vlanif10
+     silent-interface Vlanif20
+     silent-interface Vlanif30
+     silent-interface Vlanif40
+     silent-interface Vlanif100
+     silent-interface Vlanif101
+
+   【联动】与FW1建立OSPF邻居（FW1 router-id 3.3.3.3）。
+   静默接口防止用户VLAN发送Hello报文，节省资源和提高安全。
+   FW1通过OSPF学习内网路由，SW1/SW2通过OSPF学习到服务器区路由。
+
+7) AC trunk口
+   interface GigabitEthernet0/0/19       ← 连AC1
+    port link-type trunk
+    port trunk allow-pass vlan 2 to 4094
+
+   【联动】AC1的GE0/0/18口也配trunk，放行VLAN100（CAPWAP管理）和VLAN101（WiFi用户）。
+
+--------------------------------------------------------------------------------
+【SW2 — 核心交换机2】
+--------------------------------------------------------------------------------
+
+角色：核心层，MSTP实例2的主根桥，VLAN20/30/40的VRRP主网关
+
+配置与SW1镜像对称，关键差异：
+  - stp instance 1 root secondary（实例1备份根）
+  - stp instance 2 root primary（实例2主根）
+  - VRRP VLAN20/30/40 priority 120（Master），VLAN10/101默认（Backup）
+  - Vlanif521 ip 192.168.51.1（互联VLAN不同）
+  - GE0/0/1 hybrid pvid vlan 521 untagged vlan 521
+  - OSPF router-id 2.2.2.2
+
+【联动】与SW1形成完全对称的双核心架构，MSTP实现负载分担：
+  - 实例1（VLAN10/100/101）流量走SW1
+  - 实例2（VLAN20/30/40）流量走SW2
+  - 任一核心交换机故障，另一台接管所有流量
+
+--------------------------------------------------------------------------------
+【LSW3 — 汇聚交换机（宿舍+教学楼侧）】
+--------------------------------------------------------------------------------
+
+角色：汇聚层，连接AP1和楼栋交换机LSW5/LSW6
+
+关键配置：
+  stp region-configuration              ← MSTP区域必须与SW1/SW2一致
+   region-name huawei
+   revision-level 16
+   instance 1 vlan 10 100 to 101
+   instance 2 vlan 20 30 40
+   active region-configuration
+
+  vlan batch 10 20 30 40 100 to 101
+
+  interface GigabitEthernet0/0/1        ← 连SW1
+   port link-type trunk
+   port trunk allow-pass vlan 2 to 4094
+
+  interface GigabitEthernet0/0/2        ← 连SW2
+   port link-type trunk
+   port trunk allow-pass vlan 2 to 4094
+
+  interface GigabitEthernet0/0/3        ← 连AP1 ★关键★
+   port link-type trunk                  ← 必须是trunk！
+   port trunk pvid vlan 100              ← AP管理流量进入VLAN100
+   port trunk allow-pass vlan 100 to 101 ← 放行VLAN100(管理)+VLAN101(WiFi用户)
+   stp edged-port enable                 ← AP端口跳过STP收敛
+
+  【关键经验】如果AP端口配成access VLAN100，WiFi客户端的VLAN101 DHCP报文
+  会被丢弃，导致客户端无法获取IP。这是本次实训最经典的排障点。
+
+  interface GigabitEthernet0/0/4        ← 连LSW5（宿舍楼）
+   port link-type access
+   port default vlan 10
+
+  interface GigabitEthernet0/0/5        ← 连LSW6（教学楼）
+   port link-type access
+   port default vlan 20
+
+  interface GigabitEthernet0/0/10-11    ← 连LSW4（跨楼栋互联）
+   port link-type trunk
+   port trunk allow-pass vlan 2 to 4094
+
+--------------------------------------------------------------------------------
+【LSW4 — 汇聚交换机（图书馆+行政楼侧）】
+--------------------------------------------------------------------------------
+
+角色：汇聚层，连接AP2和楼栋交换机LSW7/LSW8
+
+配置与LSW3类似，端口差异：
+  GE0/0/3 → LSW7（图书馆）access VLAN30
+  GE0/0/4 → LSW8（行政楼）access VLAN40
+  GE0/0/5 → AP2 trunk pvid VLAN100, allow-pass VLAN100-101
+  GE0/0/10-11 → LSW3 trunk
+
+--------------------------------------------------------------------------------
+【LSW5 — 宿舍楼接入交换机】
+--------------------------------------------------------------------------------
+
+配置极简：
+  vlan batch 10
+  interface Ethernet0/0/1                ← 连LSW3上行
+   port link-type access
+   port default vlan 10
+  interface Ethernet0/0/2-3              ← 连PC3/PC4
+   port link-type access
+   port default vlan 10
+
+【联动】PC3/PC4获取VLAN10的IP(192.168.1.x)，网关192.168.1.254(VRRP VIP)。
+
+LSW6(VLAN20)、LSW7(VLAN30)、LSW8(VLAN40)配置模式相同，仅VLAN ID不同。
+
+--------------------------------------------------------------------------------
+【FW1 — 防火墙 (USG6000V)】
+--------------------------------------------------------------------------------
+
+角色：安全网关，区域隔离，策略控制
+
+1) 接口与区域划分
+   interface GigabitEthernet0/0/0        ← 管理口
+    ip address 192.168.255.1 255.255.255.0
+
+   interface GigabitEthernet1/0/0        ← DMZ区（服务器）
+    ip address 192.168.0.254 255.255.255.0
+    service-manage ping permit
+
+   interface GigabitEthernet1/0/1        ← Untrust区（外网）
+    ip address 200.1.1.1 255.255.255.0
+    service-manage ping permit
+
+   interface GigabitEthernet1/0/2        ← Trust区（连SW1）
+    ip address 192.168.50.2 255.255.255.0
+
+   interface GigabitEthernet1/0/3        ← Trust区（连SW2）
+    ip address 192.168.51.2 255.255.255.0
+
+   firewall zone trust
+    set priority 85
+    add interface GigabitEthernet0/0/0
+    add interface GigabitEthernet1/0/2
+    add interface GigabitEthernet1/0/3
+
+   firewall zone untrust
+    set priority 5
+    add interface GigabitEthernet1/0/1
+
+   firewall zone dmz
+    set priority 50
+    add interface GigabitEthernet1/0/0
+
+   【联动】优先级决定默认策略：trust(85) > dmz(50) > untrust(5)。
+   高优先级区域主动访问低优先级默认放行，反向默认拒绝。
+
+2) 安全策略
+   security-policy
+    rule name trust_to_dmz_untrust       ← 内网可访问服务器和外网
+     source-zone trust
+     destination-zone dmz
+     destination-zone untrust
+     action permit
+
+    rule name untrust_to_dmz             ← 外网可访问服务器
+     source-zone untrust
+     destination-zone dmz
+     action permit
+
+    rule name deny_dmz_out               ← 服务器不能主动外访
+     source-zone dmz
+     action deny
+
+   【联动】满足实验要求的三条安全策略：
+   ① 内外可以访问服务器和外网
+   ② 外网只能访问服务器
+   ③ 服务器只能被访问，无法主动发起访问
+
+3) 路由
+   ospf 1 router-id 3.3.3.3
+    default-route-advertise               ← 向SW1/SW2下发默认路由
+    area 0.0.0.0
+     network 192.168.0.0 0.0.255.255
+
+   ip route-static 0.0.0.0 0.0.0.0 200.1.1.2  ← 默认路由指向AR1
+
+   【联动】FW1通过OSPF向内网通告服务器区路由，同时通过OSPF学习内网各VLAN路由。
+   默认路由指向AR1，实现内网访问外网。
+
+4) 管理账户
+   aaa
+    manager-user admin
+    password cipher admin@123
+    level 15
+
+--------------------------------------------------------------------------------
+【AR1 — 外网路由器】
+--------------------------------------------------------------------------------
+
+角色：模拟ISP边界，连接FW1和外网PC
+
+  interface GigabitEthernet0/0/0
+   ip address 200.1.1.2 255.255.255.0     ← 连FW1
+
+  interface GigabitEthernet0/0/1
+   ip address 201.1.1.254 255.255.255.0   ← 外网PC网关
+
+  ip route-static 0.0.0.0 0.0.0.0 200.1.1.1  ← 默认路由指向FW1
+
+【联动】FW1的默认路由指向AR1(200.1.1.2)，AR1的默认路由指向FW1(200.1.1.1)，
+形成内外网互通。外网PC(201.1.1.x)通过AR1→FW1访问服务器区。
+
+--------------------------------------------------------------------------------
+【AC1 — 无线控制器】
+--------------------------------------------------------------------------------
+
+角色：管理AP，转发WiFi用户流量
+
+1) 基础配置
+  vlan batch 100 to 101
+  dhcp enable
+
+  interface Vlanif100
+   ip address 192.168.100.1 255.255.255.0
+   dhcp select interface                 ← 为AP分配管理IP
+
+  interface GigabitEthernet0/0/18        ← 连SW1
+   port link-type trunk
+   port trunk allow-pass vlan 2 to 4094
+
+  capwap source interface Vlanif100      ← CAPWAP源接口
+
+2) WLAN配置
+  wlan
+   security-profile name sec
+    security wpa-wpa2 psk pass-phrase zz1234567 aes
+
+   ssid-profile name ssid
+    ssid wlan-2024
+
+   vap-profile name vap
+    service-vlan vlan-id 101              ← WiFi用户打上VLAN101
+    ssid-profile ssid
+    security-profile sec
+
+   ap-group name ap
+    radio 0
+     vap-profile vap wlan 1
+    radio 1
+     vap-profile vap wlan 1
+
+3) AP注册
+  ap-id 1 ap-mac 00e0-fc3f-6920 ap-sn 210235448310076D7959
+   ap-name ap1
+   ap-group ap                            ← 需确认Y/N
+
+  ap-id 2 ap-mac 00e0-fc75-3280 ap-sn 2102354483100E48CA09
+   ap-name ap2
+   ap-group ap                            ← 需确认Y/N
+
+【联动】
+  - AP通过VLAN100获取管理IP(192.168.100.x)，与AC建立CAPWAP隧道
+  - WiFi客户端连接后获得VLAN101的IP(192.168.101.x)
+  - AC的trunk口连接SW1，放行VLAN100和VLAN101
+  - SW1的Vlanif101提供VLAN101的DHCP和网关服务
+
+--------------------------------------------------------------------------------
+【LSW9 — 服务器接入交换机】
+--------------------------------------------------------------------------------
+
+  vlan batch 1000                        ← 已不使用，服务器改用VLAN1
+
+  interface GigabitEthernet0/0/1         ← 连FW1
+   port link-type trunk
+   port trunk allow-pass vlan 1 to 4094
+
+  interface Ethernet0/0/1-3              ← 连Server1/2/3
+   port link-type access
+   port default vlan 1                   ← 默认VLAN1
+
+  【关键经验】最初服务器端口配为VLAN1000，但FW1的GE1/0/0是路由口（无VLAN），
+  VLAN1000 tagged帧被丢弃，ARP显示Incomplete。改为VLAN1后问题解决。
+
+  【联动】服务器(192.168.0.x) → LSW9(VLAN1 untagged) → FW1 GE1/0/0(DMZ区)。
+  服务器网关192.168.0.254就是FW1的DMZ接口。
+
+--------------------------------------------------------------------------------
+【LSW10 — 外网接入交换机】
+--------------------------------------------------------------------------------
+
+  vlan batch 2011
+
+  interface Ethernet0/0/1                ← 连AR1 GE0/0/1
+   port link-type access
+   port default vlan 2011
+
+  interface Ethernet0/0/2-3              ← 连PC1/PC2
+   port link-type access
+   port default vlan 2011
+
+  【关键经验】拓扑显示AR1连接LSW10的Eth0/0/1（非GE0/0/1），
+  脚本最初将GE0/0/1配为VLAN2011而Eth0/0/1留在默认VLAN1，导致PC无法ping通网关。
+
+  【联动】PC1/PC2(201.1.1.x) → LSW10(VLAN2011) → AR1 GE0/0/1(201.1.1.254)。
+  外网PC通过AR1→FW1可访问DMZ区服务器。
+
+
+五、数据流向分析
+================================================================================
+
+1) 内网PC → 服务器（如PC3 ping 192.168.0.1）
+   PC3(192.168.1.253) → LSW5(VLAN10) → LSW3(trunk) → SW1(VRRP网关192.168.1.254)
+   → FW1(trust→dmz策略permit) → LSW9(VLAN1) → Server1(192.168.0.1)
+
+2) 内网PC → 外网（如PC3 ping 201.1.1.1）
+   PC3 → SW1 → FW1(trust→untrust策略permit) → AR1 → 201.1.1.1
+
+3) 外网 → 服务器（如PC1 ping 192.168.0.1）
+   PC1(201.1.1.1) → LSW10 → AR1 → FW1(untrust→dmz策略permit) → LSW9 → Server1
+
+4) 服务器 → 外网（禁止）
+   Server1 → FW1(dmz→any策略deny) ✗ 被拒绝
+
+5) WiFi客户端 → 服务器
+   手机/笔记本 → AP(direct-forward, VLAN101 tagged) → LSW3(trunk VLAN101)
+   → SW1(Vlanif101网关) → FW1(trust→dmz) → Server1
+
+
+六、MSTP 负载分担机制
+================================================================================
+
+              实例1 (VLAN10/100/101)    实例2 (VLAN20/30/40)
+  SW1          主根 (root primary)        备份根 (root secondary)
+  SW2          备份根 (root secondary)    主根 (root primary)
+
+效果：
+  - VLAN10/100/101 的流量优先走SW1
+  - VLAN20/30/40 的流量优先走SW2
+  - 两台核心交换机各承担一部分流量，避免单点瓶颈
+
+
+七、VRRP 主备切换机制
+================================================================================
+
+  VLAN     SW1状态    SW1优先级    SW2状态    SW2优先级    VIP
+  ----     -------    ---------    -------    ---------    ---
+  10       Master     120          Backup     100          192.168.1.254
+  20       Backup     100          Master     120          192.168.2.254
+  30       Backup     100          Master     120          192.168.3.254
+  40       Backup     100          Master     120          192.168.4.254
+  101      Master     120          Backup     100          192.168.101.254
+
+当Master故障时，Backup在约3秒后接管VIP，终端无需修改任何配置。
+
+
+八、排障经验总结
+================================================================================
+
+问题1：WiFi客户端无法获取IP
+  原因：AP端口access VLAN100，VLAN101报文被丢弃
+  解决：改为trunk, pvid VLAN100, allow-pass VLAN100-101
+  教训：AP direct-forward模式下，管理VLAN和用户VLAN需同时放行
+
+问题2：PC1无法ping通网关
+  原因：LSW10的Eth0/0/1（连AR1）在默认VLAN1，不在VLAN2011
+  解决：Eth0/0/1改为access VLAN2011
+  教训：拓扑端口映射必须对照确认，不能假设端口编号
+
+问题3：PC无法ping通服务器
+  原因1：服务器未在eNSP GUI中配置IP
+  原因2：LSW9服务器端口VLAN1000与FW1路由口不匹配
+  解决：服务器配置IP+网关；LSW9端口改为VLAN1
+  教训：eNSP服务器需手动配置，VLAN标签与路由口不兼容
+
+问题4：AC上AP名称错误
+  原因：脚本WLAN子视图未正确退出，命令发到错误上下文
+  教训：AC的wlan-view嵌套层级多，需精确管理视图切换
+
+
+九、服务器配置（eNSP GUI手动配置）
+================================================================================
+
+Server1 (DNS):
+  IP: 192.168.0.1/24
+  网关: 192.168.0.254
+  DNS服务: www.jz.com → 192.168.0.1
+            www.fzm.com → 192.168.0.2
+
+Server2 (Web):
+  IP: 192.168.0.2/24
+  网关: 192.168.0.254
+  HTTP服务: 启动
+
+Server3 (FTP):
+  IP: 192.168.0.3/24
+  网关: 192.168.0.254
+  FTP服务: 启动
+
+PC1 (外网): 201.1.1.1/24, 网关 201.1.1.254
+PC2 (外网): 201.1.1.2/24, 网关 201.1.1.254
+
+
+十、验证测试项（对应Word 4.1~4.8）
+================================================================================
+
+4.1 DHCP自动分配     → 各VLAN PC通过DHCP获取IP，检查ipconfig
+4.2 内网互通         → PC3 ping PC5/PC7/PC9等跨VLAN测试
+4.3 内网访问服务器   → PC ping 192.168.0.1/0.2/0.3
+4.4 DNS解析          → ping www.jz.com / www.fzm.com
+4.5 内网访问外网     → PC ping 201.1.1.1/201.1.1.2
+4.6 外网访问服务器   → PC1 ping 192.168.0.1
+4.7 外网无法访问内网 → PC1 ping 192.168.1.10（应失败）
+4.8 服务器不能外访   → Server1 ping 201.1.1.1（应失败）
+
+================================================================================
+                              文档结束
+================================================================================

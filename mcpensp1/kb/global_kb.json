@@ -1,0 +1,4685 @@
+{
+  "commands": [
+    {
+      "key": "1d2d82d90f657b42",
+      "command": "display vlan 10",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display vlan 10\r\n--------------------------------------------------------------------------------\r\nU: Up;         D: Down;         TG: Tagged;         UT: Untagged;\r\nMP: Vlan-mapping;               ST: Vlan-stacking;\r\n#: ProtocolTransparent-vlan;    *: Management-vlan;\r\n--------------------------------------------------------------------------------\r\n\r\nVID  Type    Ports                                                          \r\n-------------------------------------------------------------------",
+      "success": true,
+      "last_used": "2026-06-13T17:03:23.129087+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2009"
+      ]
+    },
+    {
+      "key": "c9f320dbf8145d50",
+      "command": "display interface brief",
+      "description": "显示接口简要状态（不含IP）",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display interface brief\r\nPHY: Physical\r\n*down: administratively down\r\n(l): loopback\r\n(s): spoofing\r\n(b): BFD down\r\n(e): ETHOAM down\r\n(dl): DLDP down\r\n(d): Dampening Suppressed\r\nInUti/OutUti: input utility/output utility\r\nInterface                   PHY   Protocol InUti OutUti   inErrors  outErrors\r\nGigabitEthernet0/0/1        up    up          0%     0%          0          0\r\nGigabitEthernet0/0/2        down  down        0%     0%          0          0\r\nGigabitEthernet0/0/3        down  down    ",
+      "success": true,
+      "last_used": "2026-06-14T06:25:30.142069+00:00",
+      "use_count": 17,
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2011",
+        "127.0.0.1:2008",
+        "127.0.0.1:2002",
+        "127.0.0.1:2010",
+        "127.0.0.1:2009",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "d71c2710f3030edf",
+      "command": "display vlan",
+      "description": "显示VLAN配置信息",
+      "device_type": "unknown",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display vlan\r\nThe total number of vlans is : 4\r\n--------------------------------------------------------------------------------\r\nU: Up;         D: Down;         TG: Tagged;         UT: Untagged;\r\nMP: Vlan-mapping;               ST: Vlan-stacking;\r\n#: ProtocolTransparent-vlan;    *: Management-vlan;\r\n--------------------------------------------------------------------------------\r\n\r\nVID  Type    Ports                                                          \r\n------------------------------------",
+      "success": true,
+      "last_used": "2026-06-13T17:10:13.960924+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2008"
+      ]
+    },
+    {
+      "key": "9c28996fc73c8393",
+      "command": "display ip interface brief",
+      "description": "显示所有接口IP地址和状态摘要",
+      "device_type": "unknown",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display ip interface brief\r\n*down: administratively down\r\n^down: standby\r\n(l): loopback\r\n(s): spoofing\r\nThe number of interface that is UP in Physical is 2\r\nThe number of interface that is DOWN in Physical is 1\r\nThe number of interface that is UP in Protocol is 1\r\nThe number of interface that is DOWN in Protocol is 2\n\r\nInterface                         IP Address/Mask      Physical   Protocol  \r\nMEth0/0/1                         unassigned           down       down      \r\nNULL0                  ",
+      "success": true,
+      "last_used": "2026-06-13T17:10:46.464715+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2008"
+      ]
+    },
+    {
+      "key": "43a3406431ed7b5b",
+      "command": "display port vlan",
+      "description": "显示端口VLAN配置",
+      "device_type": "unknown",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display port vlan\r\nPort                    Link Type    PVID  Trunk VLAN List\r\n-------------------------------------------------------------------------------\r\nGigabitEthernet0/0/1    access       2     -                                   \r\nGigabitEthernet0/0/2    hybrid       1     -                                   \r\nGigabitEthernet0/0/3    hybrid       1     -                                   \r\nGigabitEthernet0/0/4    hybrid       1     -                                   \r\nGigabitEthernet0",
+      "success": true,
+      "last_used": "2026-06-13T17:11:18.968714+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2008"
+      ]
+    },
+    {
+      "key": "a9c586a5d423bbea",
+      "command": "display current-configuration | include sysname",
+      "description": "提取设备主机名",
+      "device_type": "unknown",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display current-configuration | include sysname\r\nsysname LSW1\r\n<LSW1>",
+      "success": true,
+      "last_used": "2026-06-13T17:11:51.471304+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2008"
+      ]
+    },
+    {
+      "key": "3099743c0c2ad8fe",
+      "command": "sysname S2",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname S2\r\n[S2]",
+      "success": true,
+      "last_used": "2026-06-14T06:26:41.862422+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "422c6880426c01fb",
+      "command": "sysname S1",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname S1\r\n[S1]",
+      "success": true,
+      "last_used": "2026-06-14T06:26:41.838970+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "9f36b8752ef21820",
+      "command": "interface GigabitEthernet 0/0/11",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "\r\nJun 14 2026 14:26:42-08:00 S2 DS/4/DATASYNC_CFGCHANGE:OID 1.3.6.1.4.1.2011.5.25.191.3.1 configurations have been changed. The current change number is 5, the change loop count is 0, and the maximum number of records is 4095.interface GigabitEthernet 0/0/11\r\n[S2-GigabitEthernet0/0/11]",
+      "success": true,
+      "last_used": "2026-06-14T06:26:48.968824+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2001",
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "exp3_1_sysname_S1",
+      "command": "sysname S1",
+      "description": "?????S1???",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_sysname_S2",
+      "command": "sysname S2",
+      "description": "?????S2???",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_interface_GigabitEthernet_0/0/",
+      "command": "interface GigabitEthernet 0/0/11",
+      "description": "????GE0/0/11??",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_shutdown",
+      "command": "shutdown",
+      "description": "????",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "medium",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_interface_GigabitEthernet_0/0/",
+      "command": "interface GigabitEthernet 0/0/12",
+      "description": "????GE0/0/12??",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_vlan_2",
+      "command": "vlan 2",
+      "description": "??VLAN 2",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_vlan_3",
+      "command": "vlan 3",
+      "description": "??VLAN 3",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_vlan_10",
+      "command": "vlan 10",
+      "description": "??VLAN 10",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_interface_GigabitEthernet_0/0/",
+      "command": "interface GigabitEthernet 0/0/1",
+      "description": "????GE0/0/1??",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_port_link-type_access",
+      "command": "port link-type access",
+      "description": "?????access??",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_port_default_vlan_2",
+      "command": "port default vlan 2",
+      "description": "??????VLAN?2",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_port_default_vlan_3",
+      "command": "port default vlan 3",
+      "description": "??????VLAN?3",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_port_default_vlan_10",
+      "command": "port default vlan 10",
+      "description": "??????VLAN?10",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_interface_GigabitEthernet_0/0/",
+      "command": "interface GigabitEthernet 0/0/10",
+      "description": "??????GE0/0/10??",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_port_link-type_trunk",
+      "command": "port link-type trunk",
+      "description": "?????trunk??",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_port_trunk_allow-pass_vlan_2_3",
+      "command": "port trunk allow-pass vlan 2 3",
+      "description": "trunk??VLAN 2 3??",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_port_trunk_allow-pass_vlan_10",
+      "command": "port trunk allow-pass vlan 10",
+      "description": "trunk??VLAN 10??",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_mac-vlan_enable",
+      "command": "mac-vlan enable",
+      "description": "??MAC-VLAN??",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_display_vlan",
+      "command": "display vlan",
+      "description": "??VLAN????",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "exp3_1_display_port_vlan",
+      "command": "display port vlan",
+      "description": "????VLAN??",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "safe",
+      "success": true,
+      "last_used": "2026-06-14T14:33:46.247463",
+      "use_count": 1,
+      "experiment": "3-1_ethernet_vlan",
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "4c001528dc019718",
+      "command": "interface GigabitEthernet 0/0/0",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "\r\nJun 15 2026 15:23:54-08:00 Huawei %%01IFPDT/4/IF_STATE(l)[0]:Interface GigabitEthernet0/0/2 has turned into UP state.\r\n<Huawei>interface GigabitEthernet 0/0/0\r\n        ^\r\nError: Unrecognized command found at '^' position.\r\n<Huawei>\r\n<Huawei>",
+      "success": false,
+      "last_used": "2026-06-15T07:23:58.414660+00:00",
+      "use_count": 10,
+      "devices_used": [
+        "127.0.0.1:2001",
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "985d8e26efa7deb3",
+      "command": "ip address 172.16.10.254 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "##\u0000",
+      "success": true,
+      "last_used": "2026-06-15T07:23:41.378385+00:00",
+      "use_count": 5,
+      "devices_used": [
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "db8fbc3a9c16ad1a",
+      "command": "undo shutdown",
+      "description": "启用接口",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "medium",
+      "output_preview": "undo shutdown\r\nInfo: Interface GigabitEthernet1/0/3 is not shutdown.\r\n[FW-GigabitEthernet1/0/3]",
+      "success": true,
+      "last_used": "2026-06-15T12:37:17.051560+00:00",
+      "use_count": 27,
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "7026b15bdce7be20",
+      "command": "interface GigabitEthernet 0/0/2",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "\r\n<Huawei>",
+      "success": true,
+      "last_used": "2026-06-15T07:24:08.912667+00:00",
+      "use_count": 10,
+      "devices_used": [
+        "127.0.0.1:2001",
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "4242d510cdefdb8d",
+      "command": "ip address 172.16.30.1 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 172.16.30.1 255.255.255.0\r\nJun 15 2026 14:59:57-08:00 R1 %%01IFNET/4/LINK_STATE(l)[1]:The line protocol IP on the interface GigabitEthernet0/0/2 has entered the UP state. \r\n[R1-GigabitEthernet0/0/2]\r\n[R1-GigabitEthernet0/0/2]",
+      "success": true,
+      "last_used": "2026-06-15T07:00:00.599632+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "0aae5327213fbb84",
+      "command": "ip address 172.16.20.254 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 172.16.20.254 255.255.255.0\r\n        ^\r\nError: Unrecognized command found at '^' position.\r\n<Huawei>\r\n<Huawei>\r\n<Huawei>\r\n<Huawei>",
+      "success": false,
+      "last_used": "2026-06-15T07:24:01.595490+00:00",
+      "use_count": 5,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "31b36e00f243c921",
+      "command": "ip address 172.16.30.2 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 172.16.30.2 255.255.255.0\r\nJun 15 2026 15:00:09-08:00 R2 %%01IFNET/4/LINK_STATE(l)[1]:The line protocol IP on the interface GigabitEthernet0/0/2 has entered the UP state. \r\n[R2-GigabitEthernet0/0/2]\r\n[R2-GigabitEthernet0/0/2]",
+      "success": true,
+      "last_used": "2026-06-15T07:00:12.892672+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "9f31b001a7c61c4f",
+      "command": "ping 172.16.30.2",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "\r\n    Request time out\r\n    Request time out\r\n\r\n  --- 172.16.10.10 ping statistics ---\r\n    5 packet(s) transmitted\r\n    0 packet(s) received\r\n    100.00% packet loss\r\n\r\n<Huawei>ping 172.16.30.2\r\n  PING 172.16.30.2: 56  data bytes, press CTRL_C to break",
+      "success": true,
+      "last_used": "2026-06-15T07:24:57.149076+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "7c278898e822152b",
+      "command": "ping 172.16.30.1",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 172.16.30.1\r\n  PING 172.16.30.1: 56  data bytes, press CTRL_C to break\r\n    Reply from 172.16.30.1: bytes=56 Sequence=1 ttl=255 time=30 ms\r\n    Reply from 172.16.30.1: bytes=56 Sequence=2 ttl=255 time=20 ms\r\n    Reply from 172.16.30.1: bytes=56 Sequence=3 ttl=255 time=30 ms\r\n    Reply from 172.16.30.1: bytes=56 Sequence=4 ttl=255 time=20 ms\r\n    Reply from 172.16.30.1: bytes=56 Sequence=5 ttl=255 time=1 ms\r\n\r\n  --- 172.16.30.1 ping statistics ---\r\n    5 packet(s) transmitted\r\n    5 packet(s",
+      "success": true,
+      "last_used": "2026-06-15T07:06:20.263008+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001",
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "4193c3088d8c0884",
+      "command": "ip route-static 172.16.20.0 255.255.255.0 172.16.30.2",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "\r\n    Request time out\r\n    Request time out",
+      "success": true,
+      "last_used": "2026-06-15T07:25:11.226320+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "a0efe0d69a99c45c",
+      "command": "ip route-static 172.16.10.0 255.255.255.0 172.16.30.1",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "\r\n    Request time out",
+      "success": true,
+      "last_used": "2026-06-15T07:06:44.387614+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "9d8d796fdc17a47a",
+      "command": "ip address 172.16.30.1 255.255.255.252",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "##\u0000",
+      "success": true,
+      "last_used": "2026-06-15T07:23:51.127576+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "7341e755273c85e4",
+      "command": "ping 172.16.20.10",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "\r\n    Request time out\r\n    Request time out\r\n\r\n  --- 172.16.20.10 ping statistics ---\r\n    5 packet(s) transmitted\r\n    0 packet(s) received\r\n    100.00% packet loss\r\n\r\n<Huawei>\r\n<Huawei>\r\n<Huawei>unoping 172.16.20.10\r\n        ^\r\nError: Unrecognized command found at '^' position.\r\n<Huawei>\r\n<Huawei>",
+      "success": false,
+      "last_used": "2026-06-15T07:25:20.456911+00:00",
+      "use_count": 10,
+      "devices_used": [
+        "127.0.0.1:2001",
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "fb146034f49f73a0",
+      "command": "ping 172.16.10.10",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 172.16.10.10\r\n  PING 172.16.10.10: 56  data bytes, press CTRL_C to break",
+      "success": true,
+      "last_used": "2026-06-15T07:24:47.193856+00:00",
+      "use_count": 10,
+      "devices_used": [
+        "127.0.0.1:2001",
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "e5c5a549a5625c3e",
+      "command": "ip address 172.16.30.2 255.255.255.252",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 172.16.30.2 255.255.255.252\r\n        ^\r\nError: Unrecognized command found at '^' position.\r\n<Huawei>\r\n<Huawei>",
+      "success": false,
+      "last_used": "2026-06-15T07:24:11.346139+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "9b29c03e343bb04e",
+      "command": "display mac-address",
+      "description": "显示MAC地址表",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display mac-address\r\nMAC address table of slot 0:\r\n-------------------------------------------------------------------------------\r\nMAC Address    VLAN/       PEVLAN CEVLAN Port            Type      LSP/LSR-ID  \r\n               VSI/SI                                              MAC-Tunnel  \r\n-------------------------------------------------------------------------------\r\n00e0-fca9-1610 1           -      -      GE0/0/2         dynamic   0/-         \r\n00e0-fc67-7900 1           -      -      GE0",
+      "success": true,
+      "last_used": "2026-06-15T08:02:47.934078+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2004"
+      ]
+    },
+    {
+      "key": "742c3a1aab901dae",
+      "command": "ping 127.0.0.1",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 127.0.0.1\r\n  PING 127.0.0.1: 56  data bytes, press CTRL_C to break\r\n    Reply from 127.0.0.1: bytes=56 Sequence=1 ttl=255 time=20 ms\r\n    Reply from 127.0.0.1: bytes=56 Sequence=2 ttl=255 time=1 ms\r\n    Reply from 127.0.0.1: bytes=56 Sequence=3 ttl=255 time=1 ms\r\n    Reply from 127.0.0.1: bytes=56 Sequence=4 ttl=255 time=1 ms\r\n    Reply from 127.0.0.1: bytes=56 Sequence=5 ttl=255 time=1 ms\r\n\r\n  --- 127.0.0.1 ping statistics ---\r\n    5 packet(s) transmitted\r\n    5 packet(s) received\r\n    0.0",
+      "success": true,
+      "last_used": "2026-06-15T08:04:11.206768+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "bb010674b10f98d0",
+      "command": "undo info-center enable",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "undo info-center enable\r\nInfo: Information center is disabled.\r\n[AC_TEST]\r\n[AC_TEST]",
+      "success": true,
+      "last_used": "2026-06-15T12:39:11.274000+00:00",
+      "use_count": 39,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2000",
+        "127.0.0.1:2021",
+        "127.0.0.1:2014",
+        "127.0.0.1:2015",
+        "127.0.0.1:2019",
+        "127.0.0.1:2022",
+        "127.0.0.1:2017",
+        "127.0.0.1:2020",
+        "127.0.0.1:2013",
+        "127.0.0.1:2001",
+        "127.0.0.1:2016",
+        "127.0.0.1:2018"
+      ]
+    },
+    {
+      "key": "9595080fd780d083",
+      "command": "sysname SW1",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname SW1\r\n[SW1]",
+      "success": true,
+      "last_used": "2026-06-15T12:24:55.864159+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "c20346c119084743",
+      "command": "stp mode mstp",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "stp mode mstp\r\n[SW2]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:23.736442+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "f0432967a536c565",
+      "command": "stp enable",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "stp enable\r\n[SW2]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:25.574482+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "b43bc2a4ad7df5b5",
+      "command": "dhcp enable",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "dhcp enable\r\n[AC]\r\n[AC]",
+      "success": true,
+      "last_used": "2026-06-15T12:39:16.794343+00:00",
+      "use_count": 9,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2022",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "145bbe9ae02c6574",
+      "command": "drop illegal-mac alarm",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "drop illegal-mac alarm\r\n[SW2]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:29.252825+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "2073ac532f4e9fea",
+      "command": "vlan batch 10 20 30 40 100 to 101 520 521",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vlan batch 10 20 30 40 100 to 101 520 521\r\nInfo: This operation may take a few seconds. Please wait for a moment...done.\r\n[SW2]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:31.091376+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "6de70e527d21c424",
+      "command": "stp region-configuration",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "stp region-configuration\r\n[SW2-mst-region]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:32.930919+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "e17f6b3491e57e08",
+      "command": "region-name huawei",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "region-name huawei\r\n[SW2-mst-region]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:34.767298+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "a025405272a9a0f2",
+      "command": "revision-level 16",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "revision-level 16\r\n[SW2-mst-region]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:36.604647+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "6bb7467631da3a7e",
+      "command": "instance 1 vlan 10 100 to 101",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "instance 1 vlan 10 100 to 101\r\n[SW2-mst-region]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:38.442168+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "132e16c2e9d10f66",
+      "command": "instance 2 vlan 20 30 40",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "instance 2 vlan 20 30 40\r\n[SW2-mst-region]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:40.286626+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "b0a4fcbe265906cc",
+      "command": "active region-configuration",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "active region-configuration\r\nInfo: This operation may take a few seconds. Please wait for a moment...done.\r\n[SW2-mst-region]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:42.128222+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "a4977a8c8df66ad3",
+      "command": "stp instance 1 root primary",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "stp instance 1 root primary\r\n[SW1]",
+      "success": true,
+      "last_used": "2026-06-15T12:25:17.939167+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "b413e20be85d7291",
+      "command": "stp instance 2 root secondary",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "stp instance 2 root secondary\r\n[SW1]",
+      "success": true,
+      "last_used": "2026-06-15T12:25:19.779545+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "b84f725e8ea7cc36",
+      "command": "ip pool vlan10",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip pool vlan10\r\n[SW2-ip-pool-vlan10]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:47.640953+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "a17fa7aaabdcbed9",
+      "command": "gateway-list 192.168.1.254",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "gateway-list 192.168.1.254\r\nError:Part of the gateway IP has already exist.\r\n[SW2-ip-pool-vlan10]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:49.478745+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "35ff218a3c185b20",
+      "command": "network 192.168.1.0 mask 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "network 192.168.1.0 mask 255.255.255.0\r\nError:Please delete the network section first.\r\n[SW2-ip-pool-vlan10]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:51.319976+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "4d17058ed003e379",
+      "command": "dns-list 192.168.0.1",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "dns-list 192.168.0.1\r\n     ^\r\nError: Unrecognized command found at '^' position.\r\n<SW1>",
+      "success": false,
+      "last_used": "2026-06-15T13:39:28.215930+00:00",
+      "use_count": 36,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "b8c9da6fd7a3990a",
+      "command": "ip pool vlan20",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip pool vlan20\r\n[SW2-ip-pool-vlan20]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:56.837421+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "18944767919b256e",
+      "command": "gateway-list 192.168.2.254",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "gateway-list 192.168.2.254\r\nError:Part of the gateway IP has already exist.\r\n[SW2-ip-pool-vlan20]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:58.675148+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "608e051550db1141",
+      "command": "network 192.168.2.0 mask 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "network 192.168.2.0 mask 255.255.255.0\r\nError:Please delete the network section first.\r\n[SW2-ip-pool-vlan20]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:00.512337+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "c483ca103b5b6420",
+      "command": "ip pool vlan30",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip pool vlan30\r\n[SW2-ip-pool-vlan30]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:06.035383+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "ea9143334f9a2e4c",
+      "command": "gateway-list 192.168.3.254",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "gateway-list 192.168.3.254\r\nError:Part of the gateway IP has already exist.\r\n[SW2-ip-pool-vlan30]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:07.874367+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "b113b47c403505ee",
+      "command": "network 192.168.3.0 mask 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "network 192.168.3.0 mask 255.255.255.0\r\nError:Please delete the network section first.\r\n[SW2-ip-pool-vlan30]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:09.714999+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "9b6d4f81c7e45c54",
+      "command": "ip pool vlan40",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip pool vlan40\r\n[SW2-ip-pool-vlan40]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:15.235353+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "4d4c0bc429c669c0",
+      "command": "gateway-list 192.168.4.254",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "gateway-list 192.168.4.254\r\nError:Part of the gateway IP has already exist.\r\n[SW2-ip-pool-vlan40]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:17.075977+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "c65da4d72c120726",
+      "command": "network 192.168.4.0 mask 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "network 192.168.4.0 mask 255.255.255.0\r\nError:Please delete the network section first.\r\n[SW2-ip-pool-vlan40]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:18.917213+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "03b5eafa1bfc9d72",
+      "command": "ip pool vlan101",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip pool vlan101\r\n[SW2-ip-pool-vlan101]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:24.426045+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "e66b78e32f6dfa2c",
+      "command": "gateway-list 192.168.101.254",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "gateway-list 192.168.101.254\r\nError:Part of the gateway IP has already exist.\r\n[SW2-ip-pool-vlan101]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:26.260194+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "437420c3c901c46a",
+      "command": "network 192.168.101.0 mask 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "network 192.168.101.0 mask 255.255.255.0\r\nError:Please delete the network section first.\r\n[SW2-ip-pool-vlan101]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:28.098218+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "992db2a7a61ee581",
+      "command": "interface Vlanif10",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface Vlanif10\r\n[SW2-Vlanif10]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:33.612392+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "7f58f5734f4fe41b",
+      "command": "ip address 192.168.1.100 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.1.100 255.255.255.0\r\nError: The address already exists.\r\n[SW1-Vlanif10]",
+      "success": true,
+      "last_used": "2026-06-15T12:26:09.462849+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "32b7399677a30257",
+      "command": "vrrp vrid 10 virtual-ip 192.168.1.254",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vrrp vrid 10 virtual-ip 192.168.1.254\r\nError: The virtual IP address already exists.\r\n[SW2-Vlanif10]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:37.295445+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "2ca94212b134a217",
+      "command": "vrrp vrid 10 priority 120",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vrrp vrid 10 priority 120\r\n[SW1-Vlanif10]",
+      "success": true,
+      "last_used": "2026-06-15T12:26:13.141325+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "560562e515e53081",
+      "command": "dhcp select global",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "dhcp select global\r\n[SW1-Vlanif100]",
+      "success": false,
+      "last_used": "2026-06-15T13:39:33.892602+00:00",
+      "use_count": 36,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "06c411f6f27d22a4",
+      "command": "interface Vlanif20",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface Vlanif20\r\n[SW2-Vlanif20]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:42.830802+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "8b5431123eb03f1e",
+      "command": "ip address 192.168.2.100 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.2.100 255.255.255.0\r\nError: The address already exists.\r\n[SW1-Vlanif20]",
+      "success": true,
+      "last_used": "2026-06-15T12:26:20.496923+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "c28d9edc4b56fabd",
+      "command": "vrrp vrid 20 virtual-ip 192.168.2.254",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vrrp vrid 20 virtual-ip 192.168.2.254\r\nError: The virtual IP address already exists.\r\n[SW2-Vlanif20]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:46.510259+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "f3ed4f03a9e8af21",
+      "command": "interface Vlanif30",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface Vlanif30\r\n[SW2-Vlanif30]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:53.874874+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "f123c63a75720d9a",
+      "command": "ip address 192.168.3.100 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.3.100 255.255.255.0\r\nError: The address already exists.\r\n[SW1-Vlanif30]",
+      "success": true,
+      "last_used": "2026-06-15T12:26:29.695614+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "f02b75f2bf042ee2",
+      "command": "vrrp vrid 30 virtual-ip 192.168.3.254",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vrrp vrid 30 virtual-ip 192.168.3.254\r\nError: The virtual IP address already exists.\r\n[SW2-Vlanif30]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:57.557256+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "af9e126ecb603a81",
+      "command": "interface Vlanif40",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface Vlanif40\r\n[SW2-Vlanif40]",
+      "success": true,
+      "last_used": "2026-06-15T12:30:04.936984+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "a407d6928febcb38",
+      "command": "ip address 192.168.4.100 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.4.100 255.255.255.0\r\nError: The address already exists.\r\n[SW1-Vlanif40]",
+      "success": true,
+      "last_used": "2026-06-15T12:26:38.895936+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "39f5210975b89624",
+      "command": "vrrp vrid 40 virtual-ip 192.168.4.254",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vrrp vrid 40 virtual-ip 192.168.4.254\r\nError: The virtual IP address already exists.\r\n[SW2-Vlanif40]",
+      "success": true,
+      "last_used": "2026-06-15T12:30:08.623320+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "7a9099573dd58c4b",
+      "command": "interface Vlanif100",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface Vlanif100\r\n[SW1-Vlanif100]",
+      "success": false,
+      "last_used": "2026-06-15T13:39:32.002712+00:00",
+      "use_count": 12,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "11b388487d8d95c3",
+      "command": "ip address 192.168.100.100 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.100.100 255.255.255.0\r\nError: The address already exists.\r\n[SW1-Vlanif100]",
+      "success": true,
+      "last_used": "2026-06-15T12:26:48.090354+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "15771ff5b84878c3",
+      "command": "dhcp select interface",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "dhcp select interface\r\n[AC-Vlanif100]\r\n[AC-Vlanif100]",
+      "success": true,
+      "last_used": "2026-06-15T12:39:22.316739+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "de297bde10ecefd3",
+      "command": "interface Vlanif101",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface Vlanif101\r\n[SW2-Vlanif101]",
+      "success": true,
+      "last_used": "2026-06-15T12:30:15.986563+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "4606232e91c2a8e6",
+      "command": "ip address 192.168.101.100 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.101.100 255.255.255.0\r\nError: The address already exists.\r\n[SW1-Vlanif101]",
+      "success": true,
+      "last_used": "2026-06-15T12:26:55.450648+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "7bfbb3760f6f4a42",
+      "command": "vrrp vrid 101 virtual-ip 192.168.101.254",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vrrp vrid 101 virtual-ip 192.168.101.254\r\nError: The virtual IP address already exists.\r\n[SW2-Vlanif101]",
+      "success": true,
+      "last_used": "2026-06-15T12:30:19.666701+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "2dcde95bee73bf09",
+      "command": "vrrp vrid 101 priority 120",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vrrp vrid 101 priority 120\r\n[SW1-Vlanif101]",
+      "success": true,
+      "last_used": "2026-06-15T12:26:59.128688+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "a267901b7aa20dbc",
+      "command": "interface Vlanif520",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface Vlanif520\r\n[SW1-Vlanif520]",
+      "success": true,
+      "last_used": "2026-06-15T12:27:04.644111+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "02de4e81b7de7343",
+      "command": "ip address 192.168.50.1 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.50.1 255.255.255.0\r\nError: The address already exists.\r\n[SW1-Vlanif520]",
+      "success": true,
+      "last_used": "2026-06-15T12:27:06.482184+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "4bbc48a24999da3b",
+      "command": "port trunk allow-pass vlan 2 to 4094",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "port trunk allow-pass vlan 2 to 4094\r\n                               ^\r\nError: Unrecognized command found at '^' position.\r\n[SW2-GigabitEthernet0/0/3]",
+      "success": false,
+      "last_used": "2026-06-15T12:59:59.954985+00:00",
+      "use_count": 46,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2014",
+        "127.0.0.1:2015",
+        "127.0.0.1:2022",
+        "127.0.0.1:2020",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "e76682d80e30c950",
+      "command": "eth-trunk 1",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "eth-trunk 1\r\nInfo: This operation may take a few seconds. Please wait for a moment...\r\nError: Failed to add the port into the trunk because the port has been a member of the trunk.\r\n[SW2-GigabitEthernet0/0/11]",
+      "success": true,
+      "last_used": "2026-06-15T12:31:00.125389+00:00",
+      "use_count": 12,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "1bbd971ad610455a",
+      "command": "interface Eth-Trunk 1",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface Eth-Trunk 1\r\n[SW2-Eth-Trunk1]",
+      "success": true,
+      "last_used": "2026-06-15T12:31:03.813006+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "929ec5ddae2e5a24",
+      "command": "mode lacp-static",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "mode lacp-static\r\n[SW2-Eth-Trunk1]",
+      "success": true,
+      "last_used": "2026-06-15T12:31:09.333791+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "e995d79a2530b6ef",
+      "command": "interface GigabitEthernet0/0/19",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface GigabitEthernet0/0/19\r\n[AC-GigabitEthernet0/0/19]\r\n[AC-GigabitEthernet0/0/19]",
+      "success": true,
+      "last_used": "2026-06-15T12:39:25.999268+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "2e33a70fcbc466a9",
+      "command": "area 0.0.0.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "area 0.0.0.0\r\n[SW2-ospf-1-area-0.0.0.0]",
+      "success": false,
+      "last_used": "2026-06-15T12:38:03.171704+00:00",
+      "use_count": 9,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2001",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "c3fbc0ebaf4af66a",
+      "command": "network 192.168.0.0 0.0.255.255",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "\r\n\r\nLogin authentication\r\n\r\n\r\nUsername:admin\r\nPassword:",
+      "success": true,
+      "last_used": "2026-06-15T12:38:08.152891+00:00",
+      "use_count": 9,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2001",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "b9523d9a8f77c1aa",
+      "command": "silent-interface Vlanif10",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "silent-interface Vlanif10\r\nError: The silent interface already exists.\r\n[SW2-ospf-1]",
+      "success": true,
+      "last_used": "2026-06-15T12:31:18.536241+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "e5963098842242a1",
+      "command": "silent-interface Vlanif20",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "silent-interface Vlanif20\r\nError: The silent interface already exists.\r\n[SW2-ospf-1]",
+      "success": true,
+      "last_used": "2026-06-15T12:31:20.380414+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "09a33d9bf6000694",
+      "command": "silent-interface Vlanif30",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "silent-interface Vlanif30\r\nError: The silent interface already exists.\r\n[SW2-ospf-1]",
+      "success": true,
+      "last_used": "2026-06-15T12:31:22.223416+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "7ab40ac595ad68e1",
+      "command": "silent-interface Vlanif40",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "silent-interface Vlanif40\r\nError: The silent interface already exists.\r\n[SW2-ospf-1]",
+      "success": true,
+      "last_used": "2026-06-15T12:31:24.059641+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "4392e5822b3df81e",
+      "command": "silent-interface Vlanif100",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "silent-interface Vlanif100\r\nError: The silent interface already exists.\r\n[SW1-ospf-1]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:12.709316+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "024c69dc1272ffbe",
+      "command": "silent-interface Vlanif101",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "silent-interface Vlanif101\r\nError: The silent interface already exists.\r\n[SW2-ospf-1]",
+      "success": true,
+      "last_used": "2026-06-15T12:31:25.901539+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "860748e3509af9d4",
+      "command": "sysname SW2",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname SW2\r\n[SW2]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:21.899141+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "7b64b14723a97236",
+      "command": "stp instance 1 root secondary",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "stp instance 1 root secondary\r\n[SW2]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:43.965805+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "fb8a59417b5b2a6c",
+      "command": "stp instance 2 root primary",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "stp instance 2 root primary\r\n[SW2]",
+      "success": true,
+      "last_used": "2026-06-15T12:28:45.802693+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "f280eb8656dcb8ce",
+      "command": "ip address 192.168.1.200 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.1.200 255.255.255.0\r\nError: The address already exists.\r\n[SW2-Vlanif10]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:35.454148+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "f74531b7e1df93ed",
+      "command": "ip address 192.168.2.200 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.2.200 255.255.255.0\r\nError: The address already exists.\r\n[SW2-Vlanif20]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:44.671524+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "0c1d1f3433f61b4f",
+      "command": "vrrp vrid 20 priority 120",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vrrp vrid 20 priority 120\r\n[SW2-Vlanif20]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:48.352526+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "935119f01caed7e0",
+      "command": "ip address 192.168.3.200 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.3.200 255.255.255.0\r\nError: The address already exists.\r\n[SW2-Vlanif30]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:55.715743+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "ee0da52b8a977146",
+      "command": "vrrp vrid 30 priority 120",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vrrp vrid 30 priority 120\r\n[SW2-Vlanif30]",
+      "success": true,
+      "last_used": "2026-06-15T12:29:59.400064+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "95e7c93abc721e03",
+      "command": "ip address 192.168.4.200 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.4.200 255.255.255.0\r\nError: The address already exists.\r\n[SW2-Vlanif40]",
+      "success": true,
+      "last_used": "2026-06-15T12:30:06.778911+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "74ad51f7ff4bfcb3",
+      "command": "vrrp vrid 40 priority 120",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vrrp vrid 40 priority 120\r\n[SW2-Vlanif40]",
+      "success": true,
+      "last_used": "2026-06-15T12:30:10.465833+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "d7e5af30023ddfac",
+      "command": "ip address 192.168.101.200 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.101.200 255.255.255.0\r\nError: The address already exists.\r\n[SW2-Vlanif101]",
+      "success": true,
+      "last_used": "2026-06-15T12:30:17.827366+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "d3e466f42d5c22da",
+      "command": "interface Vlanif521",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface Vlanif521\r\n[SW2-Vlanif521]",
+      "success": true,
+      "last_used": "2026-06-15T12:30:25.184917+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "159f6c2bbade867e",
+      "command": "ip address 192.168.51.1 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.51.1 255.255.255.0\r\nError: The address already exists.\r\n[SW2-Vlanif521]",
+      "success": true,
+      "last_used": "2026-06-15T12:30:27.025551+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "e089bf265b04e29a",
+      "command": "vlan batch 10 20 30 40 100 to 101",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vlan batch 10 20 30 40 100 to 101\r\nInfo: This operation may take a few seconds. Please wait for a moment...done.\r\n[LSW4]",
+      "success": true,
+      "last_used": "2026-06-15T12:33:34.351404+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2015",
+        "127.0.0.1:2014"
+      ]
+    },
+    {
+      "key": "8c07acbc5cab9019",
+      "command": "interface GigabitEthernet0/0/4",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface GigabitEthernet0/0/4\r\n[LSW4-GigabitEthernet0/0/4]",
+      "success": true,
+      "last_used": "2026-06-15T12:33:50.910216+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2015",
+        "127.0.0.1:2014"
+      ]
+    },
+    {
+      "key": "6c2cefe0c5d37c19",
+      "command": "port default vlan 10",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "port default vlan 10\r\n[LSW5-Ethernet0/0/3]",
+      "success": true,
+      "last_used": "2026-06-15T12:34:24.032053+00:00",
+      "use_count": 9,
+      "devices_used": [
+        "127.0.0.1:2016",
+        "127.0.0.1:2014"
+      ]
+    },
+    {
+      "key": "49ab46fb81a1d071",
+      "command": "interface GigabitEthernet0/0/5",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface GigabitEthernet0/0/5\r\n[LSW4-GigabitEthernet0/0/5]",
+      "success": true,
+      "last_used": "2026-06-15T13:24:21.996415+00:00",
+      "use_count": 10,
+      "devices_used": [
+        "127.0.0.1:2015",
+        "127.0.0.1:2014"
+      ]
+    },
+    {
+      "key": "b94b13366abeeb06",
+      "command": "port default vlan 20",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "port default vlan 20\r\n[LSW6-Ethernet0/0/3]",
+      "success": true,
+      "last_used": "2026-06-15T12:34:46.120966+00:00",
+      "use_count": 9,
+      "devices_used": [
+        "127.0.0.1:2017",
+        "127.0.0.1:2014"
+      ]
+    },
+    {
+      "key": "7d3d1ec829da6e04",
+      "command": "port default vlan 30",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "port default vlan 30\r\n[LSW7-Ethernet0/0/3]",
+      "success": true,
+      "last_used": "2026-06-15T12:35:08.201673+00:00",
+      "use_count": 9,
+      "devices_used": [
+        "127.0.0.1:2018",
+        "127.0.0.1:2015"
+      ]
+    },
+    {
+      "key": "4c2b277eaf34dcd5",
+      "command": "port default vlan 40",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "port default vlan 40\r\n[LSW8-Ethernet0/0/3]",
+      "success": true,
+      "last_used": "2026-06-15T12:35:30.311488+00:00",
+      "use_count": 9,
+      "devices_used": [
+        "127.0.0.1:2019",
+        "127.0.0.1:2015"
+      ]
+    },
+    {
+      "key": "a35d94f896255076",
+      "command": "sysname LSW5",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname LSW5\r\n[LSW5]",
+      "success": true,
+      "last_used": "2026-06-15T12:34:09.314924+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2016"
+      ]
+    },
+    {
+      "key": "34207d3eaba3cdfb",
+      "command": "vlan batch 10",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vlan batch 10\r\nInfo: This operation may take a few seconds. Please wait for a moment...done.\r\n[LSW5]",
+      "success": true,
+      "last_used": "2026-06-15T12:34:11.150969+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2016"
+      ]
+    },
+    {
+      "key": "293a94490d098674",
+      "command": "interface Ethernet0/0/2",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface Ethernet0/0/2\r\n[LSW10-Ethernet0/0/2]",
+      "success": true,
+      "last_used": "2026-06-15T12:36:25.516203+00:00",
+      "use_count": 18,
+      "devices_used": [
+        "127.0.0.1:2021",
+        "127.0.0.1:2019",
+        "127.0.0.1:2017",
+        "127.0.0.1:2020",
+        "127.0.0.1:2016",
+        "127.0.0.1:2018"
+      ]
+    },
+    {
+      "key": "72fd92ecc44eea0e",
+      "command": "interface Ethernet0/0/3",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface Ethernet0/0/3\r\n[LSW10-Ethernet0/0/3]",
+      "success": true,
+      "last_used": "2026-06-15T12:36:32.877906+00:00",
+      "use_count": 18,
+      "devices_used": [
+        "127.0.0.1:2021",
+        "127.0.0.1:2019",
+        "127.0.0.1:2017",
+        "127.0.0.1:2020",
+        "127.0.0.1:2016",
+        "127.0.0.1:2018"
+      ]
+    },
+    {
+      "key": "fff498abbba2f166",
+      "command": "sysname LSW6",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname LSW6\r\n[LSW6]",
+      "success": true,
+      "last_used": "2026-06-15T12:34:31.397224+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2017"
+      ]
+    },
+    {
+      "key": "d74fa4c18cab158c",
+      "command": "vlan batch 20",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vlan batch 20\r\nInfo: This operation may take a few seconds. Please wait for a moment...done.\r\n[LSW6]",
+      "success": true,
+      "last_used": "2026-06-15T12:34:33.236115+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2017"
+      ]
+    },
+    {
+      "key": "7a56c4e8f5b4cdba",
+      "command": "sysname LSW7",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname LSW7\r\n[LSW7]",
+      "success": true,
+      "last_used": "2026-06-15T12:34:53.476983+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2018"
+      ]
+    },
+    {
+      "key": "5811ce04e818b452",
+      "command": "vlan batch 30",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vlan batch 30\r\nInfo: This operation may take a few seconds. Please wait for a moment...done.\r\n[LSW7]",
+      "success": true,
+      "last_used": "2026-06-15T12:34:55.317215+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2018"
+      ]
+    },
+    {
+      "key": "44de991a7969c8a2",
+      "command": "sysname LSW8",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname LSW8\r\n[LSW8]",
+      "success": true,
+      "last_used": "2026-06-15T12:35:15.563230+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2019"
+      ]
+    },
+    {
+      "key": "ee63db168159668d",
+      "command": "vlan batch 40",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vlan batch 40\r\nInfo: This operation may take a few seconds. Please wait for a moment...done.\r\n[LSW8]",
+      "success": true,
+      "last_used": "2026-06-15T12:35:17.404552+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2019"
+      ]
+    },
+    {
+      "key": "84cee93b0c47410f",
+      "command": "sysname LSW9",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname LSW9\r\n[LSW9]",
+      "success": true,
+      "last_used": "2026-06-15T12:35:37.679261+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2020"
+      ]
+    },
+    {
+      "key": "a529a8189ac871ae",
+      "command": "vlan batch 1000",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vlan batch 1000\r\nInfo: This operation may take a few seconds. Please wait for a moment...done.\r\n[LSW9]",
+      "success": true,
+      "last_used": "2026-06-15T12:35:39.517225+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2020"
+      ]
+    },
+    {
+      "key": "6307f3f12ed91bed",
+      "command": "interface Ethernet0/0/1",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface Ethernet0/0/1\r\n[LSW9-Ethernet0/0/1]",
+      "success": true,
+      "last_used": "2026-06-15T12:35:48.730717+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2020"
+      ]
+    },
+    {
+      "key": "60fbb42eff2fab07",
+      "command": "port default vlan 1000",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "port default vlan 1000\r\n[LSW9-Ethernet0/0/3]",
+      "success": true,
+      "last_used": "2026-06-15T12:36:07.130434+00:00",
+      "use_count": 9,
+      "devices_used": [
+        "127.0.0.1:2020"
+      ]
+    },
+    {
+      "key": "0628a2ab6739b0dd",
+      "command": "sysname LSW10",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname LSW10\r\n[LSW10]",
+      "success": true,
+      "last_used": "2026-06-15T12:36:14.489873+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2021"
+      ]
+    },
+    {
+      "key": "0f5ec0c80ddc5f09",
+      "command": "vlan batch 2011",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vlan batch 2011\r\nInfo: This operation may take a few seconds. Please wait for a moment...done.\r\n[LSW10]",
+      "success": true,
+      "last_used": "2026-06-15T12:36:16.327288+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2021"
+      ]
+    },
+    {
+      "key": "14f7fa515b4976d3",
+      "command": "port default vlan 2011",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "port default vlan 2011\r\n[LSW10-Ethernet0/0/3]",
+      "success": true,
+      "last_used": "2026-06-15T12:36:36.562799+00:00",
+      "use_count": 9,
+      "devices_used": [
+        "127.0.0.1:2021"
+      ]
+    },
+    {
+      "key": "ed54e07a8c563beb",
+      "command": "sysname AC",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname AC\r\n[AC]\r\n[AC]",
+      "success": true,
+      "last_used": "2026-06-15T12:39:13.112005+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "90e8966ae6d3032d",
+      "command": "vlan batch 100 to 101",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vlan batch 100 to 101\r\nInfo: This operation may take a few seconds. Please wait for a moment...done.\r\n[AC]\r\n[AC]",
+      "success": true,
+      "last_used": "2026-06-15T12:39:14.953494+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "5ff0c1ded039bda5",
+      "command": "ip address 192.168.100.1 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.100.1 255.255.255.0\r\nError: The address already exists.\r\n[AC-Vlanif100]\r\n[AC-Vlanif100]",
+      "success": true,
+      "last_used": "2026-06-15T12:39:20.477118+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "54682207c207e95d",
+      "command": "wlan",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "wlan\r\n[AC-wlan-view]\r\n[AC-wlan-view]",
+      "success": true,
+      "last_used": "2026-06-15T13:17:23.202134+00:00",
+      "use_count": 5,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "9191a2ee6c4c4e40",
+      "command": "traffic-profile name default",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "traffic-profile name default\r\n[AC-wlan-traffic-prof-default]\r\n[AC-wlan-traffic-prof-default]",
+      "success": true,
+      "last_used": "2026-06-15T12:39:35.197245+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "b30a70d3406c2e9d",
+      "command": "security-profile name sec",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "security-profile name sec\r\n[AC-wlan-sec-prof-sec]\r\n[AC-wlan-sec-prof-sec]",
+      "success": true,
+      "last_used": "2026-06-15T12:39:37.038669+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "233a62ea62be2036",
+      "command": "security wpa-wpa2 psk pass-phrase zz1234567 aes",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "security wpa-wpa2 psk pass-phrase zz1234567 aes\r\nWarning: This action may cause service interruption. Continue?[Y/N]\r\nError: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:",
+      "success": true,
+      "last_used": "2026-06-15T12:39:38.880311+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "a2fe34166f824636",
+      "command": "security-profile name default",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "s\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\r\nError: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:\r\nError: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:",
+      "success": true,
+      "last_used": "2026-06-15T12:39:40.719172+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "85b5fb8a6ede01a3",
+      "command": "ssid-profile name ssid",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "s\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\r\nError: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:\r\nError: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:",
+      "success": true,
+      "last_used": "2026-06-15T12:39:42.573225+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "ff3af2020484e960",
+      "command": "ssid wlan-2024",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "s\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\r\nError: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:\r\nError: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:",
+      "success": true,
+      "last_used": "2026-06-15T12:39:44.413306+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "d065bb596413b4e0",
+      "command": "vap-profile name vap",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "v\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\r\nError: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:\r\nError: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:",
+      "success": true,
+      "last_used": "2026-06-15T12:39:46.251391+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "0596d1e7a79db217",
+      "command": "service-vlan vlan-id 101",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "s\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\u0007\r\nError: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:\r\nError: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:\u0007\u0007\r\nError: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:",
+      "success": true,
+      "last_used": "2026-06-15T12:39:50.283283+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "0ec70439b4f7a588",
+      "command": "ssid-profile ssid",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "y\r\nInfo: This operation may take a few seconds, please wait.done.\r\n[AC-wlan-sec-prof-sec]ssid-profile ssid\r\n                                   ^\r\nError: Unrecognized command found at '^' position.\r\n[AC-wlan-sec-prof-sec]\r\n[AC-wlan-sec-prof-sec]",
+      "success": false,
+      "last_used": "2026-06-15T12:39:52.122115+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "a87e5be85688eda3",
+      "command": "security-profile sec",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "security-profile sec\r\n                                       ^\r\nError: Unrecognized command found at '^' position.\r\n[AC-wlan-sec-prof-sec]\r\n[AC-wlan-sec-prof-sec]",
+      "success": false,
+      "last_used": "2026-06-15T12:39:53.959061+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "c1e2916ad09e19e0",
+      "command": "ap-group name ap",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "ap-group name ap\r\n[AC-wlan-ap-group-ap]\r\n[AC-wlan-ap-group-ap]",
+      "success": true,
+      "last_used": "2026-06-15T12:39:55.797415+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "b23b873772a828f5",
+      "command": "radio 0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "radio 0\r\n[AC-wlan-group-radio-ap/0]\r\n[AC-wlan-group-radio-ap/0]",
+      "success": true,
+      "last_used": "2026-06-15T12:39:57.640707+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "b33dfcc1c12b34ba",
+      "command": "vap-profile vap wlan 1",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vap-profile vap wlan 1\r\n[AC-wlan-group-radio-ap/1]\r\n[AC-wlan-group-radio-ap/1]",
+      "success": true,
+      "last_used": "2026-06-15T12:40:03.159760+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "ae5d0651cb0d0f91",
+      "command": "radio 1",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "radio 1\r\n[AC-wlan-group-radio-ap/1]\r\n[AC-wlan-group-radio-ap/1]",
+      "success": true,
+      "last_used": "2026-06-15T12:40:01.322811+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "117bb10db6104f25",
+      "command": "ap-group name default",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "ap-group name default\r\n[AC-wlan-ap-group-default]\r\n[AC-wlan-ap-group-default]",
+      "success": true,
+      "last_used": "2026-06-15T12:40:05.001732+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "cf066ef1930a671f",
+      "command": "sysname FW",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname FW\r\n[FW]",
+      "success": true,
+      "last_used": "2026-06-15T12:36:43.917595+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "b1f519f13bd43530",
+      "command": "ip address 192.168.0.1 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.0.1 255.255.255.0\r\nError: The address already exists.\r\n[FW-GigabitEthernet0/0/0]",
+      "success": true,
+      "last_used": "2026-06-15T12:36:49.441868+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "af3d3c7fe3733504",
+      "command": "interface GigabitEthernet1/0/0",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface GigabitEthernet1/0/0\r\n[FW-GigabitEthernet1/0/0]",
+      "success": true,
+      "last_used": "2026-06-15T13:09:10.232784+00:00",
+      "use_count": 5,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "7702ad5ae9beaaa2",
+      "command": "ip address 192.168.0.254 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.0.254 255.255.255.0\r\nError: The address already exists.\r\n[FW-GigabitEthernet1/0/0]",
+      "success": true,
+      "last_used": "2026-06-15T12:36:56.802211+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "07539f300b346d3c",
+      "command": "interface GigabitEthernet1/0/1",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface GigabitEthernet1/0/1\r\n[FW-GigabitEthernet1/0/1]",
+      "success": true,
+      "last_used": "2026-06-15T13:09:16.055491+00:00",
+      "use_count": 5,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "2dd5bf6d408fa8eb",
+      "command": "ip address 200.1.1.1 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 200.1.1.1 255.255.255.0\r\nError: The address already exists.\r\n[FW-GigabitEthernet1/0/1]",
+      "success": true,
+      "last_used": "2026-06-15T12:37:04.160665+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "0d4a7c2f4dba0d06",
+      "command": "interface GigabitEthernet1/0/2",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface GigabitEthernet1/0/2\r\n[FW-GigabitEthernet1/0/2]",
+      "success": true,
+      "last_used": "2026-06-15T13:09:21.877052+00:00",
+      "use_count": 5,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "634730c86accf51f",
+      "command": "ip address 192.168.50.2 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.50.2 255.255.255.0\r\nError: The address already exists.\r\n[FW-GigabitEthernet1/0/2]",
+      "success": true,
+      "last_used": "2026-06-15T12:37:11.527252+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "d822bfdc2fa23b1c",
+      "command": "interface GigabitEthernet1/0/3",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface GigabitEthernet1/0/3\r\n[FW-GigabitEthernet1/0/3]",
+      "success": true,
+      "last_used": "2026-06-15T13:09:27.706688+00:00",
+      "use_count": 5,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "5d794fd080eff3c3",
+      "command": "ip address 192.168.51.2 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.51.2 255.255.255.0\r\nError: The address already exists.\r\n[FW-GigabitEthernet1/0/3]",
+      "success": true,
+      "last_used": "2026-06-15T12:37:18.892854+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "7b30f4e1f20a99a9",
+      "command": "firewall zone trust",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "firewall zone trust\r\n[FW-zone-trust]",
+      "success": true,
+      "last_used": "2026-06-15T12:37:22.574499+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "18f0feae5360b36f",
+      "command": "set priority 85",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "set priority 85\r\n Error: Can not modify priority of system security zone.\r\n[FW-zone-trust]",
+      "success": true,
+      "last_used": "2026-06-15T12:37:24.417334+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "8d10425ac0a39562",
+      "command": "add interface GigabitEthernet0/0/0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "add interface GigabitEthernet0/0/0\r\n Error: The interface has been added to trust security zone. \r\n[FW-zone-trust]",
+      "success": true,
+      "last_used": "2026-06-15T12:37:26.258082+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "de238bbef670ca0b",
+      "command": "add interface GigabitEthernet1/0/2",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "add interface GigabitEthernet1/0/2\r\n Error: The interface has been added to trust security zone. \r\n[FW-zone-trust]",
+      "success": true,
+      "last_used": "2026-06-15T12:37:28.096869+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "366d26882c9af601",
+      "command": "add interface GigabitEthernet1/0/3",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "add interface GigabitEthernet1/0/3\r\n Error: The interface has been added to trust security zone. \r\n[FW-zone-trust]",
+      "success": true,
+      "last_used": "2026-06-15T12:37:29.935731+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "3f1dd23db661e4b1",
+      "command": "firewall zone untrust",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "firewall zone untrust\r\n[FW-zone-untrust]",
+      "success": true,
+      "last_used": "2026-06-15T12:37:33.618371+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "1424a8193c94e78f",
+      "command": "set priority 5",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "set priority 5\r\n Error: Can not modify priority of system security zone.\r\n[FW-zone-untrust]",
+      "success": true,
+      "last_used": "2026-06-15T12:37:35.462118+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "6687368ba410d16a",
+      "command": "add interface GigabitEthernet1/0/1",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "add interface GigabitEthernet1/0/1\r\n Error: The interface has been added to untrust security zone. \r\n[FW-zone-untrust]",
+      "success": true,
+      "last_used": "2026-06-15T12:37:37.299921+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "cb5dbed7d8130828",
+      "command": "firewall zone dmz",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "firewall zone dmz\r\n[FW-zone-dmz]",
+      "success": true,
+      "last_used": "2026-06-15T12:37:40.983380+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "aa8c7980adc4d55d",
+      "command": "set priority 50",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "set priority 50\r\n Error: Can not modify priority of system security zone.\r\n[FW-zone-dmz]",
+      "success": true,
+      "last_used": "2026-06-15T12:37:42.819483+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "b98ded657520f56e",
+      "command": "add interface GigabitEthernet1/0/0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "add interface GigabitEthernet1/0/0\r\n Error: The interface has been added to dmz security zone. \r\n[FW-zone-dmz]",
+      "success": true,
+      "last_used": "2026-06-15T12:37:44.663387+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "b37a9774357de8ce",
+      "command": "aaa",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "aaa\r\n[FW-aaa]",
+      "success": true,
+      "last_used": "2026-06-15T13:14:52.568377+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "974543d9f651dcc7",
+      "command": "manager-user admin",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "manager-user admin\r\n[FW-aaa-manager-user-admin]",
+      "success": true,
+      "last_used": "2026-06-15T13:14:54.511273+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "52269dbb1cd29dcd",
+      "command": "password cipher admin@123",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "password cipher admin@123\r\nPlease input old password:",
+      "success": true,
+      "last_used": "2026-06-15T13:14:56.458334+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "e53386cab6bd11af",
+      "command": "level 15",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "\r\n Error: Wrong password. Please reenter.\r\n[FW-aaa-manager-user-admin]",
+      "success": false,
+      "last_used": "2026-06-15T13:14:58.398946+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "9a9df904873c5170",
+      "command": "default-route-advertise",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "default-route-advertise\r\n[FW-ospf-1]",
+      "success": false,
+      "last_used": "2026-06-15T12:38:01.334361+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "6d84452ac2bc8555",
+      "command": "ip route-static 0.0.0.0 0.0.0.0 200.1.1.2",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip route-static 0.0.0.0 0.0.0.0 200.1.1.2\r\nError: The route already exists.\r\n[FW]",
+      "success": false,
+      "last_used": "2026-06-15T12:38:11.835741+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "f60ad39e6dfef775",
+      "command": "security-policy",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "\r\nUsername:admin\r\nPassword:",
+      "success": true,
+      "last_used": "2026-06-15T12:38:16.116211+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "a16c11b11958109f",
+      "command": "rule name trust_to_dmz_untrust",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "\r\nError: Authentication fail\r\n",
+      "success": false,
+      "last_used": "2026-06-15T12:38:17.955904+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "b2db6fb79c54530a",
+      "command": "source-zone trust",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "source-zone trust\r\n[FW-policy-security-rule-trust_to_dmz_untrust]",
+      "success": false,
+      "last_used": "2026-06-15T12:38:19.797238+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "671080ede33024d5",
+      "command": "destination-zone dmz",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "destination-zone dmz\r\n[FW-policy-security-rule-untrust_to_dmz]",
+      "success": false,
+      "last_used": "2026-06-15T12:38:38.018390+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "25fe5a6de1360131",
+      "command": "destination-zone untrust",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "destination-zone untrust\r\n[FW-policy-security-rule-trust_to_dmz_untrust]",
+      "success": false,
+      "last_used": "2026-06-15T12:38:23.479726+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "479d9b6650ffe7f2",
+      "command": "action permit",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "action permit\r\n[FW-policy-security-rule-untrust_to_dmz]",
+      "success": false,
+      "last_used": "2026-06-15T12:38:39.857757+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "735a4bf5d5a077f3",
+      "command": "quit",
+      "description": "退出当前视图",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "output_preview": "\r\n<SW1>",
+      "success": true,
+      "last_used": "2026-06-15T13:39:37.233834+00:00",
+      "use_count": 195,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2000",
+        "127.0.0.1:2021",
+        "127.0.0.1:2014",
+        "127.0.0.1:2015",
+        "127.0.0.1:2019",
+        "127.0.0.1:2022",
+        "127.0.0.1:2017",
+        "127.0.0.1:2020",
+        "127.0.0.1:2018",
+        "127.0.0.1:2016",
+        "127.0.0.1:2001",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "51e14034df13c3cb",
+      "command": "rule name untrust_to_dmz",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "\r\nError: Authentication fail\r\n",
+      "success": false,
+      "last_used": "2026-06-15T12:38:34.336200+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "3525a5a9a818d353",
+      "command": "source-zone untrust",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "source-zone untrust\r\n[FW-policy-security-rule-untrust_to_dmz]",
+      "success": false,
+      "last_used": "2026-06-15T12:38:36.177048+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "44147c593bee410f",
+      "command": "rule name deny_dmz_out",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "rule name deny_dmz_out\r\n[FW-policy-security-rule-deny_dmz_out]",
+      "success": false,
+      "last_used": "2026-06-15T12:38:43.541085+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "1498b825efeee6f0",
+      "command": "source-zone dmz",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "source-zone dmz\r\n[FW-policy-security-rule-deny_dmz_out]",
+      "success": false,
+      "last_used": "2026-06-15T12:38:45.383419+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "22b311a13e6006f4",
+      "command": "action deny",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "action deny\r\n[FW-policy-security-rule-deny_dmz_out]",
+      "success": false,
+      "last_used": "2026-06-15T12:38:47.226447+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "7b809f1e99eeb24a",
+      "command": "system-view",
+      "description": "进入系统视图（配置前提）",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "output_preview": "\u001b[42D                                          \u001b[42D\r\n\r\n  IP address Statistic\r\n    Total       :1518  \r\n    Used        :4          Idle        :1514  \r\n    Expired     :0          Conflict    :0          Disable   :0     \r\n<SW1>ystem-view\r\n     ^\r\nError: Unrecognized command found at '^' position.\r\n<SW1>",
+      "success": false,
+      "last_used": "2026-06-15T13:39:20.649842+00:00",
+      "use_count": 56,
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2012",
+        "127.0.0.1:2021",
+        "127.0.0.1:2014",
+        "127.0.0.1:2015",
+        "127.0.0.1:2019",
+        "127.0.0.1:2022",
+        "127.0.0.1:2017",
+        "127.0.0.1:2020",
+        "127.0.0.1:2018",
+        "127.0.0.1:2016",
+        "127.0.0.1:2001",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "3f0749d6d5013ac4",
+      "command": "sysname R1",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname R1\r\n[R1]\r\n[R1]",
+      "success": true,
+      "last_used": "2026-06-15T12:38:54.616869+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "6b10abc7d2d24dc9",
+      "command": "interface GigabitEthernet0/0/0",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface GigabitEthernet0/0/0\r\n[FW-GigabitEthernet0/0/0]",
+      "success": true,
+      "last_used": "2026-06-15T12:55:07.004217+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "95981dfb1b170cfa",
+      "command": "ip address 200.1.1.2 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 200.1.1.2 255.255.255.0\r\nError: The address already exists.\r\n[R1-GigabitEthernet0/0/0]\r\n[R1-GigabitEthernet0/0/0]",
+      "success": true,
+      "last_used": "2026-06-15T12:38:58.297239+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "ae1f5a827e6afd3c",
+      "command": "ip address 201.1.1.254 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 201.1.1.254 255.255.255.0\r\nError: The address already exists.\r\n[R1-GigabitEthernet0/0/1]\r\n[R1-GigabitEthernet0/0/1]",
+      "success": true,
+      "last_used": "2026-06-15T12:39:03.822985+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "ee6eb969386c8d65",
+      "command": "ip route-static 0.0.0.0 0.0.0.0 200.1.1.1",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip route-static 0.0.0.0 0.0.0.0 200.1.1.1\r\nError: The route already exists.\r\n[R1]\r\n[R1]",
+      "success": true,
+      "last_used": "2026-06-15T12:39:07.592161+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "413c8918a2854fa6",
+      "command": "interface GigabitEthernet0/0/1",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface GigabitEthernet0/0/1\r\n[SW2-GigabitEthernet0/0/1]",
+      "success": true,
+      "last_used": "2026-06-15T13:00:06.065785+00:00",
+      "use_count": 15,
+      "devices_used": [
+        "127.0.0.1:2000",
+        "127.0.0.1:2012",
+        "127.0.0.1:2021",
+        "127.0.0.1:2014",
+        "127.0.0.1:2015",
+        "127.0.0.1:2020",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "433a431a35fe8dd8",
+      "command": "sysname SW1_TEST",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname SW1_TEST\r\n[SW1_TEST]",
+      "success": true,
+      "last_used": "2026-06-15T12:22:03.887832+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "34536f9aa8774100",
+      "command": "vlan batch 99",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vlan batch 99\r\nInfo: This operation may take a few seconds. Please wait for a moment...done.\r\n[SW1_TEST]",
+      "success": true,
+      "last_used": "2026-06-15T12:22:05.723444+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "b4e66efbaafe5915",
+      "command": "return",
+      "description": "直接返回用户视图",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "safe",
+      "output_preview": "\r\n\r\n  Please check whether system data has been changed, and save data in time\r\n\r\n  Configuration console time out, please press any key to log on\r\n\r\n<AC>\r\n<AC>dis i\u001b[1D \u001b[1Dap all\r\nInfo: This operation may take a few seconds. Please wait for a moment.done.\r\nTotal AP information:\r\nidle : idle            [1]\r\nnor  : normal          [1]\r\n-------------------------------------------------------------------------------------------\r\nID   MAC            Name Group IP              Type            State ",
+      "success": true,
+      "last_used": "2026-06-15T13:50:17.117178+00:00",
+      "use_count": 105,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2000",
+        "127.0.0.1:2014",
+        "127.0.0.1:2015",
+        "127.0.0.1:2022",
+        "127.0.0.1:2001",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "a8b3649b6e3f22c4",
+      "command": "sysname FW_TEST",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname FW_TEST\r\n[FW_TEST]",
+      "success": true,
+      "last_used": "2026-06-15T12:22:13.071766+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "c3e606f6fcac963d",
+      "command": "sysname AC_TEST",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname AC_TEST\r\n[AC_TEST]\r\n[AC_TEST]",
+      "success": true,
+      "last_used": "2026-06-15T12:22:23.355217+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "8ab7920acecb32b7",
+      "command": "sysname R1_TEST",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "sysname R1_TEST\r\n[R1_TEST]\r\n[R1_TEST]",
+      "success": true,
+      "last_used": "2026-06-15T12:22:33.823056+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "c5dca77a37ebb36a",
+      "command": "interface GigabitEthernet0/0/2",
+      "description": "进入接口视图进行配置",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "low",
+      "output_preview": "interface GigabitEthernet0/0/2\r\n[LSW4-GigabitEthernet0/0/2]",
+      "success": true,
+      "last_used": "2026-06-15T12:33:43.554276+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2015",
+        "127.0.0.1:2013",
+        "127.0.0.1:2014"
+      ]
+    },
+    {
+      "key": "5e03dacf0ef2656a",
+      "command": "display ip pool",
+      "description": "显示DHCP地址池",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display ip pool \r\n  -----------------------------------------------------------------------\r\n  Pool-name      : vlan10\r\n  Pool-No        : 0\r\n  Position       : Local           Status           : Unlocked\r\n  Gateway-0      : 192.168.1.254   \r\n  Mask           : 255.255.255.0\r\n  VPN instance   : --\r\n\r\n  -----------------------------------------------------------------------\r\n  Pool-name      : vlan20\r\n  Pool-No        : 1\r\n  Position       : Local           Status           : Unlocked\r\n  Gateway-",
+      "success": true,
+      "last_used": "2026-06-15T13:39:55.014266+00:00",
+      "use_count": 18,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "31b1496839c593fc",
+      "command": "display vrrp brief",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display vrrp brief\r\nVRID  State        Interface                Type     Virtual IP     \r\n----------------------------------------------------------------\r\n10    Master       Vlanif10                 Normal   192.168.1.254  \r\n20    Backup       Vlanif20                 Normal   192.168.2.254  \r\n30    Backup       Vlanif30                 Normal   192.168.3.254  \r\n40    Backup       Vlanif40                 Normal   192.168.4.254  \r\n101   Master       Vlanif101                Normal   192.168.101",
+      "success": true,
+      "last_used": "2026-06-15T13:13:33.514860+00:00",
+      "use_count": 10,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "095181c73e5fa3a0",
+      "command": "ping 192.168.1.254",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 192.168.1.254\r\n  PING 192.168.1.254: 56  data bytes, press CTRL_C to break\r\n    Reply from 192.168.1.254: bytes=56 Sequence=1 ttl=255 time=10 ms\r\n    Reply from 192.168.1.254: bytes=56 Sequence=2 ttl=255 time=20 ms\r\n    Reply from 192.168.1.254: bytes=56 Sequence=3 ttl=255 time=10 ms\r\n    Reply from 192.168.1.254: bytes=56 Sequence=4 ttl=255 time=20 ms\r\n    Reply from 192.168.1.254: bytes=56 Sequence=5 ttl=255 time=1 ms\r\n\r\n  --- 192.168.1.254 ping statistics ---\r\n    5 packet(s) transmitted",
+      "success": true,
+      "last_used": "2026-06-15T13:10:58.563173+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "8c866589ec371802",
+      "command": "ping 192.168.2.254",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 192.168.2.254\r\n  PING 192.168.2.254: 56  data bytes, press CTRL_C to break\r\n    Reply from 192.168.2.254: bytes=56 Sequence=1 ttl=254 time=30 ms\r\n    Reply from 192.168.2.254: bytes=56 Sequence=2 ttl=254 time=60 ms\r\n    Reply from 192.168.2.254: bytes=56 Sequence=3 ttl=254 time=50 ms\r\n    Reply from 192.168.2.254: bytes=56 Sequence=4 ttl=254 time=60 ms\r\n    Reply from 192.168.2.254: bytes=56 Sequence=5 ttl=254 time=50 ms\r\n\r\n  --- 192.168.2.254 ping statistics ---\r\n    5 packet(s) transmitte",
+      "success": true,
+      "last_used": "2026-06-15T13:11:05.026581+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "14900e421a7f8146",
+      "command": "ping 192.168.3.254",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 192.168.3.254\r\n  PING 192.168.3.254: 56  data bytes, press CTRL_C to break\r\n    Reply from 192.168.3.254: bytes=56 Sequence=1 ttl=254 time=50 ms\r\n    Reply from 192.168.3.254: bytes=56 Sequence=2 ttl=254 time=20 ms\r\n    Reply from 192.168.3.254: bytes=56 Sequence=3 ttl=254 time=30 ms\r\n    Reply from 192.168.3.254: bytes=56 Sequence=4 ttl=254 time=60 ms\r\n    Reply from 192.168.3.254: bytes=56 Sequence=5 ttl=254 time=40 ms\r\n\r\n  --- 192.168.3.254 ping statistics ---\r\n    5 packet(s) transmitte",
+      "success": true,
+      "last_used": "2026-06-15T13:11:11.486253+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "151327a63e316eef",
+      "command": "ping 192.168.4.254",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 192.168.4.254\r\n  PING 192.168.4.254: 56  data bytes, press CTRL_C to break\r\n    Reply from 192.168.4.254: bytes=56 Sequence=1 ttl=254 time=40 ms\r\n    Reply from 192.168.4.254: bytes=56 Sequence=2 ttl=254 time=50 ms\r\n    Reply from 192.168.4.254: bytes=56 Sequence=3 ttl=254 time=30 ms\r\n    Reply from 192.168.4.254: bytes=56 Sequence=4 ttl=254 time=10 ms\r\n    Reply from 192.168.4.254: bytes=56 Sequence=5 ttl=254 time=50 ms\r\n\r\n  --- 192.168.4.254 ping statistics ---\r\n    5 packet(s) transmitte",
+      "success": true,
+      "last_used": "2026-06-15T13:11:17.967784+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "1eeba807e664cc91",
+      "command": "ping 192.168.0.1",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 192.168.0.1\r\n  PING 192.168.0.1: 56  data bytes, press CTRL_C to break\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n\r\n  --- 192.168.0.1 ping statistics ---\r\n    5 packet(s) transmitted\r\n    0 packet(s) received\r\n    100.00% packet loss\r\n\r\n<SW1>",
+      "success": true,
+      "last_used": "2026-06-15T12:56:02.038417+00:00",
+      "use_count": 8,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "48e87416ace23706",
+      "command": "ping 192.168.0.2",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 192.168.0.2\r\n  PING 192.168.0.2: 56  data bytes, press CTRL_C to break\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n\r\n  --- 192.168.0.2 ping statistics ---\r\n    5 packet(s) transmitted\r\n    0 packet(s) received\r\n    100.00% packet loss\r\n\r\n<R1>",
+      "success": true,
+      "last_used": "2026-06-15T12:50:36.412159+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "febafb51a66d4518",
+      "command": "ping 192.168.0.3",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 192.168.0.3\r\n  PING 192.168.0.3: 56  data bytes, press CTRL_C to break\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n\r\n  --- 192.168.0.3 ping statistics ---\r\n    5 packet(s) transmitted\r\n    0 packet(s) received\r\n    100.00% packet loss\r\n\r\n<R1>",
+      "success": true,
+      "last_used": "2026-06-15T12:50:50.888144+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "f92fe290da8cf4d3",
+      "command": "ping www.jz.com",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping www.jz.com\r\nError: Unknown host www.jz.com.\r\n[SW1]",
+      "success": true,
+      "last_used": "2026-06-15T12:43:05.776148+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "b5beec8da07075cb",
+      "command": "ping www.fzm.com",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping www.fzm.com\r\nError: Unknown host www.fzm.com.\r\n[SW1]",
+      "success": true,
+      "last_used": "2026-06-15T12:43:20.016576+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "d36269fd737f3543",
+      "command": "ping 201.1.1.1",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 201.1.1.1\r\n  PING 201.1.1.1: 56  data bytes, press CTRL_C to break\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n\r\n  --- 201.1.1.1 ping statistics ---\r\n    5 packet(s) transmitted\r\n    0 packet(s) received\r\n    100.00% packet loss\r\n\r\n<SW1>",
+      "success": true,
+      "last_used": "2026-06-15T13:03:08.046439+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "0837700bef462e8b",
+      "command": "ping 201.1.1.2",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 201.1.1.2\r\n  PING 201.1.1.2: 56  data bytes, press CTRL_C to break\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n\r\n  --- 201.1.1.2 ping statistics ---\r\n    5 packet(s) transmitted\r\n    0 packet(s) received\r\n    100.00% packet loss\r\n\r\n<SW1>\r\n<SW1>",
+      "success": true,
+      "last_used": "2026-06-15T12:50:05.590418+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "443bcb1904e357fb",
+      "command": "ping 192.168.1.10",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 192.168.1.10\r\n  PING 192.168.1.10: 56  data bytes, press CTRL_C to break\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n\r\n  --- 192.168.1.10 ping statistics ---\r\n    5 packet(s) transmitted\r\n    0 packet(s) received\r\n    100.00% packet loss\r\n\r\n<R1>",
+      "success": true,
+      "last_used": "2026-06-15T13:12:06.265597+00:00",
+      "use_count": 5,
+      "devices_used": [
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "24df25e4a2458653",
+      "command": "display security-policy all",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display security-policy all\r\n                            ^\r\nError: Unrecognized command found at '^' position.\r\n<FW>",
+      "success": false,
+      "last_used": "2026-06-15T13:07:26.997166+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "0c22991e525789a5",
+      "command": "display vrrp interface Vlanif10",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display vrrp interface Vlanif10\r\n  Vlanif10 | Virtual Router 10\r\n    State : Master\r\n    Virtual IP : 192.168.1.254\r\n    Master IP : 192.168.1.100\r\n    PriorityRun : 120\r\n    PriorityConfig : 120\r\n    MasterPriority : 120\r\n    Preempt : YES   Delay Time : 0 s\r\n    TimerRun : 1 s\r\n    TimerConfig : 1 s\r\n    Auth type : NONE\r\n    Virtual MAC : 0000-5e00-010a\r\n    Check TTL : YES\r\n    Config type : normal-vrrp\r\n    Create time : 2026-06-15 20:00:23 UTC-08:00\r\n    Last change time : 2026-06-15 20:01",
+      "success": true,
+      "last_used": "2026-06-15T12:47:05.391901+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "55a4c56e37130fe3",
+      "command": "display ospf brief",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display ospf brief\r\n2026-06-15 12:47:05.940 \r\n\r\n\t OSPF Process 1 with Router ID 3.3.3.3\r\n\t\t OSPF Protocol Information\r\n\r\n RouterID: 3.3.3.3          Border Router:  AS \r\n Multi-VPN-Instance is not enabled\r\n Graceful-restart capability: disabled\r\n Helper support capability  : not configured\r\n Spf-schedule-interval: max 10000ms, start 500ms, hold 1000ms\r\n Default ASE parameters: Metric: 1 Tag: 1 Type: 2\r\n Route Preference: 10 \r\n ASE Route Preference: 150 \r\n SPF Computation Count: 3     \r\n RFC 1583",
+      "success": true,
+      "last_used": "2026-06-15T12:47:12.671574+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "e3bca6699039d4bd",
+      "command": "display ip routing-table",
+      "description": "显示IP路由表",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display ip routing-table\r\nRoute Flags: R - relay, D - download to fib\r\n------------------------------------------------------------------------------\r\nRouting Tables: Public\r\n         Destinations : 11       Routes : 11       \r\n\r\nDestination/Mask    Proto   Pre  Cost      Flags NextHop         Interface\r\n\r\n        0.0.0.0/0   Static  60   0          RD   200.1.1.1       GigabitEthernet0/0/0\r\n      127.0.0.0/8   Direct  0    0           D   127.0.0.1       InLoopBack0\r\n      127.0.0.1/32  Direct ",
+      "success": true,
+      "last_used": "2026-06-15T12:57:20.549516+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2001",
+        "127.0.0.1:2013",
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "30f44983f13d76cc",
+      "command": "display ip interface Vlanif520",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display ip interface Vlanif520\r\nVlanif520 current state : UP \r\nLine protocol current state : UP\r\nThe Maximum Transmit Unit : 1500 bytes\r\ninput packets : 0, bytes : 0, multicasts : 0\r\noutput packets : 296, bytes : 18944, multicasts : 296\r\nDirected-broadcast packets:\r\n received packets:            0, sent packets:            0 \r\n forwarded packets:           0, dropped packets:           0 \r\nInternet Address is 192.168.50.1/24 \r\nBroadcast address : 192.168.50.255\r\nTTL being 1 packet number:       ",
+      "success": true,
+      "last_used": "2026-06-15T12:52:10.516700+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "7a9303aba64f34f4",
+      "command": "display interface GigabitEthernet 1/0/2",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display interface GigabitEthernet 1/0/2\r\n2026-06-15 12:52:07.430 \r\nGigabitEthernet1/0/2 current state : UP\r\nLine protocol current state : UP\r\nLast line protocol up time : 2026-06-15 12:12:38\r\nDescription:Huawei, USG6000V1-ENSP Series, GigabitEthernet1/0/2 Interface\r\nRoute Port,The Maximum Transmit Unit is 1500\r\nInternet Address is 192.168.50.2/24\r\nIP Sending Frames' Format is PKTFMT_ETHNT_2, Hardware address is 00e0-fc34-51e5\r\nMax-bandwidth : 1000000 kbps\r\nLast physical up time   : 2026-06-15 11",
+      "success": true,
+      "last_used": "2026-06-15T12:52:14.160164+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "2defed04c3c79096",
+      "command": "undo port trunk allow-pass vlan 2 to 4094",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "undo port trunk allow-pass vlan 2 to 4094\r\n[SW2-GigabitEthernet0/0/1]",
+      "success": true,
+      "last_used": "2026-06-15T13:00:08.107218+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "c5eb542868d7a50f",
+      "command": "port hybrid pvid vlan 520",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "port hybrid pvid vlan 520\r\n[SW1-GigabitEthernet0/0/1]",
+      "success": true,
+      "last_used": "2026-06-15T12:53:00.115343+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "08ac83fa1bc06518",
+      "command": "port hybrid untagged vlan 520",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "port hybrid untagged vlan 520\r\n[SW1-GigabitEthernet0/0/1]",
+      "success": true,
+      "last_used": "2026-06-15T12:53:02.155419+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "1037262696230a87",
+      "command": "ip address 192.168.255.1 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip address 192.168.255.1 255.255.255.0\r\n[FW-GigabitEthernet0/0/0]",
+      "success": true,
+      "last_used": "2026-06-15T12:55:09.042164+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "0dd66070ede7f03e",
+      "command": "port hybrid pvid vlan 521",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "port hybrid pvid vlan 521\r\n[SW2-GigabitEthernet0/0/1]",
+      "success": true,
+      "last_used": "2026-06-15T13:00:12.186365+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "340805930acd183d",
+      "command": "port hybrid untagged vlan 521",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "port hybrid untagged vlan 521\r\n[SW2-GigabitEthernet0/0/1]",
+      "success": true,
+      "last_used": "2026-06-15T13:00:14.226204+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "152a06a80447964d",
+      "command": "display ip interface GigabitEthernet 1/0/3",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display ip interface GigabitEthernet 1/0/3\r\n2026-06-15 12:58:06.350 \r\nGigabitEthernet1/0/3 current state : UP \r\nLine protocol current state : UP\r\nThe Maximum Transmit Unit : 1500 bytes\r\ninput packets : 420, bytes : 76248, multicasts : 233\r\noutput packets : 277, bytes : 17728, multicasts : 277\r\nDirected-broadcast packets:\r\n received packets:          187, sent packets:            0 \r\n forwarded packets:           0, dropped packets:           0 \r\nARP packet input number:           0\r\n  Request pa",
+      "success": true,
+      "last_used": "2026-06-15T12:58:13.082519+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "18be4755ba6e8385",
+      "command": "display ospf interface",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display ospf interface\r\n2026-06-15 12:58:53.530 \r\n\r\n\t OSPF Process 1 with Router ID 3.3.3.3\r\n\t\t Interfaces \r\n\r\n Area: 0.0.0.0        \r\n IP Address      Type         State    Cost    Pri   DR              BDR \r\n 192.168.0.254   Broadcast    DR       1       1     192.168.0.254   0.0.0.0\r\n 192.168.50.2    Broadcast    DR       1       1     192.168.50.2    192.168.50.1\r\n 192.168.51.2    Broadcast    DR       1       1     192.168.51.2    0.0.0.0\r\n \r\n<FW>",
+      "success": true,
+      "last_used": "2026-06-15T12:59:00.258922+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "8f1418e064f6d2bc",
+      "command": "display ip interface Vlanif521",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display ip interface Vlanif521\r\nVlanif521 current state : UP \r\nLine protocol current state : UP\r\nThe Maximum Transmit Unit : 1500 bytes\r\ninput packets : 0, bytes : 0, multicasts : 0\r\noutput packets : 286, bytes : 18304, multicasts : 286\r\nDirected-broadcast packets:\r\n received packets:            0, sent packets:            0 \r\n forwarded packets:           0, dropped packets:           0 \r\nInternet Address is 192.168.51.1/24 \r\nBroadcast address : 192.168.51.255\r\nTTL being 1 packet number:       ",
+      "success": true,
+      "last_used": "2026-06-15T12:58:22.305034+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "2c2241377136ac4b",
+      "command": "display interface GigabitEthernet 0/0/3",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display interface GigabitEthernet 0/0/3\r\nGigabitEthernet0/0/3 current state : UP\r\nLine protocol current state : UP\r\nDescription:\r\nSwitch Port, PVID :  100, TPID : 8100(Hex), The Maximum Frame Length is 9216\r\nIP Sending Frames' Format is PKTFMT_ETHNT_2, Hardware address is 4c1f-ccd1-7138\r\nLast physical up time   : 2026-06-15 19:09:45 UTC-08:00\r\nLast physical down time : 2026-06-15 19:09:43 UTC-08:00\r\nCurrent system time: 2026-06-15 21:27:22-08:00\r\nHardware address is 4c1f-ccd1-7138\r\n    Last 300 ",
+      "success": true,
+      "last_used": "2026-06-15T13:27:25.909444+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2013",
+        "127.0.0.1:2014"
+      ]
+    },
+    {
+      "key": "cd20e59955e0d4ab",
+      "command": "ping 192.168.51.2",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 192.168.51.2\r\n  PING 192.168.51.2: 56  data bytes, press CTRL_C to break\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n    Request time out\r\n\r\n  --- 192.168.51.2 ping statistics ---\r\n    5 packet(s) transmitted\r\n    0 packet(s) received\r\n    100.00% packet loss\r\n\r\n<SW2>",
+      "success": true,
+      "last_used": "2026-06-15T12:58:41.453044+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "f811fdb1eabecab0",
+      "command": "display port vlan interface GigabitEthernet 0/0/3",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display port vlan interface GigabitEthernet 0/0/3\r\n                        ^\r\nError: Wrong parameter found at '^' position.\r\n<LSW3>",
+      "success": true,
+      "last_used": "2026-06-15T13:19:09.046765+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2013",
+        "127.0.0.1:2014"
+      ]
+    },
+    {
+      "key": "acd5aa15ec839e57",
+      "command": "undo port hybrid pvid vlan 521",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "undo port hybrid pvid vlan 521\r\n                                                     ^\r\nError:Too many parameters found at '^' position.\r\n[SW2-GigabitEthernet0/0/3]",
+      "success": true,
+      "last_used": "2026-06-15T12:59:53.824320+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "dac3b07f05983e4e",
+      "command": "undo port hybrid untagged vlan 521",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "undo port hybrid untagged vlan 521\r\n[SW2-GigabitEthernet0/0/3]",
+      "success": true,
+      "last_used": "2026-06-15T12:59:55.869568+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "aa662507d2b5ad0c",
+      "command": "ping 192.168.0.254",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 192.168.0.254\r\n  PING 192.168.0.254: 56  data bytes, press CTRL_C to break\r\n    Reply from 192.168.0.254: bytes=56 Sequence=1 ttl=255 time=20 ms\r\n    Reply from 192.168.0.254: bytes=56 Sequence=2 ttl=255 time=20 ms\r\n    Reply from 192.168.0.254: bytes=56 Sequence=3 ttl=255 time=30 ms\r\n    Reply from 192.168.0.254: bytes=56 Sequence=4 ttl=255 time=30 ms\r\n    Reply from 192.168.0.254: bytes=56 Sequence=5 ttl=255 time=20 ms\r\n\r\n  --- 192.168.0.254 ping statistics ---\r\n    5 packet(s) transmitte",
+      "success": true,
+      "last_used": "2026-06-15T13:11:26.392392+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "f2868212d163625d",
+      "command": "ping 200.1.1.2",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 200.1.1.2\r\n  PING 200.1.1.2: 56  data bytes, press CTRL_C to break\r\n    Reply from 200.1.1.2: bytes=56 Sequence=1 ttl=254 time=40 ms\r\n    Reply from 200.1.1.2: bytes=56 Sequence=2 ttl=254 time=10 ms\r\n    Reply from 200.1.1.2: bytes=56 Sequence=3 ttl=254 time=50 ms\r\n    Reply from 200.1.1.2: bytes=56 Sequence=4 ttl=254 time=30 ms\r\n    Reply from 200.1.1.2: bytes=56 Sequence=5 ttl=254 time=40 ms\r\n\r\n  --- 200.1.1.2 ping statistics ---\r\n    5 packet(s) transmitted\r\n    5 packet(s) received\r\n   ",
+      "success": true,
+      "last_used": "2026-06-15T13:11:34.811470+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "df2d400f42005075",
+      "command": "ping 201.1.1.254",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 201.1.1.254\r\n  PING 201.1.1.254: 56  data bytes, press CTRL_C to break\r\n    Reply from 201.1.1.254: bytes=56 Sequence=1 ttl=254 time=50 ms\r\n    Reply from 201.1.1.254: bytes=56 Sequence=2 ttl=254 time=30 ms\r\n    Reply from 201.1.1.254: bytes=56 Sequence=3 ttl=254 time=50 ms\r\n    Reply from 201.1.1.254: bytes=56 Sequence=4 ttl=254 time=30 ms\r\n    Reply from 201.1.1.254: bytes=56 Sequence=5 ttl=254 time=50 ms\r\n\r\n  --- 201.1.1.254 ping statistics ---\r\n    5 packet(s) transmitted\r\n    5 packet(",
+      "success": true,
+      "last_used": "2026-06-15T13:11:41.281017+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "c234e26fd498ded4",
+      "command": "ping 200.1.1.1",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 200.1.1.1\r\n  PING 200.1.1.1: 56  data bytes, press CTRL_C to break\r\n    Reply from 200.1.1.1: bytes=56 Sequence=1 ttl=255 time=10 ms\r\n    Reply from 200.1.1.1: bytes=56 Sequence=2 ttl=255 time=20 ms\r\n    Reply from 200.1.1.1: bytes=56 Sequence=3 ttl=255 time=10 ms\r\n    Reply from 200.1.1.1: bytes=56 Sequence=4 ttl=255 time=10 ms\r\n    Reply from 200.1.1.1: bytes=56 Sequence=5 ttl=255 time=1 ms\r\n\r\n  --- 200.1.1.1 ping statistics ---\r\n    5 packet(s) transmitted\r\n    5 packet(s) received\r\n    ",
+      "success": true,
+      "last_used": "2026-06-15T13:11:49.760139+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2000"
+      ]
+    },
+    {
+      "key": "2ece7471fcc2935d",
+      "command": "display ospf peer brief",
+      "description": "显示OSPF邻居摘要",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display ospf peer brief\r\n2026-06-15 13:12:21.880 \r\n\r\n\t OSPF Process 1 with Router ID 3.3.3.3\r\n\t\t  Peer Statistic Information\r\n ----------------------------------------------------------------------------\r\n Area Id          Interface                        Neighbor id      State    \r\n 0.0.0.0          GigabitEthernet1/0/2             1.1.1.1          Full        \r\n 0.0.0.0          GigabitEthernet1/0/3             2.2.2.2          Full        \r\n ---------------------------------------------------",
+      "success": true,
+      "last_used": "2026-06-15T13:12:28.601826+00:00",
+      "use_count": 9,
+      "devices_used": [
+        "127.0.0.1:2012",
+        "127.0.0.1:2001",
+        "127.0.0.1:2013"
+      ]
+    },
+    {
+      "key": "89a936b37071552d",
+      "command": "display eth-trunk 1",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display eth-trunk 1\r\nEth-Trunk1's state information is:\r\nLocal:\r\nLAG ID: 1                   WorkingMode: STATIC                               \r\nPreempt Delay: Disabled     Hash arithmetic: According to SIP-XOR-DIP         \r\nSystem Priority: 32768      System ID: 4c1f-cc37-38af                         \r\nLeast Active-linknumber: 1  Max Active-linknumber: 8                          \r\nOperate status: up          Number Of Up Port In Trunk: 2                     \r\n-----------------------------------",
+      "success": true,
+      "last_used": "2026-06-15T13:12:34.183992+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "d2cfb9d05ac591e3",
+      "command": "service-manage ping permit",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "service-manage ping permit\r\n[FW-GigabitEthernet1/0/3]",
+      "success": true,
+      "last_used": "2026-06-15T13:09:29.646463+00:00",
+      "use_count": 8,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "09cbec58448db324",
+      "command": "display security-policy",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display security-policy\r\n                            ^\r\nError:Incomplete command found at '^' position.\r\n<FW>",
+      "success": true,
+      "last_used": "2026-06-15T13:09:37.070140+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "1fe2246e83db6ab8",
+      "command": "display firewall session table",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display firewall session table\r\n2026-06-15 13:09:33.890 \r\n Current Total Sessions : 0\r\n<FW>",
+      "success": true,
+      "last_used": "2026-06-15T13:09:40.610077+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "01e7f57311a3932b",
+      "command": "display security-policy rule all",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display security-policy rule all\r\n2026-06-15 13:08:38.380  \r\nTotal:4 \r\nRULE ID  RULE NAME                         STATE      ACTION       HITS        \r\n------------------------------------------------------------------------------- \r\n1        trust_to_dmz_untrust              enable     permit       8            \r\n2        untrust_to_dmz                    enable     permit       7            \r\n3        deny_dmz_out                      enable     deny         0           \r\n0        default     ",
+      "success": true,
+      "last_used": "2026-06-15T13:08:45.102993+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "9767b0ec6029c8c1",
+      "command": "display current-configuration | include deny",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display current-configuration | include deny\r\n2026-06-15 13:12:05.120 \r\n rule name deny_dmz_out\r\n  action deny\r\n<FW>",
+      "success": true,
+      "last_used": "2026-06-15T13:12:11.845731+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "71b36e40c449c5ef",
+      "command": "display stp brief",
+      "description": "显示生成树协议摘要",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display stp brief\r\n MSTID  Port                        Role  STP State     Protection\r\n   0    GigabitEthernet0/0/1        DESI  FORWARDING      NONE\r\n   0    GigabitEthernet0/0/2        ROOT  FORWARDING      NONE\r\n   0    GigabitEthernet0/0/3        DESI  FORWARDING      NONE\r\n   0    GigabitEthernet0/0/12       DESI  FORWARDING      NONE\r\n   0    GigabitEthernet0/0/19       DESI  FORWARDING      NONE\r\n   0    Eth-Trunk1                  DESI  FORWARDING      NONE\r\n   1    GigabitEthernet0/0/2 ",
+      "success": true,
+      "last_used": "2026-06-15T13:13:37.152715+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "9415ff2adbc67e43",
+      "command": "display local-user",
+      "description": "显示本地用户配置",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display local-user\r\n            ^\r\nError: Wrong parameter found at '^' position.\r\n<FW>",
+      "success": true,
+      "last_used": "2026-06-15T13:15:07.761175+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2001"
+      ]
+    },
+    {
+      "key": "1a9bf9f0209ac962",
+      "command": "display ap all",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display ap all\r\nInfo: This operation may take a few seconds. Please wait for a moment.done.\r\nTotal AP information:\r\nnor  : normal          [2]\r\n-------------------------------------------------------------------------------------------\r\nID   MAC            Name Group IP              Type            State STA Uptime\r\n-------------------------------------------------------------------------------------------\r\n1    00e0-fc3f-6920 ap1  ap    192.168.100.240 AP3030DN        nor   0   20M:34S\r\n2    00",
+      "success": true,
+      "last_used": "2026-06-15T13:50:20.758693+00:00",
+      "use_count": 12,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "553a4c8fd37692b5",
+      "command": "ap-id 1 ap-mac 00e0-fc3f-6920 ap-sn 210235448310076D7959",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "ap-id 1 ap-mac 00e0-fc3f-6920 ap-sn 210235448310076D7959\r\n[AC-wlan-ap-1]\r\n[AC-wlan-ap-1]",
+      "success": true,
+      "last_used": "2026-06-15T13:16:23.944603+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "921acfd913e58e2d",
+      "command": "ap-name ap1",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "ap-name ap1\r\n[AC-wlan-ap-1]\r\n[AC-wlan-ap-1]",
+      "success": true,
+      "last_used": "2026-06-15T13:16:25.887833+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "73b651d22f6f4ae5",
+      "command": "ap-group ap",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "ap-group ap\r\nWarning: This operation may cause AP reset. If the country code changes, it will clear channel, power and antenna gain configurations of the radio, Whether to continue? [Y/N]:\r\nError: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:y\r\nInfo: This operation may take a few seconds. Please wait for a moment.. done.\r\n[AC-wlan-ap-2]",
+      "success": true,
+      "last_used": "2026-06-15T13:17:30.657162+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "f29cc41d53188129",
+      "command": "ap-id 2 ap-mac 00e0-fc75-3280 ap-sn 2102354483100E48CA09",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "ap-id 2 ap-mac 00e0-fc75-3280 ap-sn 2102354483100E48CA09\r\n[AC-wlan-ap-2]\r\n[AC-wlan-ap-2]",
+      "success": true,
+      "last_used": "2026-06-15T13:17:25.242970+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "72a322143c47b803",
+      "command": "ap-name ap2",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "ap-name ap2\r\n[AC-wlan-ap-2]\r\n[AC-wlan-ap-2]",
+      "success": true,
+      "last_used": "2026-06-15T13:17:27.185963+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "909881a8f5bf80d8",
+      "command": "display ap online",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display ap online\r\n                      ^\r\nError: Incomplete command found at '^' position.\r\n<AC>\r\n<AC>",
+      "success": true,
+      "last_used": "2026-06-15T13:17:11.828029+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "6d2b6cf93fd5bccc",
+      "command": "Y",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "Y\r\n              ^\r\nError: Unrecognized command found at '^' position.\r\n[AC-wlan-ap-2]\r\n[AC-wlan-ap-2]",
+      "success": false,
+      "last_used": "2026-06-15T13:17:32.895829+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "9f09e7cefbac3910",
+      "command": "port link-type trunk",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "port link-type trunk\r\n[LSW4-GigabitEthernet0/0/5]",
+      "success": true,
+      "last_used": "2026-06-15T13:21:26.443850+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2015",
+        "127.0.0.1:2014"
+      ]
+    },
+    {
+      "key": "92d7bdd6d762870d",
+      "command": "port trunk allow-pass vlan 100",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "port trunk allow-pass vlan 100\r\n[LSW4-GigabitEthernet0/0/5]",
+      "success": true,
+      "last_used": "2026-06-15T13:21:28.381738+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2015",
+        "127.0.0.1:2014"
+      ]
+    },
+    {
+      "key": "4cda30aa9358ffc0",
+      "command": "display port vlan interface GigabitEthernet 0/0/5",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display port vlan interface GigabitEthernet 0/0/5\r\n                        ^\r\nError: Wrong parameter found at '^' position.\r\n<LSW4>",
+      "success": true,
+      "last_used": "2026-06-15T13:19:24.223164+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2015"
+      ]
+    },
+    {
+      "key": "cf2a286ab57116fd",
+      "command": "undo port default vlan",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "undo port default vlan\r\n                                     ^\r\nError: Unrecognized command found at '^' position.\r\n[LSW4-GigabitEthernet0/0/5]",
+      "success": false,
+      "last_used": "2026-06-15T13:21:24.502307+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2015"
+      ]
+    },
+    {
+      "key": "fede55226a9f6c81",
+      "command": "vlan batch 100",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "vlan batch 100\r\nInfo: This operation may take a few seconds. Please wait for a moment...done.\r\n[LSW4]",
+      "success": true,
+      "last_used": "2026-06-15T13:24:20.106661+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2015",
+        "127.0.0.1:2014"
+      ]
+    },
+    {
+      "key": "b548c1324d1354cd",
+      "command": "undo port trunk allow-pass vlan 100",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "undo port trunk allow-pass vlan 100\r\n                                     ^\r\nError: Unrecognized command found at '^' position.\r\n[LSW4-GigabitEthernet0/0/5]",
+      "success": false,
+      "last_used": "2026-06-15T13:24:23.887918+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2015",
+        "127.0.0.1:2014"
+      ]
+    },
+    {
+      "key": "013685216afc91e2",
+      "command": "port link-type access",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "port link-type access\r\n[LSW4-GigabitEthernet0/0/5]",
+      "success": true,
+      "last_used": "2026-06-15T13:24:25.781172+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2015",
+        "127.0.0.1:2014"
+      ]
+    },
+    {
+      "key": "2002a2c5323972ab",
+      "command": "port default vlan 100",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "port default vlan 100\r\n[LSW4-GigabitEthernet0/0/5]",
+      "success": true,
+      "last_used": "2026-06-15T13:24:27.674629+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2015",
+        "127.0.0.1:2014"
+      ]
+    },
+    {
+      "key": "a7dbb5a26bb8ccb5",
+      "command": "display ip interface Vlanif100",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "\u001b[42D                                          \u001b[42D\r\n\r\n  IP address Statistic\r\n    Total       :1518  \r\n    Used        :4          Idle        :1514  \r\n    Expired     :0          Conflict    :0          Disable   :0     \r\n<SW1>isplay ip interface Vlanif100\r\n     ^\r\nError: Unrecognized command found at '^' position.\r\n<SW1>",
+      "success": false,
+      "last_used": "2026-06-15T13:37:43.041621+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "df4392d7790d1f94",
+      "command": "display port vlan",
+      "description": "显示端口VLAN配置",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display port vlan\r\nPort                    Link Type    PVID  Trunk VLAN List\r\n-------------------------------------------------------------------------------\r\nGigabitEthernet0/0/1    trunk        1     1-4094\r\nGigabitEthernet0/0/2    trunk        1     1-4094\r\nGigabitEthernet0/0/3    hybrid       1     -                                   \r\nGigabitEthernet0/0/4    access       30    -                                   \r\nGigabitEthernet0/0/5    access       100   -                                ",
+      "success": true,
+      "last_used": "2026-06-15T13:34:22.835187+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2015",
+        "127.0.0.1:2014"
+      ]
+    },
+    {
+      "key": "47b94d3ff9e0b5e3",
+      "command": "ip pool vlan100",
+      "description": "",
+      "device_type": "huawei",
+      "category": "config",
+      "risk": "unknown",
+      "output_preview": "ip pool vlan100\r\n     ^\r\nError: Unrecognized command found at '^' position.\r\n<SW1>",
+      "success": false,
+      "last_used": "2026-06-15T13:39:22.541125+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "00cb652e1c3ee789",
+      "command": "gateway-list 192.168.100.100",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "gateway-list 192.168.100.100\r\n     ^\r\nError: Unrecognized command found at '^' position.\r\n<SW1>",
+      "success": false,
+      "last_used": "2026-06-15T13:39:24.431418+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "676742ee1c9a52fd",
+      "command": "network 192.168.100.0 mask 255.255.255.0",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "network 192.168.100.0 mask 255.255.255.0\r\n     ^\r\nError: Unrecognized command found at '^' position.\r\n<SW1>",
+      "success": false,
+      "last_used": "2026-06-15T13:39:26.320839+00:00",
+      "use_count": 6,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "dd9fcc9798b1e636",
+      "command": "option 43 hex 0104C0A86401",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "option 43 hex 0104C0A86401\r\n[SW1-ip-pool-vlan100]",
+      "success": true,
+      "last_used": "2026-06-15T13:38:19.049581+00:00",
+      "use_count": 4,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "a0451ba2127d7630",
+      "command": "ping 192.168.100.240",
+      "description": "测试网络连通性",
+      "device_type": "huawei",
+      "category": "verify",
+      "risk": "safe",
+      "output_preview": "ping 192.168.100.240\r\n  PING 192.168.100.240: 56  data bytes, press CTRL_C to break\r\n    Reply from 192.168.100.240: bytes=56 Sequence=1 ttl=255 time=40 ms\r\n    Reply from 192.168.100.240: bytes=56 Sequence=2 ttl=255 time=60 ms\r\n    Reply from 192.168.100.240: bytes=56 Sequence=3 ttl=255 time=60 ms\r\n    Reply from 192.168.100.240: bytes=56 Sequence=4 ttl=255 time=60 ms\r\n    Reply from 192.168.100.240: bytes=56 Sequence=5 ttl=255 time=60 ms\r\n\r\n  --- 192.168.100.240 ping statistics ---\r\n    5 pack",
+      "success": true,
+      "last_used": "2026-06-15T13:28:56.235431+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "4bb8c54ba336d5f9",
+      "command": "display capwap configuration",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display capwap configuration\r\n  ---------------------------------------------------------------\r\n  Source interface                                 : -\r\n  Source ip-address                                : - \r\n  Echo interval(seconds)                           : 25\r\n  Echo times                                       : 6\r\n  Control priority(server to client)               : 7\r\n  Control priority(client to server)               : 7\r\n  Control-link DTLS encrypt                        : disable\r\n  D",
+      "success": true,
+      "last_used": "2026-06-15T13:28:59.879863+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "af9853dbdec82e2f",
+      "command": "capwap source interface Vlanif100",
+      "description": "",
+      "device_type": "huawei",
+      "category": "other",
+      "risk": "unknown",
+      "output_preview": "capwap source interface Vlanif100\r\n[AC]\r\n[AC]",
+      "success": true,
+      "last_used": "2026-06-15T13:29:16.045952+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "f3ccf818158f8420",
+      "command": "display vap all",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "display vap all\r\nInfo: This operation may take a few seconds, please wait.\r\nWID : WLAN ID            \r\n------------------------------------------------------------------------------\r\nAP ID AP name RfID WID  BSSID          Status  Auth type     STA   SSID     \r\n------------------------------------------------------------------------------\r\n1     ap1     0    1    00E0-FC3F-6920 ON      WPA/WPA2-PSK  0     wlan-2024\r\n1     ap1     1    1    00E0-FC3F-6930 ON      WPA/WPA2-PSK  0     wlan-2024\r\n2  ",
+      "success": true,
+      "last_used": "2026-06-15T13:50:24.403903+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2022"
+      ]
+    },
+    {
+      "key": "d019bc8030656841",
+      "command": "display current-configuration interface Vlanif100",
+      "description": "",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "unknown",
+      "output_preview": "\u001b[42D                                          \u001b[42D\r\n\r\n  IP address Statistic\r\n    Total       :1265  \r\n    Used        :4          Idle        :1261  \r\n    Expired     :0          Conflict    :0          Disable   :0     \r\n<SW1>isplay current-configuration interface Vlanif100\r\n     ^\r\nError: Unrecognized command found at '^' position.\r\n<SW1>",
+      "success": false,
+      "last_used": "2026-06-15T13:31:28.683333+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "e0a702dbd95af1f5",
+      "command": "display vlan",
+      "description": "显示VLAN配置信息",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display vlan\r\nThe total number of vlans is : 7\r\n--------------------------------------------------------------------------------\r\nU: Up;         D: Down;         TG: Tagged;         UT: Untagged;\r\nMP: Vlan-mapping;               ST: Vlan-stacking;\r\n#: ProtocolTransparent-vlan;    *: Management-vlan;\r\n--------------------------------------------------------------------------------\r\n\r\nVID  Type    Ports                                                          \r\n------------------------------------",
+      "success": true,
+      "last_used": "2026-06-15T13:34:19.190097+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2015"
+      ]
+    },
+    {
+      "key": "b7d05cbe9d26c9c9",
+      "command": "display vlan brief",
+      "description": "显示VLAN简要信息",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display vlan brief\r\n                  ^\r\nError: Wrong parameter found at '^' position.\r\n<SW1>",
+      "success": true,
+      "last_used": "2026-06-15T13:37:35.752525+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "cb48f17ca5e83ab7",
+      "command": "display version",
+      "description": "显示设备版本信息，识别型号和OS版本",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S5700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S5700-28C-HI Routing Switch uptime is 0 week, 0 day, 2 hours, 27 minutes\r\n<SW1>",
+      "success": true,
+      "last_used": "2026-06-15T13:37:07.734101+00:00",
+      "use_count": 3,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    },
+    {
+      "key": "39952297f8c5b43b",
+      "command": "display current-configuration | include sysname",
+      "description": "提取设备主机名",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display current-configuration | include sysname\r\nsysname SW1\r\n<SW1>",
+      "success": true,
+      "last_used": "2026-06-15T13:37:32.111973+00:00",
+      "use_count": 2,
+      "devices_used": [
+        "127.0.0.1:2012"
+      ]
+    }
+  ],
+  "last_updated": "2026-06-15T13:50:24.403903+00:00"
+}

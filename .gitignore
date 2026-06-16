@@ -1,0 +1,51 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+python312/
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+stderr*.log
+stdout*.log
+
+# Temp/generated images
+temp_page*.jpeg
+temp_page*.png
+pdf_page_*.png
+exp34_page*.png
+exp41_page*.png
+
+# Uploads
+uploads/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Build artifacts
+_build.py
+_gen.py
+_probe*.py
+_extract*.py
+_cfgdump.py
+
+# Corrupted/backup files
+*_backup_*.py
+*_corrupted.py

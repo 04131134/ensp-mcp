@@ -1,0 +1,1713 @@
+{
+  "version": "1.0",
+  "description": "eNSP设备命令知识库 - 按视图类型/设备型号/配置主题分类",
+  "last_updated": "2026-06-16",
+  "user_view_commands": {
+    "_meta": {
+      "description": "<> 尖括号用户视图下的命令",
+      "view_indicator": "<设备名>"
+    },
+    "common": {
+      "description": "所有设备通用",
+      "commands": [
+        {
+          "cmd": "undo terminal monitor",
+          "short": "undo t m",
+          "desc": "关闭终端日志监控，配置前第一步必做",
+          "when": "开始配置前"
+        },
+        {
+          "cmd": "system-view",
+          "short": "sys",
+          "desc": "进入[]系统视图",
+          "when": "需要配置设备时"
+        },
+        {
+          "cmd": "display version",
+          "desc": "查看设备版本型号",
+          "when": "识别设备型号"
+        },
+        {
+          "cmd": "display current-configuration",
+          "desc": "查看完整运行配置",
+          "when": "审计/备份配置"
+        },
+        {
+          "cmd": "save",
+          "desc": "保存配置到存储，配置完成后必做",
+          "when": "配置完成后"
+        },
+        {
+          "cmd": "reboot",
+          "desc": "重启设备",
+          "when": "需要重启时"
+        },
+        {
+          "cmd": "ping <IP>",
+          "desc": "测试三层连通性",
+          "when": "排障"
+        },
+        {
+          "cmd": "tracert <IP>",
+          "desc": "追踪路由路径",
+          "when": "排障路由"
+        },
+        {
+          "cmd": "display ip routing-table",
+          "desc": "查看路由表",
+          "when": "排障路由"
+        },
+        {
+          "cmd": "display arp",
+          "desc": "查看ARP表",
+          "when": "排障二层"
+        },
+        {
+          "cmd": "display mac-address",
+          "desc": "查看MAC地址表",
+          "when": "排障二层"
+        },
+        {
+          "cmd": "display cpu-usage",
+          "desc": "查看CPU使用率",
+          "when": "性能监控"
+        }
+      ]
+    },
+    "S5700": {
+      "description": "华为S5700系列交换机 - 用户视图命令",
+      "commands": [
+        {
+          "cmd": "display vlan",
+          "desc": "查看VLAN信息",
+          "when": "检查VLAN配置"
+        },
+        {
+          "cmd": "display vlan brief",
+          "desc": "查看VLAN简要信息",
+          "when": "快速查看VLAN"
+        },
+        {
+          "cmd": "display port vlan",
+          "desc": "查看端口VLAN配置",
+          "when": "检查端口模式"
+        },
+        {
+          "cmd": "display stp brief",
+          "desc": "查看STP简要信息",
+          "when": "检查生成树"
+        },
+        {
+          "cmd": "display stp region-configuration",
+          "desc": "查看MSTP域配置",
+          "when": "验证MSTP"
+        },
+        {
+          "cmd": "display vrrp",
+          "desc": "查看VRRP状态",
+          "when": "检查VRRP主备"
+        },
+        {
+          "cmd": "display vrrp brief",
+          "desc": "查看VRRP简要信息",
+          "when": "快速查看VRRP"
+        },
+        {
+          "cmd": "display vrrp interface Vlanif<vlan_id>",
+          "desc": "查看指定VLAN的VRRP",
+          "when": "检查特定VRRP"
+        },
+        {
+          "cmd": "display ip pool",
+          "desc": "查看所有DHCP地址池",
+          "when": "检查DHCP分配"
+        },
+        {
+          "cmd": "display ip pool name <pool_name>",
+          "desc": "查看指定地址池详情",
+          "when": "检查特定VLAN的DHCP"
+        },
+        {
+          "cmd": "display dhcp snooping",
+          "desc": "查看DHCP Snooping",
+          "when": "检查DHCP安全"
+        },
+        {
+          "cmd": "display ospf peer brief",
+          "desc": "查看OSPF邻居摘要",
+          "when": "检查OSPF邻居"
+        },
+        {
+          "cmd": "display ospf interface brief",
+          "desc": "查看OSPF接口摘要",
+          "when": "检查OSPF接口"
+        },
+        {
+          "cmd": "display eth-trunk",
+          "desc": "查看Eth-Trunk聚合状态",
+          "when": "检查LACP聚合"
+        },
+        {
+          "cmd": "display interface brief",
+          "desc": "查看接口简要状态",
+          "when": "检查接口状态"
+        },
+        {
+          "cmd": "display interface Vlanif<vlan_id>",
+          "desc": "查看VLANIF接口详情",
+          "when": "检查VLANIF状态"
+        },
+        {
+          "cmd": "display ip interface brief",
+          "desc": "查看接口IP地址摘要",
+          "when": "检查IP配置"
+        }
+      ]
+    },
+    "S3700": {
+      "description": "华为S3700系列交换机 - 用户视图命令",
+      "commands": [
+        {
+          "cmd": "display vlan",
+          "desc": "查看VLAN信息",
+          "when": "检查VLAN配置"
+        },
+        {
+          "cmd": "display port vlan",
+          "desc": "查看端口VLAN配置",
+          "when": "检查端口模式"
+        },
+        {
+          "cmd": "display interface brief",
+          "desc": "查看接口状态",
+          "when": "检查端口状态"
+        },
+        {
+          "cmd": "display mac-address",
+          "desc": "查看MAC地址表",
+          "when": "排障二层转发"
+        },
+        {
+          "cmd": "display stp brief",
+          "desc": "查看STP状态",
+          "when": "检查生成树"
+        }
+      ]
+    },
+    "USG6000V": {
+      "description": "华为USG6000V防火墙 - 用户视图命令",
+      "commands": [
+        {
+          "cmd": "display firewall session table",
+          "desc": "查看防火墙会话表",
+          "when": "检查流量会话"
+        },
+        {
+          "cmd": "display security-policy",
+          "desc": "查看安全策略",
+          "when": "检查策略配置"
+        },
+        {
+          "cmd": "display firewall zone",
+          "desc": "查看安全区域",
+          "when": "检查区域划分"
+        },
+        {
+          "cmd": "display ip routing-table",
+          "desc": "查看路由表",
+          "when": "排障路由"
+        },
+        {
+          "cmd": "display arp",
+          "desc": "查看ARP表",
+          "when": "排障ARP"
+        },
+        {
+          "cmd": "display interface brief",
+          "desc": "查看接口状态",
+          "when": "检查接口"
+        },
+        {
+          "cmd": "display ip interface brief",
+          "desc": "查看接口IP",
+          "when": "检查接口IP"
+        },
+        {
+          "cmd": "display ospf peer brief",
+          "desc": "查看OSPF邻居",
+          "when": "检查OSPF"
+        },
+        {
+          "cmd": "display logbuffer",
+          "desc": "查看日志缓冲区",
+          "when": "查看日志"
+        },
+        {
+          "cmd": "display this",
+          "desc": "查看当前视图配置",
+          "when": "检查当前配置"
+        }
+      ]
+    },
+    "AR2220": {
+      "description": "华为AR2220路由器 - 用户视图命令",
+      "commands": [
+        {
+          "cmd": "display ip routing-table",
+          "desc": "查看路由表",
+          "when": "排障路由"
+        },
+        {
+          "cmd": "display ip interface brief",
+          "desc": "查看接口IP",
+          "when": "检查接口配置"
+        },
+        {
+          "cmd": "display interface brief",
+          "desc": "查看接口状态",
+          "when": "检查接口状态"
+        },
+        {
+          "cmd": "display arp",
+          "desc": "查看ARP表",
+          "when": "排障ARP"
+        },
+        {
+          "cmd": "display ospf peer brief",
+          "desc": "查看OSPF邻居",
+          "when": "检查OSPF"
+        },
+        {
+          "cmd": "display nat session",
+          "desc": "查看NAT会话",
+          "when": "检查NAT转换"
+        },
+        {
+          "cmd": "display nat server-map",
+          "desc": "查看NAT Server-map",
+          "when": "检查NAT映射"
+        },
+        {
+          "cmd": "display firewall session table",
+          "desc": "查看会话表",
+          "when": "检查防火墙会话"
+        }
+      ]
+    },
+    "AC6605": {
+      "description": "华为AC6605无线控制器 - 用户视图命令",
+      "commands": [
+        {
+          "cmd": "display ap all",
+          "desc": "查看所有AP状态",
+          "when": "检查AP上线状态"
+        },
+        {
+          "cmd": "display ap ap-id <id>",
+          "desc": "查看指定AP详情",
+          "when": "检查特定AP"
+        },
+        {
+          "cmd": "display station all",
+          "desc": "查看所有无线终端",
+          "when": "检查WiFi客户端"
+        },
+        {
+          "cmd": "display station ap-id <id>",
+          "desc": "查看指定AP的终端",
+          "when": "检查AP下终端"
+        },
+        {
+          "cmd": "display vap all",
+          "desc": "查看所有VAP状态",
+          "when": "检查VAP配置"
+        },
+        {
+          "cmd": "display wlan config",
+          "desc": "查看WLAN配置摘要",
+          "when": "检查WLAN配置"
+        },
+        {
+          "cmd": "display dhcp snooping",
+          "desc": "查看DHCP状态",
+          "when": "检查DHCP分配"
+        },
+        {
+          "cmd": "display ip pool",
+          "desc": "查看地址池",
+          "when": "检查DHCP地址池"
+        }
+      ]
+    }
+  },
+  "system_view_commands": {
+    "_meta": {
+      "description": "[] 方括号系统视图下的命令",
+      "view_indicator": "[设备名]"
+    },
+    "S5700": {
+      "description": "华为S5700系列交换机（核心/汇聚层）",
+      "topics": {
+        "基础": {
+          "view": "[SW-name]",
+          "commands": [
+            {
+              "cmd": "sysname <名称>",
+              "desc": "修改主机名"
+            },
+            {
+              "cmd": "undo info-center enable",
+              "desc": "关闭信息中心，防日志刷屏，配置前必做"
+            },
+            {
+              "cmd": "vlan batch <vlist>",
+              "desc": "批量创建VLAN",
+              "example": "vlan batch 10 20 30 40 100 to 101"
+            },
+            {
+              "cmd": "dhcp enable",
+              "desc": "全局开启DHCP服务"
+            },
+            {
+              "cmd": "stp mode mstp",
+              "desc": "设置STP模式为MSTP"
+            }
+          ]
+        },
+        "VLAN端口": {
+          "view": "[SW-name-GigabitEthernet0/0/X]",
+          "commands": [
+            {
+              "cmd": "port link-type access",
+              "desc": "端口设为access模式"
+            },
+            {
+              "cmd": "port default vlan <id>",
+              "desc": "access端口划入指定VLAN"
+            },
+            {
+              "cmd": "port link-type trunk",
+              "desc": "端口设为trunk模式"
+            },
+            {
+              "cmd": "port trunk allow-pass vlan <range>",
+              "desc": "trunk放行指定VLAN",
+              "example": "port trunk allow-pass vlan 2 to 4094"
+            },
+            {
+              "cmd": "port trunk pvid vlan <id>",
+              "desc": "设置trunk的PVID（原生VLAN）"
+            },
+            {
+              "cmd": "port link-type hybrid",
+              "desc": "端口设为hybrid模式"
+            },
+            {
+              "cmd": "port hybrid pvid vlan <id>",
+              "desc": "设置hybrid PVID"
+            },
+            {
+              "cmd": "port hybrid untagged vlan <id>",
+              "desc": "hybrid该VLAN不打标签"
+            }
+          ],
+          "tips": [
+            "AP端口必须用trunk+PVID，不能用access，否则VLAN101用户流量被丢弃",
+            "trunk口默认只放行VLAN1，必须手动allow-pass",
+            "access口只能属于一个VLAN"
+          ]
+        },
+        "VLANIF接口": {
+          "view": "[SW-name-VlanifX]",
+          "commands": [
+            {
+              "cmd": "interface Vlanif<vlan_id>",
+              "desc": "进入VLANIF接口"
+            },
+            {
+              "cmd": "ip address <ip> <mask>",
+              "desc": "配置接口IP地址"
+            },
+            {
+              "cmd": "dhcp select global",
+              "desc": "启用DHCP全局地址池模式"
+            },
+            {
+              "cmd": "dhcp select interface",
+              "desc": "启用DHCP接口地址池模式"
+            }
+          ]
+        },
+        "VRRP": {
+          "view": "[SW-name-VlanifX]",
+          "commands": [
+            {
+              "cmd": "vrrp vrid <id> virtual-ip <ip>",
+              "desc": "配置VRRP虚拟IP（网关地址）"
+            },
+            {
+              "cmd": "vrrp vrid <id> priority <n>",
+              "desc": "设置VRRP优先级（>100为Master，默认100）"
+            },
+            {
+              "cmd": "vrrp vrid <id> preempt-mode timer delay <n>",
+              "desc": "设置抢占延时"
+            }
+          ],
+          "tips": [
+            "VRRP vrid建议与VLAN ID一致便于管理",
+            "虚拟IP即为该VLAN的网关地址",
+            "主备优先级差建议>=20",
+            "SW1主VLAN10/101(优先级120)，备VLAN20/30/40(默认100)",
+            "SW2主VLAN20/30/40(优先级120)，备VLAN10/101(默认100)"
+          ]
+        },
+        "MSTP": {
+          "view": "[SW-name-mst-region]",
+          "commands": [
+            {
+              "cmd": "stp region-configuration",
+              "desc": "进入MST域配置"
+            },
+            {
+              "cmd": "region-name <name>",
+              "desc": "MST域名（所有交换机必须一致）",
+              "example": "region-name huawei"
+            },
+            {
+              "cmd": "revision-level <n>",
+              "desc": "修订等级（所有交换机必须一致）",
+              "example": "revision-level 16"
+            },
+            {
+              "cmd": "instance <id> vlan <range>",
+              "desc": "实例映射VLAN",
+              "example": "instance 1 vlan 10 100 101"
+            },
+            {
+              "cmd": "active region-configuration",
+              "desc": "激活MST域配置（必须执行！不执行配置不生效）"
+            },
+            {
+              "cmd": "stp enable",
+              "desc": "全局开启STP"
+            },
+            {
+              "cmd": "stp instance <id> root primary",
+              "desc": "设为该实例的主根桥"
+            },
+            {
+              "cmd": "stp instance <id> root secondary",
+              "desc": "设为该实例的备份根桥"
+            }
+          ],
+          "tips": [
+            "region-name + revision-level 必须所有交换机完全一致",
+            "active region-configuration 忘记执行是最常见的错误",
+            "instance映射规则：10/100/101→instance1，20/30/40→instance2",
+            "SW1为instance1主根桥、instance2备份根桥",
+            "SW2为instance2主根桥、instance1备份根桥"
+          ]
+        },
+        "DHCP": {
+          "view": "[SW-name-ip-pool-xxx]",
+          "commands": [
+            {
+              "cmd": "ip pool <name>",
+              "desc": "创建/进入地址池",
+              "example": "ip pool vlan10"
+            },
+            {
+              "cmd": "gateway-list <ip>",
+              "desc": "网关地址（通常为VRRP VIP）",
+              "example": "gateway-list 192.168.1.254"
+            },
+            {
+              "cmd": "network <ip> mask <mask>",
+              "desc": "分配网段",
+              "example": "network 192.168.1.0 mask 255.255.255.0"
+            },
+            {
+              "cmd": "dns-list <ip>",
+              "desc": "DNS服务器地址",
+              "example": "dns-list 192.168.0.1"
+            },
+            {
+              "cmd": "excluded-ip-address <start> <end>",
+              "desc": "排除地址段",
+              "example": "excluded-ip-address 192.168.1.1 192.168.1.10"
+            },
+            {
+              "cmd": "lease day <d> hour <h> minute <m>",
+              "desc": "设置租约时间"
+            }
+          ],
+          "tips": [
+            "dns-list地址为服务器区DNS服务器IP",
+            "网关地址建议使用VRRP虚拟IP"
+          ]
+        },
+        "OSPF": {
+          "view": "[SW-name-ospf-1]",
+          "commands": [
+            {
+              "cmd": "ospf 1 router-id <id>",
+              "desc": "启动OSPF进程并指定Router-ID",
+              "example": "ospf 1 router-id 1.1.1.1"
+            },
+            {
+              "cmd": "area 0.0.0.0",
+              "desc": "进入骨干区域Area0"
+            },
+            {
+              "cmd": "network <ip> <wildcard>",
+              "desc": "宣告网段",
+              "example": "network 192.168.0.0 0.0.255.255"
+            },
+            {
+              "cmd": "silent-interface Vlanif<id>",
+              "desc": "静默接口，抑制OSPF报文（防广播浪费）"
+            }
+          ],
+          "tips": [
+            "silent-interface用于用户VLAN接口，避免在接入端发送OSPF Hello",
+            "network反掩码0.0.255.255匹配192.168.x.0/24网段",
+            "静默接口仍可被OSPF宣告，只是不发Hello包"
+          ]
+        },
+        "LACP链路聚合": {
+          "view": "[SW-name-Eth-TrunkX]",
+          "commands": [
+            {
+              "cmd": "interface Eth-Trunk <id>",
+              "desc": "创建并进入Eth-Trunk接口"
+            },
+            {
+              "cmd": "mode lacp-static",
+              "desc": "设置LACP静态模式"
+            },
+            {
+              "cmd": "interface GigabitEthernet0/0/X",
+              "desc": "进入物理接口"
+            },
+            {
+              "cmd": "eth-trunk <id>",
+              "desc": "将物理接口加入Eth-Trunk"
+            },
+            {
+              "cmd": "port link-type trunk",
+              "desc": "聚合口设为trunk"
+            },
+            {
+              "cmd": "port trunk allow-pass vlan 2 to 4094",
+              "desc": "聚合口放行所有VLAN"
+            }
+          ],
+          "tips": [
+            "Eth-Trunk两端配置必须一致",
+            "先创建Eth-Trunk并设mode，再将物理口加入"
+          ]
+        },
+        "Eth-Trunk接口配置": {
+          "view": "[SW-name-GigabitEthernet0/0/X]",
+          "commands": [
+            {
+              "cmd": "eth-trunk <id>",
+              "desc": "将当前接口加入Eth-Trunk"
+            }
+          ],
+          "tips": [
+            "加入Eth-Trunk前确保接口无其他配置"
+          ]
+        },
+        "经验积累": {
+          "commands": [
+            {
+              "cmd": "port link-type hybrid",
+              "desc": "端口设为hybrid模式",
+              "source": "实验3-1"
+            },
+            {
+              "cmd": "port hybrid untagged vlan <id>",
+              "desc": "hybrid口该VLAN不打标签",
+              "source": "实验3-1"
+            },
+            {
+              "cmd": "port hybrid pvid vlan <id>",
+              "desc": "hybrid口PVID设置",
+              "source": "实验3-1"
+            },
+            {
+              "cmd": "mac-vlan enable",
+              "desc": "端口启用MAC-VLAN",
+              "source": "实验3-1"
+            },
+            {
+              "cmd": "mac-vlan mac-address <mac>",
+              "desc": "VLAN下绑定MAC地址",
+              "source": "实验3-1"
+            },
+            {
+              "cmd": "shutdown",
+              "desc": "关闭接口",
+              "source": "实验3-1"
+            },
+            {
+              "cmd": "undo shutdown",
+              "desc": "开启接口",
+              "source": "实验3-1"
+            },
+            {
+              "cmd": "stp mode stp",
+              "desc": "设置STP模式为STP",
+              "source": "实验3-2"
+            },
+            {
+              "cmd": "stp root primary",
+              "desc": "设为根桥",
+              "source": "实验3-2"
+            },
+            {
+              "cmd": "stp root secondary",
+              "desc": "设为备份根桥",
+              "source": "实验3-2"
+            },
+            {
+              "cmd": "mode manual load-balance",
+              "desc": "Eth-Trunk手工模式",
+              "source": "实验3-3"
+            },
+            {
+              "cmd": "max active-linknumber <n>",
+              "desc": "最大活动链路数",
+              "source": "实验3-3"
+            },
+            {
+              "cmd": "least active-linknumber <n>",
+              "desc": "最小活动链路数",
+              "source": "实验3-3"
+            },
+            {
+              "cmd": "load-balance dst-ip",
+              "desc": "负载分担模式",
+              "source": "实验3-3"
+            }
+          ],
+          "tips": []
+        }
+      }
+    },
+    "S3700": {
+      "description": "华为S3700系列交换机（接入层，二层交换机）",
+      "topics": {
+        "基础": {
+          "view": "[LSW-name]",
+          "commands": [
+            {
+              "cmd": "sysname <名称>",
+              "desc": "修改主机名"
+            },
+            {
+              "cmd": "undo info-center enable",
+              "desc": "关闭信息中心"
+            },
+            {
+              "cmd": "vlan batch <id>",
+              "desc": "创建VLAN",
+              "example": "vlan batch 10"
+            }
+          ]
+        },
+        "端口配置": {
+          "view": "[LSW-name-Ethernet0/0/X]",
+          "commands": [
+            {
+              "cmd": "port link-type access",
+              "desc": "接入模式"
+            },
+            {
+              "cmd": "port default vlan <id>",
+              "desc": "划入指定VLAN"
+            }
+          ],
+          "tips": [
+            "S3700端口命名：Ethernet0/0/1~22（百兆），GE0/0/1~2（千兆上行）",
+            "S3700只支持二层，不能配三层接口",
+            "接入层交换机只需要access端口划VLAN即可"
+          ]
+        },
+        "上行口配置": {
+          "view": "[LSW-name-GigabitEthernet0/0/X]",
+          "commands": [
+            {
+              "cmd": "port link-type trunk",
+              "desc": "上行口设为trunk"
+            },
+            {
+              "cmd": "port trunk allow-pass vlan <range>",
+              "desc": "放行VLAN",
+              "example": "port trunk allow-pass vlan 10 100 to 101"
+            }
+          ],
+          "tips": [
+            "S3700的GE口通常用于上行连接汇聚交换机",
+            "上行trunk口需放行管理VLAN和业务VLAN"
+          ]
+        }
+      }
+    },
+    "USG6000V": {
+      "description": "华为USG6000V系列防火墙",
+      "login": "默认用户名admin，默认密码admin@123",
+      "topics": {
+        "接口配置": {
+          "view": "[FW-GigabitEthernetX/0/X]",
+          "commands": [
+            {
+              "cmd": "undo shutdown",
+              "desc": "开启端口（防火墙接口默认shutdown）"
+            },
+            {
+              "cmd": "ip address <ip> <mask>",
+              "desc": "配置接口IP",
+              "example": "ip address 192.168.100.2 255.255.255.0"
+            },
+            {
+              "cmd": "service-manage ping permit",
+              "desc": "允许ping管理访问"
+            },
+            {
+              "cmd": "service-manage https permit",
+              "desc": "允许HTTPS管理访问"
+            },
+            {
+              "cmd": "service-manage http permit",
+              "desc": "允许HTTP管理访问"
+            }
+          ],
+          "tips": [
+            "防火墙接口默认shutdown，必须手动undo shutdown",
+            "需要service-manage permit才能从该接口管理防火墙"
+          ]
+        },
+        "安全区域": {
+          "view": "[FW-zone-xxx]",
+          "commands": [
+            {
+              "cmd": "firewall zone trust",
+              "desc": "进入Trust区域"
+            },
+            {
+              "cmd": "firewall zone untrust",
+              "desc": "进入Untrust区域"
+            },
+            {
+              "cmd": "firewall zone dmz",
+              "desc": "进入DMZ区域"
+            },
+            {
+              "cmd": "firewall zone name <name>",
+              "desc": "创建自定义区域"
+            },
+            {
+              "cmd": "set priority <n>",
+              "desc": "设置区域优先级"
+            },
+            {
+              "cmd": "add interface <if>",
+              "desc": "将接口加入区域",
+              "example": "add interface GigabitEthernet1/0/0"
+            }
+          ],
+          "tips": [
+            "默认优先级：trust(85) > dmz(50) > untrust(5)",
+            "高优先级→低优先级默认放行（trust→untrust）",
+            "低优先级→高优先级默认拒绝（untrust→trust需配策略）",
+            "Trust区：内网用户；Untrust区：外网；DMZ区：服务器"
+          ]
+        },
+        "安全策略": {
+          "view": "[FW-security-policy]",
+          "commands": [
+            {
+              "cmd": "security-policy",
+              "desc": "进入安全策略视图"
+            },
+            {
+              "cmd": "rule name <name>",
+              "desc": "创建/进入策略规则",
+              "example": "rule name trust_to_server"
+            },
+            {
+              "cmd": "source-zone <zone>",
+              "desc": "指定源区域",
+              "example": "source-zone trust"
+            },
+            {
+              "cmd": "destination-zone <zone>",
+              "desc": "指定目的区域"
+            },
+            {
+              "cmd": "source-address <ip> <mask>",
+              "desc": "指定源地址"
+            },
+            {
+              "cmd": "destination-address <ip> <mask>",
+              "desc": "指定目的地址"
+            },
+            {
+              "cmd": "service icmp",
+              "desc": "允许ICMP服务"
+            },
+            {
+              "cmd": "service http",
+              "desc": "允许HTTP服务"
+            },
+            {
+              "cmd": "service ftp",
+              "desc": "允许FTP服务"
+            },
+            {
+              "cmd": "service dns",
+              "desc": "允许DNS服务"
+            },
+            {
+              "cmd": "action permit",
+              "desc": "允许通过"
+            },
+            {
+              "cmd": "action deny",
+              "desc": "拒绝通过"
+            }
+          ],
+          "tips": [
+            "默认策略是deny（拒绝所有）",
+            "规则从上到下匹配，顺序很重要",
+            "状态检测机制：回程流量自动放行",
+            "本实验策略：①内外可访问服务器和外网 ②外网只能访问服务器 ③服务器只能被访问不能主动发起"
+          ]
+        },
+        "OSPF路由": {
+          "view": "[FW-ospf-1]",
+          "commands": [
+            {
+              "cmd": "ospf 1 router-id <id>",
+              "desc": "启动OSPF"
+            },
+            {
+              "cmd": "area 0.0.0.0",
+              "desc": "进入骨干区域"
+            },
+            {
+              "cmd": "network <ip> <wildcard>",
+              "desc": "宣告网段"
+            },
+            {
+              "cmd": "default-route-advertise",
+              "desc": "向OSPF邻居下发默认路由"
+            }
+          ],
+          "tips": [
+            "防火墙通常下发默认路由，让内网交换机通过它访问外网"
+          ]
+        },
+        "静态路由": {
+          "view": "[FW]",
+          "commands": [
+            {
+              "cmd": "ip route-static 0.0.0.0 0.0.0.0 <nexthop>",
+              "desc": "默认静态路由",
+              "example": "ip route-static 0.0.0.0 0.0.0.0 10.0.0.2"
+            }
+          ]
+        },
+        "AAA账户": {
+          "view": "[FW-aaa]",
+          "commands": [
+            {
+              "cmd": "manager-user admin",
+              "desc": "进入管理用户配置"
+            },
+            {
+              "cmd": "password cipher <pass>",
+              "desc": "设置密码"
+            },
+            {
+              "cmd": "level 15",
+              "desc": "设置权限级别（15为最高）"
+            }
+          ]
+        },
+        "经验积累": {
+          "commands": [
+            {
+              "cmd": "service-manage ping permit",
+              "desc": "防火墙接口允许ping",
+              "source": "校园网综合设计实训"
+            }
+          ],
+          "tips": []
+        }
+      }
+    },
+    "AR2220": {
+      "description": "华为AR2220系列路由器",
+      "topics": {
+        "接口配置": {
+          "view": "[AR-GigabitEthernet0/0/X]",
+          "commands": [
+            {
+              "cmd": "ip address <ip> <mask>",
+              "desc": "配置接口IP（路由器三层口直接配）",
+              "example": "ip address 201.1.1.1 255.255.255.0"
+            },
+            {
+              "cmd": "undo shutdown",
+              "desc": "开启接口"
+            }
+          ],
+          "tips": [
+            "路由器接口直接配IP，不需要创建VLAN",
+            "路由器接口默认开启（与防火墙不同）"
+          ]
+        },
+        "静态路由": {
+          "view": "[AR]",
+          "commands": [
+            {
+              "cmd": "ip route-static 0.0.0.0 0.0.0.0 <nexthop>",
+              "desc": "默认路由指向下一跳",
+              "example": "ip route-static 0.0.0.0 0.0.0.0 10.0.0.1"
+            }
+          ]
+        },
+        "环回接口": {
+          "view": "[AR-LoopBack0]",
+          "commands": [
+            {
+              "cmd": "interface LoopBack0",
+              "desc": "创建环回接口"
+            },
+            {
+              "cmd": "ip address <ip> <mask>",
+              "desc": "配置环回IP"
+            }
+          ],
+          "tips": [
+            "环回接口常用于模拟外网主机或OSPF Router-ID"
+          ]
+        },
+        "经验积累": {
+          "commands": [
+            {
+              "cmd": "interface GigabitEthernet0/0/1.<vlan>",
+              "desc": "创建路由器子接口",
+              "source": "实验3-4"
+            },
+            {
+              "cmd": "dot1q termination vid <id>",
+              "desc": "子接口终结Dot1q VLAN标签",
+              "source": "实验3-4"
+            },
+            {
+              "cmd": "arp broadcast enable",
+              "desc": "子接口开启ARP广播（必须！）",
+              "source": "实验3-4"
+            },
+            {
+              "cmd": "undo interface <if>",
+              "desc": "删除子接口",
+              "source": "实验3-4"
+            }
+          ],
+          "tips": []
+        }
+      }
+    },
+    "AC6605": {
+      "description": "华为AC6605无线控制器",
+      "topics": {
+        "基础配置": {
+          "view": "[AC]",
+          "commands": [
+            {
+              "cmd": "sysname AC",
+              "desc": "修改主机名"
+            },
+            {
+              "cmd": "undo info-center enable",
+              "desc": "关闭信息中心"
+            },
+            {
+              "cmd": "vlan batch 100 to 101",
+              "desc": "创建管理VLAN100和用户VLAN101"
+            },
+            {
+              "cmd": "dhcp enable",
+              "desc": "开启DHCP"
+            },
+            {
+              "cmd": "interface Vlanif100",
+              "desc": "进入管理VLANIF"
+            },
+            {
+              "cmd": "ip address 192.168.100.1 255.255.255.0",
+              "desc": "配置管理VLAN IP"
+            },
+            {
+              "cmd": "dhcp select interface",
+              "desc": "接口模式分配IP给AP"
+            },
+            {
+              "cmd": "interface GigabitEthernet0/0/19",
+              "desc": "进入上行口"
+            },
+            {
+              "cmd": "port link-type trunk",
+              "desc": "trunk模式"
+            },
+            {
+              "cmd": "port trunk allow-pass vlan 2 to 4094",
+              "desc": "放行所有VLAN"
+            },
+            {
+              "cmd": "capwap source interface Vlanif100",
+              "desc": "指定CAPWAP隧道源接口（AP发现AC的关键）"
+            }
+          ]
+        },
+        "WLAN安全配置": {
+          "view": "[AC-wlan-view]",
+          "commands": [
+            {
+              "cmd": "wlan",
+              "desc": "进入WLAN视图"
+            },
+            {
+              "cmd": "security-profile name <name>",
+              "desc": "创建安全配置文件",
+              "example": "security-profile name sec"
+            },
+            {
+              "cmd": "security wpa-wpa2 psk pass-phrase <pwd> aes",
+              "desc": "WPA2-PSK加密（会弹Y/N确认）"
+            },
+            {
+              "cmd": "quit",
+              "desc": "退出安全配置文件"
+            }
+          ],
+          "tips": [
+            "security wpa-wpa2命令会弹确认提示[Y/N]，脚本需特殊处理",
+            "WLAN子视图层级很深，注意quit退出"
+          ]
+        },
+        "WLAN SSID配置": {
+          "view": "[AC-wlan-view]",
+          "commands": [
+            {
+              "cmd": "ssid-profile name <name>",
+              "desc": "创建SSID配置文件",
+              "example": "ssid-profile name ssid"
+            },
+            {
+              "cmd": "ssid <name>",
+              "desc": "设置WiFi名称",
+              "example": "ssid wlan-2024"
+            },
+            {
+              "cmd": "quit",
+              "desc": "退出SSID配置文件"
+            }
+          ]
+        },
+        "WLAN VAP配置": {
+          "view": "[AC-wlan-view]",
+          "commands": [
+            {
+              "cmd": "vap-profile name <name>",
+              "desc": "创建VAP配置文件",
+              "example": "vap-profile name vap"
+            },
+            {
+              "cmd": "service-vlan vlan-id <id>",
+              "desc": "WiFi用户VLAN",
+              "example": "service-vlan vlan-id 101"
+            },
+            {
+              "cmd": "ssid-profile <name>",
+              "desc": "引用SSID配置文件"
+            },
+            {
+              "cmd": "security-profile <name>",
+              "desc": "引用安全配置文件"
+            },
+            {
+              "cmd": "quit",
+              "desc": "退出VAP配置文件"
+            }
+          ]
+        },
+        "WLAN AP组配置": {
+          "view": "[AC-wlan-view]",
+          "commands": [
+            {
+              "cmd": "ap-group name <name>",
+              "desc": "创建AP分组",
+              "example": "ap-group name ap"
+            },
+            {
+              "cmd": "radio 0",
+              "desc": "进入射频0（2.4G）"
+            },
+            {
+              "cmd": "vap-profile <name> wlan 1",
+              "desc": "绑定VAP到射频",
+              "example": "vap-profile vap wlan 1"
+            },
+            {
+              "cmd": "quit",
+              "desc": "退出射频"
+            },
+            {
+              "cmd": "radio 1",
+              "desc": "进入射频1（5G）"
+            },
+            {
+              "cmd": "quit",
+              "desc": "退出AP组"
+            }
+          ],
+          "tips": [
+            "radio 0 通常是2.4GHz，radio 1 通常是5GHz",
+            "vap-profile绑定后AP才会广播SSID"
+          ]
+        },
+        "AP注册": {
+          "view": "[AC-wlan-view]",
+          "commands": [
+            {
+              "cmd": "ap-id <id> ap-mac <mac> ap-sn <sn>",
+              "desc": "注册AP（指定ID、MAC、SN）"
+            },
+            {
+              "cmd": "ap-name <name>",
+              "desc": "设置AP名称",
+              "example": "ap-name ap1"
+            },
+            {
+              "cmd": "ap-group <name>",
+              "desc": "将AP加入分组（会弹Y/N确认）",
+              "example": "ap-group ap"
+            }
+          ],
+          "tips": [
+            "ap-group命令会弹Warning提示[Y/N]，脚本需等待后发送y",
+            "AP注册后需等待30-40秒才会正常上线",
+            "ap-mac和ap-sn必须与eNSP拓扑中AP的实际值一致"
+          ]
+        },
+        "经验积累": {
+          "commands": [
+            {
+              "cmd": "capwap source interface Vlanif100",
+              "desc": "CAPWAP源接口",
+              "source": "校园网综合设计实训"
+            }
+          ],
+          "tips": []
+        }
+      }
+    }
+  },
+  "troubleshooting": {
+    "WiFi客户端无法获取IP": {
+      "symptom": "AP在线但WiFi设备获取不到IP地址",
+      "cause": "AP端口配置为access VLAN100，VLAN101的DHCP Discover报文被丢弃",
+      "fix": "AP端口改为trunk模式，PVID设为VLAN100，allow-pass VLAN100到101",
+      "verify": "display vlan检查端口PVID和allow-pass",
+      "commands": [
+        "interface GigabitEthernet0/0/3",
+        "port link-type trunk",
+        "port trunk pvid vlan 100",
+        "port trunk allow-pass vlan 100 to 101"
+      ]
+    },
+    "PC无法ping通网关": {
+      "symptom": "Destination host unreachable",
+      "cause": "接入交换机端口在错误VLAN，或上行口未放行VLAN",
+      "fix": "确认端口划入正确VLAN，确认trunk口放行对应VLAN",
+      "verify": "display vlan查看端口所属VLAN",
+      "commands": [
+        "display vlan",
+        "display port vlan"
+      ]
+    },
+    "服务器ping不通": {
+      "symptom": "防火墙ARP表显示Incomplete",
+      "cause": "服务器端口VLAN与防火墙接口不匹配",
+      "fix": "确保服务器端口在正确的VLAN，防火墙接口undo shutdown",
+      "verify": "display arp interface GigabitEthernet1/0/0"
+    },
+    "AP名称错误": {
+      "symptom": "AP1被命名为ap2或命名混乱",
+      "cause": "AC的WLAN子视图层级太深，quit退出不正确导致命令发到错误上下文",
+      "fix": "手动在AC上修正ap-name，确保每次操作后quit退出正确视图",
+      "verify": "display ap all"
+    },
+    "VRRP主备不切换": {
+      "symptom": "Master故障后Backup未接管",
+      "cause": "VRRP优先级配置错误或vrid不匹配",
+      "fix": "确认主设备priority>100，确认两端vrid一致",
+      "verify": "display vrrp brief"
+    },
+    "MSTP实例不一致": {
+      "symptom": "交换机间MSTP域不匹配，端口被阻塞",
+      "cause": "region-name或revision-level不一致，或忘记active",
+      "fix": "所有交换机配置相同的region-name和revision-level，执行active region-configuration",
+      "verify": "display stp region-configuration"
+    },
+    "Hybrid口VLAN不通": {
+      "symptom": "Hybrid端口的VLAN流量不通",
+      "cause": "PVID和untagged配置不匹配",
+      "fix": "确保port hybrid pvid和port hybrid untagged指向正确VLAN",
+      "verify": "display port vlan"
+    },
+    "网络环路广播风暴": {
+      "symptom": "网络严重拥塞，交换机CPU飙升",
+      "cause": "冗余链路未开启STP导致广播风暴",
+      "fix": "所有交换机执行stp enable",
+      "verify": "display stp brief"
+    },
+    "路由器子接口不通": {
+      "symptom": "路由器子接口无法与同网段设备通信",
+      "cause": "子接口未执行arp broadcast enable",
+      "fix": "在子接口下执行arp broadcast enable",
+      "verify": "display ip interface brief"
+    }
+  },
+  "config_order": [
+    "1. 所有设备: undo t m（关闭日志）→ system-view → undo info-center enable",
+    "2. 所有交换机: 创建VLAN（vlan batch）",
+    "3. SW1/SW2: MSTP区域配置（region-name + revision-level + instance映射 + active + 根桥）",
+    "4. SW1/SW2: DHCP地址池（ip pool + gateway + network + dns）",
+    "5. SW1/SW2: VLANIF接口（IP + VRRP主备 + dhcp select global）",
+    "6. SW1/SW2: 上行/下行端口配置（trunk/access）",
+    "7. SW1/SW2: LACP链路聚合（Eth-Trunk + mode lacp-static）",
+    "8. LSW3/LSW4: 汇聚交换机MSTP区域 + 端口配置",
+    "9. LSW5~LSW8: 接入交换机端口配置（access划VLAN）",
+    "10. LSW9/LSW10: 服务器区/外网区端口配置",
+    "11. FW1: 登录 + 接口IP + undo shutdown + 区域划分",
+    "12. FW1: 安全策略（trust_to_server, trust_to_untrust, untrust_to_server, server_deny）",
+    "13. FW1: OSPF + 默认路由下发",
+    "14. AR1: 接口IP + 默认路由",
+    "15. SW1/SW2: OSPF配置（等FW1和AR1配好后再开启）",
+    "16. AC1: 基础配置（VLAN + CAPWAP + trunk）",
+    "17. AC1: WLAN配置（security + ssid + vap + ap-group）",
+    "18. AC1: AP注册（ap-mac + ap-sn + ap-group）",
+    "19. AP端口: 改为trunk + pvid 100 + allow-pass 100-101",
+    "20. 保存所有设备配置（save）"
+  ],
+  "meta": {
+    "version": "2.0",
+    "description": "eNSP设备命令经验知识库 - 每次实验积累经验，逐步覆盖所有设备所有命令",
+    "design_philosophy": "知识库不是一次性产物，而是随每次实验持续增长的经验库。每次实验后提取新发现的命令、排障经验、最佳实践，写入知识库，使AI工具越来越熟练，最终无需联网即可完成eNSP所有配置。",
+    "last_updated": "2026-06-16",
+    "experiment_count": 5,
+    "total_experiments_recorded": [
+      "校园网综合设计实训",
+      "实验3-1：以太网基础与VLAN配置",
+      "实验3-2：生成树基础实验",
+      "实验3-3：链路聚合实验",
+      "实验3-4：实现VLAN间通信"
+    ]
+  },
+  "best_practices": {
+    "_description": "操作规范 - 每次配置设备前必须遵守",
+    "command_rules": [
+      {
+        "id": "BP-001",
+        "rule": "配置前必须检测视图类型",
+        "detail": "发送命令前先检测设备当前处于 <> 尖括号（用户视图）还是 [] 方括号（系统视图）。不同视图下可用命令不同，发错视图的命令会报 Unrecognized command 错误。",
+        "detection_method": "读取终端提示符：以 > 结尾为用户视图，以 ] 结尾为系统视图",
+        "example_user_view": "<LSW1> （用户视图，可执行 display/save/ping/system-view）",
+        "example_system_view": "[LSW1] （系统视图，可执行 interface/vlan/ospf 等配置命令）",
+        "priority": "critical"
+      },
+      {
+        "id": "BP-002",
+        "rule": "配置前第一步：undo terminal monitor",
+        "detail": "所有设备配置前必须先执行 undo terminal monitor（简写 undo t m）关闭终端日志监控，否则设备日志会不断弹出干扰命令输入和输出解析。",
+        "view": "<> 用户视图",
+        "command": "undo terminal monitor",
+        "short": "undo t m",
+        "priority": "critical"
+      },
+      {
+        "id": "BP-003",
+        "rule": "配置完成后必须保存",
+        "detail": "所有设备配置完成后必须执行 save 命令保存配置，否则重启后配置丢失。",
+        "view": "<> 用户视图",
+        "command": "save",
+        "priority": "high"
+      },
+      {
+        "id": "BP-004",
+        "rule": "防火墙接口默认关闭",
+        "detail": "华为USG6000V防火墙所有接口默认shutdown状态，必须手动 undo shutdown 开启。路由器接口默认开启。",
+        "applies_to": "USG6000V",
+        "priority": "high"
+      },
+      {
+        "id": "BP-005",
+        "rule": "MSTP域配置必须active",
+        "detail": "MSTP的 region-name、revision-level、instance映射 配置完成后必须执行 active region-configuration，否则配置不生效。这是最常见的遗漏。",
+        "applies_to": "S5700/S3700",
+        "priority": "high"
+      },
+      {
+        "id": "BP-006",
+        "rule": "WLAN子视图层级管理",
+        "detail": "AC的WLAN视图层级很深（wlan -> security-profile -> quit -> ssid-profile -> quit -> vap-profile -> quit -> ap-group -> radio -> quit quit），每个子视图操作完必须quit退出，否则命令发到错误上下文。",
+        "applies_to": "AC6605",
+        "priority": "high"
+      },
+      {
+        "id": "BP-007",
+        "rule": "AP端口必须用trunk不能用access",
+        "detail": "AP端口如果配置为access模式，WiFi客户端的VLAN标签流量会被丢弃，导致无法获取IP。必须配置为trunk + pvid + allow-pass。",
+        "applies_to": "连接AP的交换机端口",
+        "priority": "high"
+      },
+      {
+        "id": "BP-008",
+        "rule": "配置顺序很重要",
+        "detail": "必须按照正确顺序配置：先底层(VLAN/接口) -> 再二层(MSTP) -> 再三层(VRRP/DHCP/OSPF) -> 最后安全策略。先配FW1再开SW1/SW2的OSPF。",
+        "priority": "medium"
+      }
+    ]
+  },
+  "experiences": [
+    {
+      "experiment": "校园网综合设计实训",
+      "date": "2026-06-16",
+      "topology": "32台设备：SW1/SW2(核心S5700) + LSW3~LSW8(汇聚/接入) + LSW9/LSW10(服务器区/外网区) + FW1(USG6000V) + AR1(AR2220) + AC1(AC6605) + AP1/AP2 + Server1~3 + PC1~3",
+      "features_implemented": [
+        "MSTP",
+        "VRRP",
+        "DHCP",
+        "OSPF",
+        "LACP",
+        "WLAN",
+        "防火墙安全策略",
+        "DNS/Web/FTP服务"
+      ],
+      "new_commands_learned": [
+        {
+          "cmd": "capwap source interface Vlanif100",
+          "device": "AC6605",
+          "desc": "指定CAPWAP隧道源接口，AP发现AC的关键配置"
+        },
+        {
+          "cmd": "security wpa-wpa2 psk pass-phrase <pwd> aes",
+          "device": "AC6605",
+          "desc": "WPA2-PSK加密，会弹Y/N确认需要特殊处理"
+        },
+        {
+          "cmd": "ap-group <name>",
+          "device": "AC6605",
+          "desc": "AP加入分组会弹Warning提示Y/N，脚本需等待后发送y"
+        },
+        {
+          "cmd": "service-manage ping permit",
+          "device": "USG6000V",
+          "desc": "防火墙接口允许ping管理"
+        },
+        {
+          "cmd": "firewall zone name <name>",
+          "device": "USG6000V",
+          "desc": "创建自定义安全区域"
+        },
+        {
+          "cmd": "default-route-advertise",
+          "device": "USG6000V",
+          "desc": "OSPF中下发默认路由给邻居"
+        },
+        {
+          "cmd": "silent-interface Vlanif<id>",
+          "device": "S5700",
+          "desc": "OSPF静默接口，抑制用户VLAN的Hello包"
+        }
+      ],
+      "lessons_learned": [
+        "AP端口不能用access模式，必须trunk+pvid+allow-pass，否则WiFi客户端流量被丢弃",
+        "防火墙接口默认shutdown，必须手动undo shutdown",
+        "MSTP的active region-configuration忘记执行是最高频错误",
+        "AC的WLAN子视图层级很深，quit退出不正确会导致AP名称错乱",
+        "ap-group命令会弹Y/N确认，脚本需要特殊处理（等待提示后发送y）",
+        "防火墙安全策略默认deny，必须显式配置permit规则",
+        "服务器只能被访问不能主动发起请求，需要deny方向的安全策略",
+        "VLANIF接口的VRRP vrid建议与VLAN ID一致便于管理",
+        "AP端口必须trunk不能access"
+      ],
+      "troubleshooting_cases": [
+        {
+          "problem": "WiFi客户端无法获取IP",
+          "root_cause": "AP端口配置为access VLAN100，WiFi客户端的VLAN101 DHCP报文被丢弃",
+          "solution": "AP端口改为trunk + pvid vlan 100 + allow-pass vlan 100 to 101",
+          "diagnosis_cmd": "display vlan"
+        },
+        {
+          "problem": "PC无法ping通网关",
+          "root_cause": "接入交换机连路由器的端口在错误VLAN",
+          "solution": "确认端口划入正确VLAN，确认trunk口放行对应VLAN",
+          "diagnosis_cmd": "display vlan / display port vlan"
+        },
+        {
+          "problem": "服务器ping不通（防火墙ARP Incomplete）",
+          "root_cause": "服务器端口VLAN与防火墙路由口不匹配",
+          "solution": "确保服务器端口在正确VLAN，防火墙接口undo shutdown",
+          "diagnosis_cmd": "display arp interface GigabitEthernet1/0/0"
+        }
+      ]
+    },
+    {
+      "experiment": "实验3-1：以太网基础与VLAN配置",
+      "date": "2026-06-10",
+      "topology": "4台S5700交换机 + 2台AR2200路由器",
+      "features_implemented": [
+        "VLAN",
+        "Access",
+        "Trunk",
+        "Hybrid",
+        "MAC-VLAN"
+      ],
+      "new_commands_learned": [
+        {
+          "cmd": "port link-type hybrid",
+          "device": "S5700",
+          "desc": "端口设为hybrid模式（支持多VLAN灵活打/不打标签）"
+        },
+        {
+          "cmd": "port hybrid untagged vlan <id>",
+          "device": "S5700",
+          "desc": "hybrid口该VLAN不打标签发出"
+        },
+        {
+          "cmd": "port hybrid pvid vlan <id>",
+          "device": "S5700",
+          "desc": "hybrid口PVID设置"
+        },
+        {
+          "cmd": "mac-vlan enable",
+          "device": "S5700",
+          "desc": "端口启用MAC-VLAN功能"
+        },
+        {
+          "cmd": "mac-vlan mac-address <mac>",
+          "device": "S5700",
+          "desc": "VLAN视图下绑定MAC地址到VLAN"
+        },
+        {
+          "cmd": "display vlan <id> verbose",
+          "device": "S5700",
+          "desc": "查看指定VLAN详细信息"
+        },
+        {
+          "cmd": "display mac-vlan",
+          "device": "S5700",
+          "desc": "查看MAC-VLAN绑定表"
+        },
+        {
+          "cmd": "shutdown",
+          "device": "S5700",
+          "desc": "关闭接口"
+        },
+        {
+          "cmd": "undo shutdown",
+          "device": "S5700",
+          "desc": "开启接口"
+        }
+      ],
+      "lessons_learned": [
+        "Trunk口默认放行VLAN1，需要undo port trunk allow-pass vlan 1先移除再配置",
+        "Hybrid口的PVID和untagged配置要匹配，否则流量不通",
+        "MAC-VLAN绑定在vlan视图下配置，不是接口视图",
+        "关闭多余接口(shutdown)是好习惯，避免环路和未授权接入"
+      ],
+      "troubleshooting_cases": [
+        {
+          "problem": "Hybrid口VLAN不通",
+          "root_cause": "PVID和untagged配置不匹配",
+          "solution": "确保port hybrid pvid和port hybrid untagged指向正确VLAN",
+          "diagnosis_cmd": "display port vlan"
+        }
+      ]
+    },
+    {
+      "experiment": "实验3-2：生成树基础实验",
+      "date": "2026-06-10",
+      "topology": "4台S5700交换机，冗余链路环形拓扑",
+      "features_implemented": [
+        "STP"
+      ],
+      "new_commands_learned": [
+        {
+          "cmd": "stp mode stp",
+          "device": "S5700",
+          "desc": "设置STP模式为STP（非MSTP/RSTP）"
+        },
+        {
+          "cmd": "stp enable",
+          "device": "S5700",
+          "desc": "全局启用STP"
+        },
+        {
+          "cmd": "stp root primary",
+          "device": "S5700",
+          "desc": "设为根桥（自动设置优先级为0）"
+        },
+        {
+          "cmd": "stp root secondary",
+          "device": "S5700",
+          "desc": "设为备份根桥"
+        },
+        {
+          "cmd": "display stp",
+          "device": "S5700",
+          "desc": "查看STP详细信息（根桥、端口角色等）"
+        },
+        {
+          "cmd": "display stp brief",
+          "device": "S5700",
+          "desc": "查看STP简要信息"
+        },
+        {
+          "cmd": "display stp interface <if>",
+          "device": "S5700",
+          "desc": "查看指定接口STP状态"
+        }
+      ],
+      "lessons_learned": [
+        "冗余链路会导致广播风暴，必须开启STP",
+        "根桥选举基于Bridge ID（优先级+MAC地址），值越小越优先",
+        "stp root primary自动设置优先级为0，stp root secondary设置为4096",
+        "STP收敛时间较长（30-50秒），RSTP/MSTP更快"
+      ],
+      "troubleshooting_cases": [
+        {
+          "problem": "网络环路导致广播风暴",
+          "root_cause": "冗余链路未开启STP",
+          "solution": "所有交换机执行stp enable",
+          "diagnosis_cmd": "display stp brief"
+        }
+      ]
+    },
+    {
+      "experiment": "实验3-3：链路聚合实验",
+      "date": "2026-06-10",
+      "topology": "2台S5700交换机，3条物理链路聚合",
+      "features_implemented": [
+        "Eth-Trunk",
+        "LACP"
+      ],
+      "new_commands_learned": [
+        {
+          "cmd": "interface Eth-Trunk <id>",
+          "device": "S5700",
+          "desc": "创建并进入Eth-Trunk接口"
+        },
+        {
+          "cmd": "mode manual load-balance",
+          "device": "S5700",
+          "desc": "手工负载分担模式（无需LACP协商）"
+        },
+        {
+          "cmd": "mode lacp-static",
+          "device": "S5700",
+          "desc": "LACP静态模式（通过LACP协议协商，更可靠）"
+        },
+        {
+          "cmd": "eth-trunk <id>",
+          "device": "S5700",
+          "desc": "物理接口加入Eth-Trunk"
+        },
+        {
+          "cmd": "max active-linknumber <n>",
+          "device": "S5700",
+          "desc": "最大活动链路数（超出的变为Unselect备用）"
+        },
+        {
+          "cmd": "least active-linknumber <n>",
+          "device": "S5700",
+          "desc": "最小活动链路数（低于此数Eth-Trunk整体DOWN）"
+        },
+        {
+          "cmd": "load-balance dst-ip",
+          "device": "S5700",
+          "desc": "负载分担模式为按目的IP哈希"
+        },
+        {
+          "cmd": "display eth-trunk <id>",
+          "device": "S5700",
+          "desc": "查看Eth-Trunk状态（活动链路数、模式等）"
+        }
+      ],
+      "lessons_learned": [
+        "手工模式简单但不检测链路故障，LACP模式更可靠",
+        "Max Active-linknumber控制活动链路数，多余的作为热备",
+        "Least Active-linknumber低于阈值时整个Eth-Trunk DOWN",
+        "负载分担hash算法决定流量分配：src-ip/dst-ip/src-dst-ip/SIP-XOR-DIP",
+        "加入Eth-Trunk前确保物理口无其他配置"
+      ],
+      "troubleshooting_cases": []
+    },
+    {
+      "experiment": "实验3-4：实现VLAN间通信",
+      "date": "2026-06-10",
+      "topology": "1台S5700三层交换机 + 1台AR2220路由器",
+      "features_implemented": [
+        "Dot1q子接口",
+        "VLANIF",
+        "VLAN间路由"
+      ],
+      "new_commands_learned": [
+        {
+          "cmd": "interface GigabitEthernet0/0/1.2",
+          "device": "AR2220",
+          "desc": "创建路由器子接口"
+        },
+        {
+          "cmd": "dot1q termination vid <id>",
+          "device": "AR2220",
+          "desc": "子接口终结Dot1q VLAN标签"
+        },
+        {
+          "cmd": "arp broadcast enable",
+          "device": "AR2220",
+          "desc": "子接口必须开启ARP广播才能通信"
+        },
+        {
+          "cmd": "undo interface <if>",
+          "device": "AR2220",
+          "desc": "删除子接口"
+        }
+      ],
+      "lessons_learned": [
+        "子接口必须执行arp broadcast enable，否则无法ARP解析导致不通",
+        "物理接口必须先undo shutdown，子接口才能工作",
+        "VLANIF方式（三层交换机做网关）比子接口方式更简洁高效",
+        "路由器做网关适合跨网段场景，三层交换机做网关适合同设备多VLAN场景",
+        "undo interface可以删除子接口（包括其下所有配置）"
+      ],
+      "troubleshooting_cases": [
+        {
+          "problem": "路由器子接口ping不通",
+          "root_cause": "子接口未执行arp broadcast enable",
+          "solution": "在子接口下执行arp broadcast enable",
+          "diagnosis_cmd": "display ip interface brief"
+        }
+      ]
+    }
+  ]
+}

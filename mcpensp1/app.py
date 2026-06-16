@@ -1265,7 +1265,9 @@ def api_kb_stats():
         'user_view_models': [k for k in uv.keys() if k != '_meta'],
         'system_view_models': [k for k in sv.keys() if k != '_meta'],
         'troubleshooting_count': len(skb.get('troubleshooting', {})),
-        'config_steps': len(skb.get('config_order', []))
+        'config_steps': len(skb.get('config_order', [])),
+        'experiment_count': len(skb.get('experiences', [])),
+        'best_practice_count': len(skb.get('best_practices', {}).get('command_rules', []))
     }
     return jsonify(stats)
 

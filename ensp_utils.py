@@ -10,6 +10,41 @@ import sys
 # 默认端口映射（可按实验覆盖）
 DEFAULT_HOST = '127.0.0.1'
 
+def _recv_all(sock, bufsize=65536, timeout=0.5):
+    """循环读取 socket 直到超时无新数据，避免长输出截断。"""
+    chunks = []
+    old_timeout = sock.gettimeout()
+    sock.settimeout(timeout)
+    while True:
+        try:
+            chunk = sock.recv(bufsize)
+            if not chunk:
+                break
+            chunks.append(chunk)
+        except (socket.timeout, OSError):
+            break
+    sock.settimeout(old_timeout)
+    return b''.join(chunks)
+
+
+def _detect_decode(data):
+    """自动检测编码并解码，回退 utf-8 -> gbk -> latin-1。"""
+    if not data:
+        return ''
+    try:
+        import chardet
+        det = chardet.detect(data)
+        if det and det.get('encoding'):
+            return data.decode(det['encoding'], errors='ignore')
+    except ImportError:
+        pass
+    for enc in ('utf-8', 'gbk', 'latin-1'):
+        try:
+            return data.decode(enc)
+        except (UnicodeDecodeError, LookupError):
+            continue
+    return data.decode('latin-1', errors='ignore')
+
 
 def connect(port, host=DEFAULT_HOST, timeout=5, drain=True):
     """连接到 eNSP 设备并清理欢迎信息。
@@ -29,7 +64,7 @@ def connect(port, host=DEFAULT_HOST, timeout=5, drain=True):
     time.sleep(0.3)
     if drain:
         try:
-            s.recv(8192)
+            _recv_all(s, bufsize=8192, timeout=0.3)
         except Exception:
             pass
     return s
@@ -50,7 +85,8 @@ def send_cmd(sock, cmd, wait=1.5, bufsize=65536, encoding='gbk'):
     sock.send((cmd + '\r\n').encode())
     time.sleep(wait)
     try:
-        data = sock.recv(bufsize).decode(encoding, errors='ignore')
+        raw = _recv_all(sock, bufsize=bufsize, timeout=wait if wait > 0.5 else 0.5)
+        data = _detect_decode(raw)
     except Exception:
         data = ''
     return data
@@ -160,7 +196,7 @@ def screen_length_zero(sock):
     """设置 screen-length 0 temporary 避免分页。"""
     send_cmd(sock, 'screen-length 0 temporary', wait=0.8)
     try:
-        sock.recv(4096)
+        _recv_all(sock, bufsize=4096, timeout=0.3)
     except Exception:
         pass
 

@@ -1,21 +1,22 @@
-﻿var socket;try{socket=io();}catch(e){console.error('socket.io failed:',e);}
+var socket;try{socket=io();}catch(e){console.error('socket.io failed:',e);}if(typeof socket==='undefined'||!socket)socket={on:function(){},emit:function(){}};
 let dCon={},dNames={},dTypes={},dAlive={},tData={},curDev=null,scanned=[],renameTgt=null,topoSum=null,kbCurrentModel='S5700',kbCurrentView='both';
 function eId(p){return p.replace(/[^a-zA-Z0-9_-]/g,'_')}
 function uId(id){return id.replace(/_/g,'.')}
-function esc(t){const d=document.createElement('div');d.textContent=t;let s=d.innerHTML;s=s.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');return s}
-function sw(v){document.querySelectorAll('.sp').forEach(function(p){p.classList.remove('active')});document.querySelectorAll('.btn-nav').forEach(function(b){b.classList.remove('active')});var c=v.charAt(0).toUpperCase()+v.slice(1);document.getElementById('v'+c).classList.add('active');document.getElementById('n'+c).classList.add('active');if(v==='cat')loadCat();if(v==='cap')loadCap();if(v==='kb')loadKb();if(v==='topo')loadTopo();}socket.on('connect',function(){log('已连接','success');socket.emit('get_connected_devices')});
+function esc(t){const d=document.createElement('div');d.textContent=t;let s=d.innerHTML;s=s.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');return s}
+function showModalPrompt(title,defaultVal,callback){var overlay=document.createElement('div');overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000';var modal=document.createElement('div');modal.style.cssText='background:#1e1e2e;border:1px solid #45475a;border-radius:8px;padding:20px;min-width:400px;max-width:600px';var titleEl=document.createElement('div');titleEl.style.cssText='color:#cdd6f4;font-size:14px;margin-bottom:10px';titleEl.textContent=title;var textarea=document.createElement('textarea');textarea.style.cssText='width:100%;height:150px;background:#181825;color:#cdd6f4;border:1px solid #45475a;border-radius:4px;padding:8px;font-family:monospace;font-size:12px;resize:vertical;box-sizing:border-box';textarea.value=defaultVal||'';var btnRow=document.createElement('div');btnRow.style.cssText='display:flex;gap:8px;justify-content:flex-end;margin-top:10px';var okBtn=document.createElement('button');okBtn.textContent='OK';okBtn.style.cssText='padding:6px 16px;background:#89b4fa;color:#181825;border:none;border-radius:4px;cursor:pointer;font-size:12px';var cancelBtn=document.createElement('button');cancelBtn.textContent='Cancel';cancelBtn.style.cssText='padding:6px 16px;background:#45475a;color:#cdd6f4;border:none;border-radius:4px;cursor:pointer;font-size:12px';function close(){overlay.remove()}okBtn.onclick=function(){var val=textarea.value;close();callback(val)};cancelBtn.onclick=function(){close();callback(null)};textarea.addEventListener('keydown',function(e){if(e.key==='Escape'){close();callback(null)}});btnRow.appendChild(cancelBtn);btnRow.appendChild(okBtn);modal.appendChild(titleEl);modal.appendChild(textarea);modal.appendChild(btnRow);overlay.appendChild(modal);document.body.appendChild(overlay);textarea.focus()}
+function sw(v){document.querySelectorAll('.sp').forEach(function(p){p.classList.remove('active')});document.querySelectorAll('.btn-nav').forEach(function(b){b.classList.remove('active')});var c=v.charAt(0).toUpperCase()+v.slice(1);var vc=document.getElementById('v'+c);var nc=document.getElementById('n'+c);if(vc)vc.classList.add('active');if(nc)nc.classList.add('active');if(v==='cat')loadCat();if(v==='cap')loadCap();if(v==='kb')loadKb();if(v==='topo')loadTopo();}socket.on('connect',function(){log('已连接','success');socket.emit('get_connected_devices')});
 socket.on('disconnect',function(){log('断开连接','error')});
 socket.on('scan_result',function(d){scanned=d;d.forEach(function(x){if(x.name&&x.name!==x.path)dNames[x.path]=x.name;if(x.device_type)dTypes[x.path]=x.device_type});updDL();log('扫描完成，发现 '+d.length+' 个设备')});
 socket.on('connected_devices_list',function(d){d.forEach(function(x){dCon[x.path]=true;if(x.name&&x.name!==x.path)dNames[x.path]=x.name;if(x.device_type)dTypes[x.path]=x.device_type});updDL()});
 socket.on('device_connected',function(d){dCon[d.path]=true;if(d.name&&d.name!==d.path)dNames[d.path]=d.name;if(d.device_type)dTypes[d.path]=d.device_type;updDL();addTerm(d.path,d.name||d.path);log('已连接: '+(d.name||d.path),'success')});
-socket.on('device_output',function(d){if(!tData[d.path])tData[d.path]=[];tData[d.path].push({type:'output',text:d.output});if(curDev===d.path)renderTerm(d.path)});
+socket.on('device_output',function(d){if(!tData[d.path])tData[d.path]=[];tData[d.path].push({type:'output',text:d.output});if(tData[d.path].length>500)tData[d.path].shift();if(curDev===d.path)renderTerm(d.path)});
 socket.on('device_error',function(d){log('错误: '+d.error,'error')});
 socket.on('device_disconnected',function(d){delete dCon[d.path];delete dNames[d.path];delete dTypes[d.path];delete dAlive[d.path];updDL();rmTerm(d.path);log('断开: '+d.path)});
 socket.on('device_renamed',function(d){dNames[d.path]=d.name;updDL();updTH(d.path,d.name);log('重命名: '+d.name)});
 socket.on('heartbeat_status',function(d){dAlive[d.path]=d.alive;updDL();if(d.status==='reconnected'){log((dNames[d.path]||d.path)+' 已恢复','success');addSys(d.path,'设备已自动恢复')}else if(d.status==='disconnected'){log(d.message,'error');addSys(d.path,d.message)}});
 socket.on('topology_updated',function(d){topoSum=d;document.getElementById('topoInd').textContent='拓扑: '+d.node_count+'节点 '+d.link_count+'链路';if(document.getElementById('vTopo').classList.contains('active'))renderTopo()});
-function addSys(p,t){if(!tData[p])tData[p]=[];tData[p].push({type:'system',text:'[系统] '+t});if(curDev===p)renderTerm(p)}
-function uploadTopo(f){if(!f)return;var fd=new FormData();fd.append('file',f);fetch('/api/topology/file',{method:'POST',body:fd}).then(function(r){return r.json()}).then(function(d){if(d.success){log('拓扑上传: '+f.name,'success');loadTopo()}else log('失败: '+d.error,'error')}).catch(function(e){log('错误: '+e,'error')})}function updDL(){var l=document.getElementById('dList');if(!scanned.length){l.innerHTML='<div style="padding:20px;text-align:center;color:#6c7086;font-size:11px">点击扫描搜索设备</div>';return}
+function addSys(p,t){if(!tData[p])tData[p]=[];tData[p].push({type:'system',text:'[系统] '+t});if(tData[p].length>500)tData[p].shift();if(curDev===p)renderTerm(p)}
+function uploadTopo(f){if(!f)return;var fd=new FormData();fd.append('file',f);fetch('/api/topology/file',{method:'POST',body:fd}).then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(d){if(d.success){log('拓扑上传: '+f.name,'success');loadTopo()}else log('失败: '+d.error,'error')}).catch(function(e){log('错误: '+e,'error')})}function updDL(){var l=document.getElementById('dList');if(!scanned.length){l.innerHTML='<div style="padding:20px;text-align:center;color:#6c7086;font-size:11px">点击扫描搜索设备</div>';return}
 l.innerHTML=scanned.map(function(d){var n=dNames[d.path]||d.name||d.path,c=dCon[d.path],a=dAlive[d.path],dt=dTypes[d.path]||d.device_type||'unknown';
 var hb=!c?'':(a?'alive':'unresponsive'),ic=c?'connected '+hb:'';
 return '<div class="di '+ic+'"><div class="dh"><div class="dinf"><div class="dn">'+(c?'<span class="hb '+(hb||'dead')+'"></span>':'')+esc(n)+'<span class="ei" onclick="openRM(\''+esc(d.path)+'\',\''+esc(n)+'\')">&#9998;</span></div>'
@@ -40,23 +41,73 @@ function updTH(path,name){var p=document.getElementById('tp-'+eId(path));if(!p)r
 function rmTerm(path){var p=document.getElementById('tp-'+eId(path));if(p)p.remove();var t=document.getElementById('t-'+eId(path));if(t)t.remove();if(curDev===path){curDev=null;var tabs=document.getElementById('tabs');if(!tabs.querySelector('.tab'))tabs.innerHTML='<div class="et">等待设备连接...</div>'}}
 function swTerm2(path){curDev=path;document.querySelectorAll('.tp').forEach(function(p){p.classList.remove('active')});document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});var p=document.getElementById('tp-'+eId(path));var t=document.getElementById('t-'+eId(path));if(p)p.classList.add('active');if(t)t.classList.add('active');renderTerm(path)}
 function renderTerm(path){var b=document.getElementById('tb-'+eId(path));if(!b||!tData[path])return;b.innerHTML=tData[path].map(function(i){return '<div class="'+i.type+'">'+esc(i.text)+'</div>'}).join('');b.scrollTop=b.scrollHeight}
-function sendCmd(e,path){if(e.key==='Enter'){var inp=document.getElementById('inp-'+eId(path));var c=inp.value.trim();if(c){if(!tData[path])tData[path]=[];tData[path].push({type:'input',text:'$ '+c});renderTerm(path);if(c.length>1024){log('Command too long (max 1024)','error');return}socket.emit('send_command',{path:path,command:c});inp.value=''}}}
-function log(msg,type){var l=document.getElementById('logs');var t=new Date().toLocaleTimeString();var i=document.createElement('div');i.className='li '+(type||'');i.textContent='['+t+'] '+msg;l.appendChild(i);l.scrollTop=l.scrollHeight}
+function sendCmd(e,path){if(e.key==='Enter'){var inp=document.getElementById('inp-'+eId(path));var c=inp.value.trim();if(c){if(!tData[path])tData[path]=[];tData[path].push({type:'input',text:'$ '+c});if(tData[path].length>500)tData[path].shift();renderTerm(path);if(c.length>1024){log('Command too long (max 1024)','error');return}socket.emit('send_command',{path:path,command:c});inp.value=''}}}
+function log(msg,type){var l=document.getElementById('logs');var t=new Date().toLocaleTimeString();var i=document.createElement('div');i.className='li '+(type||'');i.textContent='['+t+'] '+msg;if(l.children.length>500)l.removeChild(l.firstChild);l.appendChild(i);l.scrollTop=l.scrollHeight}
 function openRM(p,n){renameTgt=p;document.getElementById('renameInput').value=n;document.getElementById('renameModal').style.display='flex';document.getElementById('renameInput').focus()}
 function closeRM(){renameTgt=null;document.getElementById('renameModal').style.display='none'}
-function confirmRM(){if(!renameTgt)return;var n=document.getElementById('renameInput').value.trim();if(n&&n.length<=128)socket.emit('rename_device',{path:renameTgt,name:n});closeRM()}function loadCat(){var cat=document.getElementById('catCat').value,dev=document.getElementById('catDev').value,risk=document.getElementById('catRisk').value;var url='/api/kb/catalog?';if(cat)url+='category='+encodeURIComponent(cat)+'&';if(dev)url+='device_type='+encodeURIComponent(dev)+'&';if(risk)url+='risk='+encodeURIComponent(risk);fetch(url).then(function(r){return r.json()}).then(function(data){document.getElementById('catCount').textContent=data.length;document.getElementById('catList').innerHTML=data.length?data.map(function(c){var sup=Object.entries(c.supported||{}).filter(function(x){return x[1]}).map(function(x){return x[0]}).join(', ');var tags=(c.tags||[]).map(function(t){return '<span class="cmd-tag">'+esc(t)+'</span>'}).join('');var oh=c.output_hint?'<div class="cmd-output">输出: '+esc(c.output_hint)+'</div>':'';return '<div class="cmd-card"><div class="cmd-name">'+esc(c.command)+' <span class="risk-'+c.risk+'">'+c.risk+'</span></div>'+'<div class="cmd-desc">'+esc(c.description)+'</div>'+'<div class="cmd-meta"><span>'+c.category+'</span><span>'+sup+'</span></div>'+(tags?'<div class="cmd-tags">'+tags+'</div>':'')+oh+'</div>'}).join(''):'<div style="padding:20px;text-align:center;color:#6c7086;font-size:11px">暂无命令目录</div>'}).catch(function(){})}
-function loadCap(){fetch('/api/kb/devices').then(function(r){return r.json()}).then(function(devs){document.getElementById('capDevCount').textContent=Object.keys(devs).length;Object.entries(devs).forEach(function(entry){var path=entry[0],dev=entry[1];var dt=dev.device_type||'unknown';var dn=dev.display_name||dNames[path]||path;fetch('/api/kb/capabilities?path='+encodeURIComponent(path)).then(function(r){return r.json()}).then(function(cap){var verified=(cap.can_execute||[]).filter(function(c){return c.status==='verified'});var supported=(cap.can_execute||[]).filter(function(c){return c.status==='supported'});var failed=cap.cannot_execute||[];var untested=cap.untested||[];var sec='<div class="cap-section"><div class="cap-title">'+esc(dn)+' <span class="dt">'+dt+'</span>'+'<span class="cap-count">已验证 '+verified.length+' | 理论可用 '+supported.length+' | 失败 '+failed.length+' | 不支持 '+untested.length+'</span></div>';if(verified.length){sec+='<div class="cap-section"><div class="cap-title" style="color:#a6e3a1">已验证 ('+verified.length+')</div>';sec+=verified.map(function(c){return '<div class="cmd-card verified"><div class="cmd-name">'+esc(c.command)+' <span class="status-badge verified">已验证</span> <span class="risk-'+c.risk+'">'+c.risk+'</span></div>'+'<div class="cmd-desc">'+esc(c.description)+'</div><div class="cmd-meta"><span>使用 '+(c.use_count||1)+' 次</span><span>'+c.category+'</span></div>'+(c.output_hint?'<div class="cmd-output">输出: '+esc(c.output_hint)+'</div>':'')+'</div>'}).join('');sec+='</div>';}if(supported.length){sec+='<div class="cap-section"><div class="cap-title" style="color:#cba6f7">理论可用 ('+supported.length+')</div>';sec+=supported.map(function(c){return '<div class="cmd-card supported"><div class="cmd-name">'+esc(c.command)+' <span class="status-badge supported">理论可用</span> <span class="risk-'+c.risk+'">'+c.risk+'</span></div>'+'<div class="cmd-desc">'+esc(c.description)+'</div><div class="cmd-meta"><span>'+c.category+'</span></div></div>'}).join('');sec+='</div>';}if(failed.length){sec+='<div class="cap-section"><div class="cap-title" style="color:#f38ba8">执行失败 ('+failed.length+')</div>';sec+=failed.map(function(c){return '<div class="cmd-card failed"><div class="cmd-name">'+esc(c.command)+' <span class="status-badge failed">失败</span> <span class="risk-'+c.risk+'">'+c.risk+'</span></div>'+'<div class="cmd-desc">'+esc(c.description)+'</div></div>'}).join('');sec+='</div>';}if(untested.length){sec+='<div class="cap-section"><div class="cap-title" style="color:#6c7086">不支持 ('+untested.length+')</div>';sec+=untested.map(function(c){return '<div class="cmd-card unsupported"><div class="cmd-name">'+esc(c.command)+' <span class="status-badge unsupported">不支持</span></div>'+'<div class="cmd-desc">'+esc(c.description)+'</div></div>'}).join('');sec+='</div>';}document.getElementById('capList').innerHTML=sec;}).catch(function(){});});}).catch(function(){})}
-function loadKb(){fetch('/api/kb/stats').then(function(r){return r.json()}).then(function(s){var skb=s.structured_kb||{};document.getElementById('kbTotal').textContent=s.total_commands_recorded||0;document.getElementById('kbDevs').textContent=s.total_devices||0;document.getElementById('kbExpCount').textContent=skb.experiment_count||0;document.getElementById('kbTsCount').textContent=skb.troubleshooting_count||0;document.getElementById('kbBpCount').textContent=skb.best_practice_count||0}).catch(function(){});fetch('/api/kb/best-practice').then(function(r){return r.json()}).then(function(d){document.getElementById('kbBpCount').textContent=d.length||0}).catch(function(){});loadKbStructured();loadKbBestPractice();loadKbExperience();loadKbTroubleshoot();loadKbConfigOrder()}
-function switchKbTab(tab,el){document.querySelectorAll('.kb-tab').forEach(function(t){t.classList.remove('active')});document.querySelectorAll('.kb-section').forEach(function(s){s.classList.remove('active')});if(el)el.classList.add('active');var map={structured:'kbStructured',bestpractice:'kbBestpractice',experience:'kbExperience',troubleshoot:'kbTroubleshoot',configorder:'kbConfigorder',runtime:'kbRuntime'};var sec=document.getElementById(map[tab]);if(sec)sec.classList.add('active');if(tab==='runtime')loadKbRuntime()}
-function loadKbStructured(){fetch('/api/kb/suggest?model='+encodeURIComponent(kbCurrentModel)).then(function(r){return r.json()}).then(function(data){var uv=data.user_view||[];var sv=data.system_view||[];var h='';if(kbCurrentView==='both'||kbCurrentView==='user_view'){h+='<div style="margin-bottom:12px"><div style="font-size:13px;color:#89b4fa;font-weight:bold;margin-bottom:6px">用户视图 &lt;&gt; ('+uv.length+' 条命令)</div>';var groups={};uv.forEach(function(c){var g=c.group||'other';if(!groups[g])groups[g]=[];groups[g].push(c)});for(var g in groups){h+='<div class="topic-card"><div class="topic-title">'+esc(g)+'</div><div class="topic-cmds">';groups[g].forEach(function(c){h+='<div class="topic-cmd"><span class="cmd-c">'+esc(c.cmd||c.command||'')+'</span><span class="cmd-d">'+esc(c.desc||c.description||'')+'</span></div>'});h+='</div></div>'}h+='</div>'}if(kbCurrentView==='both'||kbCurrentView==='system_view'){h+='<div style="margin-bottom:12px"><div style="font-size:13px;color:#cba6f7;font-weight:bold;margin-bottom:6px">系统视图 [] ('+sv.length+' 条命令)</div>';var groups2={};sv.forEach(function(c){var g=c.group||'other';if(!groups2[g])groups2[g]=[];groups2[g].push(c)});for(var g2 in groups2){var tips=groups2[g2].find(function(c){return c.tips&&c.tips.length});h+='<div class="topic-card"><div class="topic-title">'+esc(g2)+'</div><div class="topic-cmds">';groups2[g2].forEach(function(c){h+='<div class="topic-cmd"><span class="cmd-c">'+esc(c.cmd||c.command||'')+'</span><span class="cmd-d">'+esc(c.desc||c.description||'')+'</span></div>'});if(tips){tips.tips.forEach(function(t){h+='<div class="topic-tip">Tip: '+esc(t)+'</div>'})}h+='</div></div>'}h+='</div>'}document.getElementById('kbStructuredContent').innerHTML=h||'<div style="color:#6c7086;padding:20px;text-align:center">暂无数据</div>';var sel='';var models=['S5700','S3700','USG6000V','AR2220','AC6605'];models.forEach(function(m){sel+='<div class="device-sel-btn '+(m===kbCurrentModel?'active':'')+'" onclick="selectKbModel(\''+m+'\')">'+m+'</div>'});document.getElementById('kbDeviceSel').innerHTML=sel}).catch(function(){})}
+function confirmRM(){if(!renameTgt)return;var n=document.getElementById('renameInput').value.trim();if(n&&n.length<=128)socket.emit('rename_device',{path:renameTgt,name:n});closeRM()}function loadCat(){var cat=document.getElementById('catCat').value,dev=document.getElementById('catDev').value,risk=document.getElementById('catRisk').value;var url='/api/kb/catalog?';if(cat)url+='category='+encodeURIComponent(cat)+'&';if(dev)url+='device_type='+encodeURIComponent(dev)+'&';if(risk)url+='risk='+encodeURIComponent(risk);fetch(url).then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(data){document.getElementById('catCount').textContent=data.length;document.getElementById('catList').innerHTML=data.length?data.map(function(c){var sup=Object.entries(c.supported||{}).filter(function(x){return x[1]}).map(function(x){return x[0]}).join(', ');var tags=(c.tags||[]).map(function(t){return '<span class="cmd-tag">'+esc(t)+'</span>'}).join('');var oh=c.output_hint?'<div class="cmd-output">输出: '+esc(c.output_hint)+'</div>':'';return '<div class="cmd-card"><div class="cmd-name">'+esc(c.command)+' <span class="risk-'+c.risk+'">'+c.risk+'</span></div>'+'<div class="cmd-desc">'+esc(c.description)+'</div>'+'<div class="cmd-meta"><span>'+c.category+'</span><span>'+sup+'</span></div>'+(tags?'<div class="cmd-tags">'+tags+'</div>':'')+oh+'</div>'}).join(''):'<div style="padding:20px;text-align:center;color:#6c7086;font-size:11px">暂无命令目录</div>'}).catch(function(){})}
+function loadCap(){
+    fetch('/api/kb/devices').then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(devs){
+        var paths = Object.keys(devs);
+        document.getElementById('capDevCount').textContent = paths.length;
+        var allHtml = [];
+        var completed = 0;
+        if (paths.length === 0) { document.getElementById('capList').innerHTML = ''; return; }
+        paths.forEach(function(path){
+            var dev = devs[path] || {};
+            var dt = dev.device_type || 'unknown';
+            var dn = dev.display_name || dNames[path] || path;
+            fetch('/api/kb/capabilities?path=' + encodeURIComponent(path)).then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(cap){
+                var verified = (cap.can_execute||[]).filter(function(c){return c.status==='verified'});
+                var supported = (cap.can_execute||[]).filter(function(c){return c.status==='supported'});
+                var failed = cap.cannot_execute||[];
+                var untested = cap.untested||[];
+                var sec = '<div class="cap-section"><div class="cap-title">' + esc(dn) + ' <span class="dt">' + dt + '</span>'
+                    + '<span class="cap-count">' + verified.length + ' | ' + supported.length + ' | ' + failed.length + ' | ' + untested.length + '</span></div>';
+                if (verified.length) {
+                    sec += '<div class="cap-section"><div class="cap-title" style="color:#a6e3a1">' + verified.length + '</div>';
+                    sec += verified.map(function(c){return '<div class="cmd-card verified"><div class="cmd-name">' + esc(c.command) + ' <span class="status-badge verified"></span> <span class="risk-'+c.risk+'">'+c.risk+'</span></div>'+'<div class="cmd-desc">'+esc(c.description)+'</div><div class="cmd-meta"><span>'+(c.use_count||1)+'</span><span>'+c.category+'</span></div>'+(c.output_hint?'<div class="cmd-output">'+esc(c.output_hint)+'</div>':'')+'</div>'}).join('');
+                    sec += '</div>';
+                }
+                if (supported.length) {
+                    sec += '<div class="cap-section"><div class="cap-title" style="color:#cba6f7">' + supported.length + '</div>';
+                    sec += supported.map(function(c){return '<div class="cmd-card supported"><div class="cmd-name">' + esc(c.command) + ' <span class="status-badge supported"></span> <span class="risk-'+c.risk+'">'+c.risk+'</span></div>'+'<div class="cmd-desc">'+esc(c.description)+'</div><div class="cmd-meta"><span>'+c.category+'</span></div></div>'}).join('');
+                    sec += '</div>';
+                }
+                if (failed.length) {
+                    sec += '<div class="cap-section"><div class="cap-title" style="color:#f38ba8">' + failed.length + '</div>';
+                    sec += failed.map(function(c){return '<div class="cmd-card failed"><div class="cmd-name">' + esc(c.command) + ' <span class="status-badge failed"></span> <span class="risk-'+c.risk+'">'+c.risk+'</span></div>'+'<div class="cmd-desc">'+esc(c.description)+'</div></div>'}).join('');
+                    sec += '</div>';
+                }
+                if (untested.length) {
+                    sec += '<div class="cap-section"><div class="cap-title" style="color:#6c7086">' + untested.length + '</div>';
+                    sec += untested.map(function(c){return '<div class="cmd-card unsupported"><div class="cmd-name">' + esc(c.command) + ' <span class="status-badge unsupported"></span></div><div class="cmd-desc">'+esc(c.description)+'</div></div>'}).join('');
+                    sec += '</div>';
+                }
+                allHtml.push(sec);
+                completed++;
+                if (completed === paths.length) {
+                    document.getElementById('capList').innerHTML = allHtml.join('');
+                }
+            }).catch(function(){
+                completed++;
+                if (completed === paths.length) {
+                    document.getElementById('capList').innerHTML = allHtml.join('');
+                }
+            });
+        });
+    }).catch(function(){})
+}function loadKb(){fetch('/api/kb/stats').then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(s){var skb=s.structured_kb||{};document.getElementById('kbTotal').textContent=s.total_commands_recorded||0;document.getElementById('kbDevs').textContent=s.total_devices||0;document.getElementById('kbExpCount').textContent=skb.experiment_count||0;document.getElementById('kbTsCount').textContent=skb.troubleshooting_count||0;document.getElementById('kbBpCount').textContent=skb.best_practice_count||0}).catch(function(){});fetch('/api/kb/best-practice').then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(d){document.getElementById('kbBpCount').textContent=d.length||0}).catch(function(){});loadKbStructured();loadKbBestPractice();loadKbExperience();loadKbTroubleshoot();loadKbConfigOrder()}
+function switchKbTab(tab,el){document.querySelectorAll('.kb-tab').forEach(function(t){t.classList.remove('active')});document.querySelectorAll('.kb-section').forEach(function(s){s.classList.remove('active')});if(el)el.classList.add('active');var map={structured:'kbStructured',bestpractice:'kbBestpractice',experience:'kbExperience',troubleshoot:'kbTroubleshoot',configorder:'kbConfigorder',runtime:'kbRuntime',search:'kbSearch',templates:'kbTemplates',report:'kbReport'};var sec=document.getElementById(map[tab]);if(sec)sec.classList.add('active');if(tab==='runtime')loadKbRuntime()}
+function loadKbStructured(){fetch('/api/kb/suggest?model='+encodeURIComponent(kbCurrentModel)).then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(data){var uv=data.user_view||[];var sv=data.system_view||[];var h='';if(kbCurrentView==='both'||kbCurrentView==='user_view'){h+='<div style="margin-bottom:12px"><div style="font-size:13px;color:#89b4fa;font-weight:bold;margin-bottom:6px">用户视图 &lt;&gt; ('+uv.length+' 条命令)</div>';var groups={};uv.forEach(function(c){var g=c.group||'other';if(!groups[g])groups[g]=[];groups[g].push(c)});for(var g in groups){h+='<div class="topic-card"><div class="topic-title">'+esc(g)+'</div><div class="topic-cmds">';groups[g].forEach(function(c){h+='<div class="topic-cmd"><span class="cmd-c">'+esc(c.cmd||c.command||'')+'</span><span class="cmd-d">'+esc(c.desc||c.description||'')+'</span></div>'});h+='</div></div>'}h+='</div>'}if(kbCurrentView==='both'||kbCurrentView==='system_view'){h+='<div style="margin-bottom:12px"><div style="font-size:13px;color:#cba6f7;font-weight:bold;margin-bottom:6px">系统视图 [] ('+sv.length+' 条命令)</div>';var groups2={};sv.forEach(function(c){var g=c.group||'other';if(!groups2[g])groups2[g]=[];groups2[g].push(c)});for(var g2 in groups2){var tips=groups2[g2].find(function(c){return c.tips&&c.tips.length});h+='<div class="topic-card"><div class="topic-title">'+esc(g2)+'</div><div class="topic-cmds">';groups2[g2].forEach(function(c){h+='<div class="topic-cmd"><span class="cmd-c">'+esc(c.cmd||c.command||'')+'</span><span class="cmd-d">'+esc(c.desc||c.description||'')+'</span></div>'});if(tips){tips.tips.forEach(function(t){h+='<div class="topic-tip">Tip: '+esc(t)+'</div>'})}h+='</div></div>'}h+='</div>'}document.getElementById('kbStructuredContent').innerHTML=h||'<div style="color:#6c7086;padding:20px;text-align:center">暂无数据</div>';var sel='';var models=['S5700','S3700','USG6000V','AR2220','AC6605'];models.forEach(function(m){sel+='<div class="device-sel-btn '+(m===kbCurrentModel?'active':'')+'" onclick="selectKbModel(\''+m+'\')">'+m+'</div>'});document.getElementById('kbDeviceSel').innerHTML=sel}).catch(function(){})}
 function selectKbModel(m){kbCurrentModel=m;loadKbStructured()}
 function switchKbView(v,el){kbCurrentView=v;document.querySelectorAll('.view-sel-btn').forEach(function(b){b.classList.remove('active')});if(el)el.classList.add('active');loadKbStructured()}
-function loadKbBestPractice(){fetch('/api/kb/best-practice').then(function(r){return r.json()}).then(function(data){var h='';data.forEach(function(bp){h+='<div class="bp-card '+(bp.priority||'medium')+'"><div class="bp-rule">'+esc(bp.rule)+'</div><div class="bp-detail">'+esc(bp.detail||'')+'</div><div class="bp-meta"><span>优先级: '+(bp.priority||'-')+'</span>'+(bp.applies_to?'<span>适用: '+esc(bp.applies_to)+'</span>':'')+(bp.view?'<span>视图: '+esc(bp.view)+'</span>':'')+(bp.command?'<span>命令: <code>'+esc(bp.command)+'</code></span>':'')+'</div></div>'});document.getElementById('kbBpContent').innerHTML=h||'<div style="color:#6c7086;padding:20px;text-align:center">暂无操作规范</div>'}).catch(function(){})}
-function loadKbExperience(){fetch('/api/kb/experience').then(function(r){return r.json()}).then(function(data){var h='';data.forEach(function(exp){h+='<div class="exp-card"><div class="exp-title">'+esc(exp.experiment||'未知实验')+' ('+esc(exp.date||'')+'</div>';if(exp.topology)h+='<div class="exp-item">拓扑: '+esc(exp.topology)+'</div>';if(exp.new_commands_learned&&exp.new_commands_learned.length){h+='<div class="exp-section"><div class="exp-section-title">新学到的命令 ('+exp.new_commands_learned.length+')</div>';exp.new_commands_learned.forEach(function(c){h+='<div class="exp-item"><span class="exp-cmd">'+esc(c.cmd)+'</span> ['+esc(c.device||'')+'] '+esc(c.desc||'')+'</div>'});h+='</div>'}if(exp.lessons_learned&&exp.lessons_learned.length){h+='<div class="exp-section"><div class="exp-section-title">教训 ('+exp.lessons_learned.length+')</div>';exp.lessons_learned.forEach(function(l){h+='<div class="exp-item">'+esc(l)+'</div>'});h+='</div>'}if(exp.troubleshooting_cases&&exp.troubleshooting_cases.length){h+='<div class="exp-section"><div class="exp-section-title">排障案例 ('+exp.troubleshooting_cases.length+')</div>';exp.troubleshooting_cases.forEach(function(tc){h+='<div class="exp-item"><b>'+esc(tc.problem)+'</b><br>原因: '+esc(tc.root_cause||'')+'<br>解决: '+esc(tc.solution||'')+'</div>'});h+='</div>'}h+='</div>'});document.getElementById('kbExpContent').innerHTML=h||'<div style="color:#6c7086;padding:20px;text-align:center">暂无实验经验记录</div>'}).catch(function(){})}
-function loadKbTroubleshoot(){fetch('/api/kb/troubleshooting').then(function(r){return r.json()}).then(function(data){var h='';for(var name in data){var ts=data[name];h+='<div class="ts-card"><div class="ts-title">'+esc(name)+'</div>';if(ts.symptom)h+='<div class="ts-field"><span class="ts-label">症状: </span><span class="ts-value">'+esc(ts.symptom)+'</span></div>';if(ts.cause)h+='<div class="ts-field"><span class="ts-label">原因: </span><span class="ts-value">'+esc(ts.cause)+'</span></div>';if(ts.fix)h+='<div class="ts-field"><span class="ts-label">修复: </span><span class="ts-value">'+esc(ts.fix)+'</span></div>';if(ts.verify)h+='<div class="ts-field"><span class="ts-label">验证: </span><span class="ts-value">'+esc(ts.verify)+'</span></div>';if(ts.commands)h+='<div class="ts-field"><span class="ts-label">命令: </span><span class="ts-cmd">'+ts.commands.map(function(c){return esc(c)}).join('<br>')+'</span></div>';h+='</div>'}document.getElementById('kbTsContent').innerHTML=h||'<div style="color:#6c7086;padding:20px;text-align:center">暂无排障知识</div>'}).catch(function(){})}
-function loadKbConfigOrder(){fetch('/api/kb/config-order').then(function(r){return r.json()}).then(function(data){var h='';data.forEach(function(step){var m=step.match(/^(\d+)\.\s*(.*)/);if(m)h+='<div class="order-step"><span class="step-n">'+m[1]+'.</span><span>'+esc(m[2])+'</span></div>';else h+='<div class="order-step"><span>'+esc(step)+'</span></div>'});document.getElementById('kbCoContent').innerHTML=h||'<div style="color:#6c7086;padding:20px;text-align:center">暂无配置顺序</div>'}).catch(function(){})}
-function loadKbRuntime(){var cf=document.getElementById('kbCatF').value;var url='/api/kb/commands?limit=50';if(cf)url+='&category='+encodeURIComponent(cf);fetch(url).then(function(r){return r.json()}).then(function(data){document.getElementById('kbList').innerHTML=data.length?data.map(function(c){var cls=c.success===false?'failed':'verified';var badge=c.success===false?'<span class="status-badge failed">失败</span>':'<span class="status-badge verified">成功</span>';var output=c.output_preview?'<div class="cmd-output">'+esc(c.output_preview.substring(0,200))+'</div>':'';return '<div class="cmd-card '+cls+'"><div class="cmd-name">'+esc(c.command)+' '+badge+'</div>'+'<div class="cmd-desc">'+esc(c.description||'')+'</div>'+'<div class="cmd-meta"><span>'+(c.device_type||'unknown')+'</span><span>'+(c.category||'')+'</span><span>'+(c.risk||'')+'</span><span>使用 '+(c.use_count||1)+' 次</span></div>'+output+'</div>'}).join(''):'<div style="padding:20px;text-align:center;color:#6c7086;font-size:11px">暂无记录</div>'}).catch(function(){})}
-function loadTopo(){fetch('/api/topology').then(function(r){return r.json()}).then(function(d){topoSum=d;document.getElementById('topoInd').textContent='拓扑: '+d.node_count+'节点 '+d.link_count+'链路';renderTopo()}).catch(function(){})}
+function loadKbBestPractice(){fetch('/api/kb/best-practice').then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(data){var h='';data.forEach(function(bp){h+='<div class="bp-card '+(bp.priority||'medium')+'"><div class="bp-rule">'+esc(bp.rule)+'</div><div class="bp-detail">'+esc(bp.detail||'')+'</div><div class="bp-meta"><span>优先级: '+(bp.priority||'-')+'</span>'+(bp.applies_to?'<span>适用: '+esc(bp.applies_to)+'</span>':'')+(bp.view?'<span>视图: '+esc(bp.view)+'</span>':'')+(bp.command?'<span>命令: <code>'+esc(bp.command)+'</code></span>':'')+'</div></div>'});document.getElementById('kbBpContent').innerHTML=h||'<div style="color:#6c7086;padding:20px;text-align:center">暂无操作规范</div>'}).catch(function(){})}
+function loadKbExperience(){fetch('/api/kb/experience').then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(data){var h='';data.forEach(function(exp){h+='<div class="exp-card"><div class="exp-title">'+esc(exp.experiment||'未知实验')+' ('+esc(exp.date||'')+'</div>';if(exp.topology)h+='<div class="exp-item">拓扑: '+esc(exp.topology)+'</div>';if(exp.new_commands_learned&&exp.new_commands_learned.length){h+='<div class="exp-section"><div class="exp-section-title">新学到的命令 ('+exp.new_commands_learned.length+')</div>';exp.new_commands_learned.forEach(function(c){h+='<div class="exp-item"><span class="exp-cmd">'+esc(c.cmd)+'</span> ['+esc(c.device||'')+'] '+esc(c.desc||'')+'</div>'});h+='</div>'}if(exp.lessons_learned&&exp.lessons_learned.length){h+='<div class="exp-section"><div class="exp-section-title">教训 ('+exp.lessons_learned.length+')</div>';exp.lessons_learned.forEach(function(l){h+='<div class="exp-item">'+esc(l)+'</div>'});h+='</div>'}if(exp.troubleshooting_cases&&exp.troubleshooting_cases.length){h+='<div class="exp-section"><div class="exp-section-title">排障案例 ('+exp.troubleshooting_cases.length+')</div>';exp.troubleshooting_cases.forEach(function(tc){h+='<div class="exp-item"><b>'+esc(tc.problem)+'</b><br>原因: '+esc(tc.root_cause||'')+'<br>解决: '+esc(tc.solution||'')+'</div>'});h+='</div>'}h+='</div>'});document.getElementById('kbExpContent').innerHTML=h||'<div style="color:#6c7086;padding:20px;text-align:center">暂无实验经验记录</div>'}).catch(function(){})}
+function loadKbTroubleshoot(){fetch('/api/kb/troubleshooting').then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(data){var h='';for(var name in data){var ts=data[name];h+='<div class="ts-card"><div class="ts-title">'+esc(name)+'</div>';if(ts.symptom)h+='<div class="ts-field"><span class="ts-label">症状: </span><span class="ts-value">'+esc(ts.symptom)+'</span></div>';if(ts.cause)h+='<div class="ts-field"><span class="ts-label">原因: </span><span class="ts-value">'+esc(ts.cause)+'</span></div>';if(ts.fix)h+='<div class="ts-field"><span class="ts-label">修复: </span><span class="ts-value">'+esc(ts.fix)+'</span></div>';if(ts.verify)h+='<div class="ts-field"><span class="ts-label">验证: </span><span class="ts-value">'+esc(ts.verify)+'</span></div>';if(ts.commands)h+='<div class="ts-field"><span class="ts-label">命令: </span><span class="ts-cmd">'+ts.commands.map(function(c){return esc(c)}).join('<br>')+'</span></div>';h+='</div>'}document.getElementById('kbTsContent').innerHTML=h||'<div style="color:#6c7086;padding:20px;text-align:center">暂无排障知识</div>'}).catch(function(){})}
+function loadKbConfigOrder(){fetch('/api/kb/config-order').then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(data){var h='';data.forEach(function(step){var m=step.match(/^(\d+)\.\s*(.*)/);if(m)h+='<div class="order-step"><span class="step-n">'+m[1]+'.</span><span>'+esc(m[2])+'</span></div>';else h+='<div class="order-step"><span>'+esc(step)+'</span></div>'});document.getElementById('kbCoContent').innerHTML=h||'<div style="color:#6c7086;padding:20px;text-align:center">暂无配置顺序</div>'}).catch(function(){})}
+function loadKbRuntime(){var cf=document.getElementById('kbCatF').value;var url='/api/kb/commands?limit=50';if(cf)url+='&category='+encodeURIComponent(cf);fetch(url).then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(data){document.getElementById('kbList').innerHTML=data.length?data.map(function(c){var cls=c.success===false?'failed':'verified';var badge=c.success===false?'<span class="status-badge failed">失败</span>':'<span class="status-badge verified">成功</span>';var output=c.output_preview?'<div class="cmd-output">'+esc(c.output_preview.substring(0,200))+'</div>':'';return '<div class="cmd-card '+cls+'"><div class="cmd-name">'+esc(c.command)+' '+badge+'</div>'+'<div class="cmd-desc">'+esc(c.description||'')+'</div>'+'<div class="cmd-meta"><span>'+(c.device_type||'unknown')+'</span><span>'+(c.category||'')+'</span><span>'+(c.risk||'')+'</span><span>使用 '+(c.use_count||1)+' 次</span></div>'+output+'</div>'}).join(''):'<div style="padding:20px;text-align:center;color:#6c7086;font-size:11px">暂无记录</div>'}).catch(function(){})}
+function loadTopo(){fetch('/api/topology').then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(d){topoSum=d;document.getElementById('topoInd').textContent='拓扑: '+d.node_count+'节点 '+d.link_count+'链路';renderTopo()}).catch(function(){})}
 function renderTopo(){var cv=document.getElementById('topoCanvas'),info=document.getElementById('topoInfo');if(!topoSum||!topoSum.node_count){cv.innerHTML='<div class="topo-empty">暂无拓扑数据<br><br>上传JSON或.topo拓扑文件<br>或通过MCP添加</div>';info.textContent='';return}var nodes=topoSum.nodes||[],links=topoSum.links||[],w=cv.clientWidth||800,h=cv.clientHeight||400;var pos={};var hasLink=new Set();links.forEach(function(l){hasLink.add(l.source);hasLink.add(l.target)});
 var mainNodes=nodes.filter(function(n){return hasLink.has(n.id)});
 var orphanNodes=nodes.filter(function(n){return!hasLink.has(n.id)});
@@ -65,3 +116,141 @@ mainNodes.forEach(function(n,i){pos[n.id]={x:60+(i%cols)*((w-120)/Math.max(cols-
 if(orphanNodes.length>0){var ox=w-80,oy=h-40;orphanNodes.forEach(function(n,i){pos[n.id]={x:ox,y:oy-(i+1)*35}})}var svg='<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;"><defs><marker id="ar" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="#6c7086"/></marker></defs>';links.forEach(function(l){var s=pos[l.source],t=pos[l.target];if(s&&t){var mx=(s.x+t.x)/2,my=(s.y+t.y)/2;svg+='<line x1="'+s.x+'" y1="'+s.y+'" x2="'+t.x+'" y2="'+t.y+'" stroke="#45475a" stroke-width="1.5" marker-end="url(#ar)"/>';var si=l.source_interface||'',ti=l.target_interface||'';if(si||ti){var lbl=si&&ti?esc(si)+' <-> '+esc(ti):si?esc(si):esc(ti);svg+='<text x="'+mx+'" y="'+(my-4)+'" fill="#a6adc8" font-size="7" text-anchor="middle">'+lbl+'</text>'}}});nodes.forEach(function(n){var p=pos[n.id];if(!p)return;var c=n.type==='router'?'#89b4fa':n.type==='switch'?'#a6e3a1':n.type==='pc'?'#f9e2af':n.type==='firewall'?'#f38ba8':'#cba6f7';svg+='<circle cx="'+p.x+'" cy="'+p.y+'" r="16" fill="#181825" stroke="'+c+'" stroke-width="2"/>';if(n.type==='wireless'&&!hasLink.has(n.id)){svg+='<text x="'+p.x+'" y="'+(p.y-22)+'" fill="#a6e3a1" font-size="14" text-anchor="middle">??</text>'}svg+='<text x="'+p.x+'" y="'+(p.y+4)+'" fill="'+c+'" font-size="10" text-anchor="middle" font-weight="bold">'+esc(n.name||n.id).substring(0,6)+'</text>';svg+='<text x="'+p.x+'" y="'+(p.y+28)+'" fill="#6c7086" font-size="8" text-anchor="middle">'+esc(n.type||'')+'</text>'});svg+='</svg>';cv.innerHTML=svg;var ifCount=links.filter(function(l){return l.source_interface}).length;info.textContent='节点: '+nodes.length+' | 链路: '+links.length+(ifCount?' | 端口映射: '+ifCount:'');}
 window.addEventListener('resize',function(){if(document.getElementById('vTopo').classList.contains('active'))renderTopo()});
 
+// ==================== NEW FEATURE UI FUNCTIONS ====================
+
+// Knowledge Base Search
+function doKbSearch(){
+    var q=document.getElementById('kbSearchInput').value.trim();
+    if(!q)return;
+    log('Searching: '+q);
+    fetch('/api/kb/search?q='+encodeURIComponent(q)+'&limit=20').then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(data){
+        var h='';
+        if(!data.length){h='<div style="color:#6c7086;padding:20px;text-align:center">No results</div>';}
+        else{data.forEach(function(item){
+            var type=item.type||'unknown';
+            var name=item.cmd||item.name||item.experiment||'';
+            var desc=item.desc||item.symptom||item.fix||'';
+            var score=item.score||0;
+            h+='<div class="cmd-card verified"><div class="cmd-name">'+esc(name)+' <span class="status-badge verified">'+esc(type)+'</span> score:'+score+'</div>';
+            if(desc)h+='<div class="cmd-desc">'+esc(desc)+'</div>';
+            if(item.model)h+='<div class="cmd-meta"><span>Model: '+esc(item.model)+'</span></div>';
+            h+='</div>';
+        });}
+        document.getElementById('kbSearchContent').innerHTML=h;
+    }).catch(function(e){log('Search error: '+e,'error')});
+}
+
+// Config Template Generator
+function loadKbTemplate(){
+    var type=document.getElementById('kbTplType').value;
+    log('Generating template: '+type);
+    fetch('/api/kb/template',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:type,params:{}})}).then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(data){
+        var h='';
+        if(data.success&&data.commands){
+            h+='<div class="cmd-card verified"><div class="cmd-name">'+esc(data.description||type)+' Template ('+data.commands.length+' commands)</div>';
+            h+='<div class="cmd-output">';
+            data.commands.forEach(function(c){h+=esc(c)+'<br>'});
+            h+='</div></div>';
+        }else{h='<div style="color:#f38ba8;padding:20px">'+esc(data.error||'Error')+'</div>';}
+        document.getElementById('kbTemplateContent').innerHTML=h;
+    }).catch(function(e){log('Template error: '+e,'error')});
+}
+
+// Lab Report Generator
+function genLabReport(){
+    var name=document.getElementById('kbReportName').value.trim()||'eNSP Lab Report';
+    log('Generating report: '+name);
+    fetch('/api/kb/lab-report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name})}).then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(data){
+        var h='<div class="cmd-card verified">';
+        h+='<div class="cmd-name">'+esc(data.experiment)+'</div>';
+        h+='<div class="cmd-meta"><span>Devices: '+(data.summary?data.summary.total_devices:0)+'</span><span>Commands: '+(data.summary?data.summary.total_commands:0)+'</span><span>Success: '+(data.summary?data.summary.success_rate:'0%')+'</span></div>';
+        if(data.knowledge_base){
+            h+='<div class="cmd-meta"><span>Structured: '+data.knowledge_base.structured_commands+'</span><span>Experiences: '+data.knowledge_base.experiences+'</span><span>TS: '+data.knowledge_base.troubleshooting+'</span></div>';
+        }
+        if(data.markdown){
+            h+='<div class="cmd-output" style="max-height:400px;overflow-y:auto;white-space:pre-wrap;font-size:11px">'+esc(data.markdown)+'</div>';
+        }
+        h+='</div>';
+        document.getElementById('kbReportContent').innerHTML=h;
+    }).catch(function(e){log('Report error: '+e,'error')});
+}
+
+// Batch Command
+function doBatchCmd(){
+    if(!curDev){log('No device selected','error');return;}
+    showModalPrompt('Enter commands (one per line):','',function(cmds){
+    if(cmds===null)return;
+    var cmdList=cmds.split('\n').map(function(c){return c.trim()}).filter(function(c){return c});
+    if(!cmdList.length)return;
+    log('Batch: '+cmdList.length+' commands to '+curDev);
+    fetch('/api/devices/batch-command',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:curDev,commands:cmdList,auto_view:true,auto_undo_tm:true})}).then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(data){
+        if(data.success){log('Batch OK: '+data.passed+'/'+data.total+' in '+data.elapsed+'s','success');}
+        else{log('Batch partial: '+data.passed+'/'+data.total+' ('+data.failed+' failed)','error');}
+        if(data.results){
+            data.results.forEach(function(r){
+                if(!tData[curDev])tData[curDev]=[];
+                tData[curDev].push({type:r.success?'output':'error',text:'[batch] '+r.command+(r.success?'':' FAILED')});
+                if(tData[curDev].length>500)tData[curDev].shift();
+            });
+            renderTerm(curDev);
+        }
+    }).catch(function(e){log('Batch error: '+e,'error')});
+    });
+}
+
+// Suggest Next Steps
+function doSuggestNext(){
+    if(!curDev){log('No device selected','error');return;}
+    log('Analyzing: '+curDev);
+    fetch('/api/devices/suggest-next',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:curDev})}).then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(data){
+        if(!data.success){log('Suggest error: '+data.error,'error');return;}
+        var msg='Device: '+data.device_name+' ('+data.role+') | Progress: '+data.progress;
+        msg+=' | Phase: '+data.current_phase;
+        if(data.completed_topics&&data.completed_topics.length)msg+=' | Done: '+data.completed_topics.join(', ');
+        log(msg,'success');
+        if(data.next_steps&&data.next_steps.length){
+            log('Next steps:','success');
+            data.next_steps.forEach(function(s,i){log('  '+(i+1)+'. '+s,'success');});
+        }
+        if(!tData[curDev])tData[curDev]=[];
+        tData[curDev].push({type:'output',text:'[suggest] '+data.role+' Progress:'+data.progress+' Phase:'+data.current_phase});if(tData[curDev].length>500)tData[curDev].shift();
+        if(data.next_steps)data.next_steps.forEach(function(s){tData[curDev].push({type:'output',text:'  -> '+s});if(tData[curDev].length>500)tData[curDev].shift();});
+        renderTerm(curDev);
+    }).catch(function(e){log('Suggest error: '+e,'error')});
+}
+
+// Snapshot
+function doSnapshot(){
+    if(!curDev){log('No device selected','error');return;}
+    showModalPrompt('Snapshot label (optional):','',function(label){
+    log('Snapshot: '+curDev);
+    fetch('/api/devices/snapshot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:curDev,label:label||null})}).then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(data){
+        if(data.success){log('Snapshot saved: '+data.snapshot_id+' ('+data.size+' bytes)','success');}
+        else{log('Snapshot error: '+data.error,'error');}
+    }).catch(function(e){log('Snapshot error: '+e,'error')});
+    });
+}
+
+// List Snapshots
+function doListSnapshots(){
+    if(!curDev){log('No device selected','error');return;}
+    fetch('/api/devices/snapshots?path='+encodeURIComponent(curDev)).then(function(r){if(!r.ok)throw new Error(r.statusText);return r.json()}).then(function(data){
+        if(!data.length){log('No snapshots for '+curDev);return;}
+        log('Snapshots for '+curDev+':');
+        data.forEach(function(s){log('  '+s.snapshot_id+' ('+s.label+') '+s.timestamp,'success');});
+    }).catch(function(e){log('Snapshot error: '+e,'error')});
+}
+
+// Show device actions when terminal is active
+var origSW=swTerm2;
+swTerm2=function(path){
+    origSW(path);
+    var da=document.getElementById('deviceActions');
+    if(da)da.style.display='flex';
+};
+
+// Enter key for search
+document.addEventListener('DOMContentLoaded',function(){
+    var si=document.getElementById('kbSearchInput');
+    if(si)si.addEventListener('keydown',function(e){if(e.key==='Enter')doKbSearch();});
+});

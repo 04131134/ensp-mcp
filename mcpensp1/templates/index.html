@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' ws: wss:;"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' ws: wss:; frame-ancestors 'self';"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
 <title>eNSP MCP</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -163,6 +163,13 @@ body{font-family:sans-serif;background:#1e1e2e;color:#cdd6f4;height:100vh;displa
       <div class="et">等待设备连接...</div>
     </div>
     <div class="terminals" id="terminals"></div>
+    <div id="deviceActions" style="display:none;padding:6px 8px;background:#181825;border-top:1px solid #313244;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-scan" onclick="doBatchCmd()" style="font-size:10px;padding:3px 8px" title="批量发送命令">批量命令</button>
+      <button class="btn btn-scan" onclick="doSuggestNext()" style="font-size:10px;padding:3px 8px" title="根据已执行命令推荐下一步">推荐下一步</button>
+      <button class="btn btn-scan" onclick="doSnapshot()" style="font-size:10px;padding:3px 8px" title="保存当前配置快照">配置快照</button>
+      <button class="btn btn-scan" onclick="doListSnapshots()" style="font-size:10px;padding:3px 8px" title="查看快照列表">快照列表</button>
+    </div>
+
 
     <div class="sp" id="vCat">
       <div class="filter-row">
@@ -195,6 +202,9 @@ body{font-family:sans-serif;background:#1e1e2e;color:#cdd6f4;height:100vh;displa
         <div class="kb-tab" onclick="switchKbTab('troubleshoot', this)">排障知识</div>
         <div class="kb-tab" onclick="switchKbTab('configorder', this)">配置顺序</div>
         <div class="kb-tab" onclick="switchKbTab('runtime', this)">运行时记录</div>
+        <div class="kb-tab" onclick="switchKbTab('search', this)">搜索</div>
+        <div class="kb-tab" onclick="switchKbTab('templates', this)">配置模板</div>
+        <div class="kb-tab" onclick="switchKbTab('report', this)">实验报告</div>
       </div>
       <div class="kb-section active" id="kbStructured">
         <div class="device-sel" id="kbDeviceSel"></div>
@@ -209,6 +219,36 @@ body{font-family:sans-serif;background:#1e1e2e;color:#cdd6f4;height:100vh;displa
       <div class="kb-section" id="kbExperience"><div id="kbExpContent"></div></div>
       <div class="kb-section" id="kbTroubleshoot"><div id="kbTsContent"></div></div>
       <div class="kb-section" id="kbConfigorder"><div id="kbCoContent"></div></div>
+      <div class="kb-section" id="kbSearch">
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <input type="text" id="kbSearchInput" placeholder="搜索命令、排障经验..." style="flex:1;padding:6px 10px;background:#1e1e2e;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:12px">
+          <button class="btn btn-scan" onclick="doKbSearch()" style="font-size:11px;padding:4px 12px">搜索</button>
+        </div>
+        <div id="kbSearchContent"></div>
+      </div>
+      <div class="kb-section" id="kbTemplates">
+        <div style="margin-bottom:10px">
+          <select id="kbTplType" style="padding:6px;background:#1e1e2e;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:12px">
+            <option value="vlan">VLAN</option>
+            <option value="vrrp">VRRP</option>
+            <option value="mstp">MSTP</option>
+            <option value="dhcp">DHCP</option>
+            <option value="ospf">OSPF</option>
+            <option value="lacp">LACP</option>
+            <option value="wlan">WLAN</option>
+          </select>
+          <button class="btn btn-scan" onclick="loadKbTemplate()" style="font-size:11px;padding:4px 12px">生成模板</button>
+        </div>
+        <div id="kbTemplateContent"></div>
+      </div>
+      <div class="kb-section" id="kbReport">
+        <div style="margin-bottom:10px">
+          <input type="text" id="kbReportName" placeholder="实验名称" value="eNSP Lab Report" style="flex:1;padding:6px 10px;background:#1e1e2e;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:12px;width:60%">
+          <button class="btn btn-scan" onclick="genLabReport()" style="font-size:11px;padding:4px 12px">生成报告</button>
+        </div>
+        <div id="kbReportContent"></div>
+      </div>
+
       <div class="kb-section" id="kbRuntime">
         <div class="filter-row">
           <select id="kbCatF"><option value="">全部分类</option><option value="display">Display</option><option value="config">Config</option><option value="verify">Verify</option></select>

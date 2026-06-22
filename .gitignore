@@ -7,17 +7,20 @@ __pycache__/
 dist/
 build/
 *.egg
+*.pyc
 
 # Virtual environment
 python312/
 .venv/
 venv/
+env/
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*.sublime-*
 
 # Logs
 *.log
@@ -31,8 +34,9 @@ pdf_page_*.png
 exp34_page*.png
 exp41_page*.png
 
-# Uploads
+# Uploads and snapshots
 uploads/
+snapshots/
 
 # OS
 Thumbs.db
@@ -46,6 +50,13 @@ _probe*.py
 _extract*.py
 _cfgdump.py
 
-# Corrupted/backup files
+# Backup files
 *_backup_*.py
 *_corrupted.py
+backup*/
+
+# Codex workspace
+.codex/
+
+# Project duplicates (use mcpensp1/ as canonical)
+project_001*/

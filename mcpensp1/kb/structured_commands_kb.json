@@ -1213,6 +1213,56 @@
               "cmd": "capwap source interface Vlanif100",
               "desc": "CAPWAP源接口",
               "source": "校园网综合设计实训"
+            },
+            {
+              "cmd": "ap auth-mode mac-auth",
+              "desc": "AC开启MAC认证模式，AP必须用MAC注册才能上线",
+              "source": "AP上线配置完整指南"
+            },
+            {
+              "cmd": "capwap source interface vlanif100",
+              "desc": "AC的CAPWAP源接口，AP必须在同一网段才能发现AC",
+              "source": "AP上线配置完整指南"
+            },
+            {
+              "cmd": "ap-id 1 ap-mac 00e0-fcc7-1b40",
+              "desc": "手动注册AP的MAC地址到AC，瘦AP无法自动发现时必须手动添加",
+              "source": "AP上线配置完整指南"
+            },
+            {
+              "cmd": "ap-name AP1",
+              "desc": "给注册的AP命名",
+              "source": "AP上线配置完整指南"
+            },
+            {
+              "cmd": "ap-group ap-group1",
+              "desc": "将AP加入组，组决定AP使用哪个VAP和Radio配置",
+              "source": "AP上线配置完整指南"
+            },
+            {
+              "cmd": "radio-2g-profile name radio-2g",
+              "desc": "创建2.4G射频模板，radio-type dot11n",
+              "source": "AP上线配置完整指南"
+            },
+            {
+              "cmd": "radio-5g-profile name radio-5g",
+              "desc": "创建5G射频模板，radio-type dot11ac",
+              "source": "AP上线配置完整指南"
+            },
+            {
+              "cmd": "forward-mode tunnel",
+              "desc": "VAP隧道转发模式，用户流量通过CAPWAP隧道回AC再转发",
+              "source": "AP上线配置完整指南"
+            },
+            {
+              "cmd": "security wpa2 psk pass-phrase 12345678 aes",
+              "desc": "WPA2-PSK加密，预共享密钥12345678，AES加密",
+              "source": "AP上线配置完整指南"
+            },
+            {
+              "cmd": "ap-reset ap-id 1",
+              "desc": "重置AP状态，AP fault时使用",
+              "source": "AP上线配置完整指南"
             }
           ],
           "tips": []
@@ -1312,14 +1362,21 @@
     "version": "2.0",
     "description": "eNSP设备命令经验知识库 - 每次实验积累经验，逐步覆盖所有设备所有命令",
     "design_philosophy": "知识库不是一次性产物，而是随每次实验持续增长的经验库。每次实验后提取新发现的命令、排障经验、最佳实践，写入知识库，使AI工具越来越熟练，最终无需联网即可完成eNSP所有配置。",
-    "last_updated": "2026-06-16",
-    "experiment_count": 5,
+    "last_updated": "2026-06-19",
+    "experiment_count": 12,
     "total_experiments_recorded": [
       "校园网综合设计实训",
       "实验3-1：以太网基础与VLAN配置",
       "实验3-2：生成树基础实验",
       "实验3-3：链路聚合实验",
-      "实验3-4：实现VLAN间通信"
+      "实验3-4：实现VLAN间通信",
+      "自动记录-VLAN配置-20260619",
+      "自动记录-AC/WLAN配置-20260619",
+      "自动记录-DHCP配置-20260619",
+      "AP上线配置完整指南",
+      "排障-AP注册后fault",
+      "排障-AP获取169.254地址",
+      "排障-display命令首字母丢失"
     ]
   },
   "best_practices": {
@@ -1384,6 +1441,41 @@
         "rule": "配置顺序很重要",
         "detail": "必须按照正确顺序配置：先底层(VLAN/接口) -> 再二层(MSTP) -> 再三层(VRRP/DHCP/OSPF) -> 最后安全策略。先配FW1再开SW1/SW2的OSPF。",
         "priority": "medium"
+      },
+      {
+        "rule": "AP上线前必须确认AC capwap source接口IP",
+        "detail": "AP获取的IP必须与AC capwap source接口同网段，否则AP无法发现AC",
+        "priority": "critical",
+        "applies_to": "AC6605",
+        "id": "BP-009"
+      },
+      {
+        "rule": "连接AP的交换机端口必须设trunk PVID为管理VLAN",
+        "detail": "AP发出的未标记流量需要进入正确的VLAN才能获取DHCP地址",
+        "priority": "critical",
+        "applies_to": "S5700",
+        "id": "BP-010"
+      },
+      {
+        "rule": "AC WLAN配置顺序固定",
+        "detail": "ap-auth-mode -> radio-profile -> security-profile -> ssid-profile -> vap-profile -> ap-group -> ap-id",
+        "priority": "high",
+        "applies_to": "AC6605",
+        "id": "BP-011"
+      },
+      {
+        "rule": "瘦AP不支持本地VLAN/IP配置",
+        "detail": "AP3030DN等瘦AP的所有配置由AC下发，不要在AP上配置vlan、ip address等命令",
+        "priority": "high",
+        "applies_to": "AP3030DN",
+        "id": "BP-012"
+      },
+      {
+        "rule": "AP fault状态优先检查网段一致性",
+        "detail": "AP显示fault通常是IP网段不对，shutdown/undo shutdown Vlanif可重新获取DHCP",
+        "priority": "high",
+        "applies_to": "AC6605",
+        "id": "BP-013"
       }
     ]
   },
@@ -1707,6 +1799,708 @@
           "solution": "在子接口下执行arp broadcast enable",
           "diagnosis_cmd": "display ip interface brief"
         }
+      ]
+    },
+    {
+      "experiment": "自动记录-VLAN配置-20260619",
+      "date": "2026-06-19",
+      "topology": "",
+      "features_implemented": [
+        "VLAN配置"
+      ],
+      "new_commands_learned": [
+        {
+          "cmd": "ip pool vlan100",
+          "device": "unknown",
+          "desc": "成功执行: ip pool vlan100"
+        },
+        {
+          "cmd": "gateway-list 192.168.100.100",
+          "device": "unknown",
+          "desc": "成功执行: gateway-list 192.168.100.100"
+        },
+        {
+          "cmd": "network 192.168.100.0 mask 255.255.255.0",
+          "device": "unknown",
+          "desc": "成功执行: network 192.168.100.0 mask 255.255.255.0"
+        },
+        {
+          "cmd": "option 43 hex 0104C0A86401",
+          "device": "unknown",
+          "desc": "成功执行: option 43 hex 0104C0A86401"
+        },
+        {
+          "cmd": "display version",
+          "device": "unknown",
+          "desc": "成功执行: display version"
+        },
+        {
+          "cmd": "display current-configuration | include sysname",
+          "device": "unknown",
+          "desc": "成功执行: display current-configuration | include sysname"
+        },
+        {
+          "cmd": "display vlan brief",
+          "device": "unknown",
+          "desc": "成功执行: display vlan brief"
+        },
+        {
+          "cmd": "display cur | inc sysname",
+          "device": "unknown",
+          "desc": "成功执行: display cur | inc sysname"
+        },
+        {
+          "cmd": "display bridge mac-address",
+          "device": "unknown",
+          "desc": "成功执行: display bridge mac-address"
+        },
+        {
+          "cmd": "display interface brief",
+          "device": "unknown",
+          "desc": "成功执行: display interface brief"
+        },
+        {
+          "cmd": "vlan batch 40",
+          "device": "unknown",
+          "desc": "成功执行: vlan batch 40"
+        },
+        {
+          "cmd": "interface Ethernet0/0/1",
+          "device": "unknown",
+          "desc": "成功执行: interface Ethernet0/0/1"
+        },
+        {
+          "cmd": "port link-type access",
+          "device": "unknown",
+          "desc": "成功执行: port link-type access"
+        },
+        {
+          "cmd": "port default vlan 40",
+          "device": "unknown",
+          "desc": "成功执行: port default vlan 40"
+        },
+        {
+          "cmd": "interface Ethernet0/0/2",
+          "device": "unknown",
+          "desc": "成功执行: interface Ethernet0/0/2"
+        },
+        {
+          "cmd": "interface Ethernet0/0/3",
+          "device": "unknown",
+          "desc": "成功执行: interface Ethernet0/0/3"
+        },
+        {
+          "cmd": "display current-configuration interface GigabitEthernet 0/0/1",
+          "device": "unknown",
+          "desc": "成功执行: display current-configuration interface GigabitEthernet 0/0/1"
+        },
+        {
+          "cmd": "ping 192.168.0.1",
+          "device": "unknown",
+          "desc": "成功执行: ping -c 3 192.168.0.1"
+        },
+        {
+          "cmd": "display ip routing-table 192.168.0.1",
+          "device": "unknown",
+          "desc": "成功执行: display ip routing-table 192.168.0.1"
+        },
+        {
+          "cmd": "vlan batch 100 101",
+          "device": "huawei",
+          "desc": "成功执行: vlan batch 100 101"
+        },
+        {
+          "cmd": "interface GigabitEthernet0/0/1",
+          "device": "huawei",
+          "desc": "成功执行: interface GigabitEthernet0/0/1"
+        },
+        {
+          "cmd": "port link-type trunk",
+          "device": "huawei",
+          "desc": "成功执行: port link-type trunk"
+        },
+        {
+          "cmd": "port trunk allow-pass vlan 100 101",
+          "device": "huawei",
+          "desc": "成功执行: port trunk allow-pass vlan 100 101"
+        },
+        {
+          "cmd": "interface GigabitEthernet0/0/2",
+          "device": "huawei",
+          "desc": "成功执行: interface GigabitEthernet0/0/2"
+        },
+        {
+          "cmd": "port link-type trunk",
+          "device": "huawei",
+          "desc": "成功执行: port link-type trunk"
+        },
+        {
+          "cmd": "port trunk allow-pass vlan 100 101",
+          "device": "huawei",
+          "desc": "成功执行: port trunk allow-pass vlan 100 101"
+        },
+        {
+          "cmd": "interface GigabitEthernet0/0/3",
+          "device": "huawei",
+          "desc": "成功执行: interface GigabitEthernet0/0/3"
+        },
+        {
+          "cmd": "port trunk pvid vlan 100",
+          "device": "huawei",
+          "desc": "成功执行: port trunk pvid vlan 100"
+        },
+        {
+          "cmd": "port trunk pvid vlan 100",
+          "device": "huawei",
+          "desc": "成功执行: port trunk pvid vlan 100"
+        },
+        {
+          "cmd": "port trunk pvid vlan 100",
+          "device": "huawei",
+          "desc": "成功执行: port trunk pvid vlan 100"
+        },
+        {
+          "cmd": "port trunk pvid vlan 1",
+          "device": "huawei",
+          "desc": "成功执行: port trunk pvid vlan 1"
+        },
+        {
+          "cmd": "port trunk pvid vlan 1",
+          "device": "huawei",
+          "desc": "成功执行: port trunk pvid vlan 1"
+        },
+        {
+          "cmd": "sysname LSW1",
+          "device": "huawei",
+          "desc": "成功执行: sysname LSW1"
+        },
+        {
+          "cmd": "interface GigabitEthernet 0/0/3",
+          "device": "huawei",
+          "desc": "成功执行: interface GigabitEthernet 0/0/3"
+        },
+        {
+          "cmd": "interface GigabitEthernet 0/0/1",
+          "device": "huawei",
+          "desc": "成功执行: interface GigabitEthernet 0/0/1"
+        },
+        {
+          "cmd": "interface GigabitEthernet 0/0/2",
+          "device": "huawei",
+          "desc": "成功执行: interface GigabitEthernet 0/0/2"
+        },
+        {
+          "cmd": "sysname LSW2",
+          "device": "huawei",
+          "desc": "成功执行: sysname LSW2"
+        },
+        {
+          "cmd": "sysname LSW3",
+          "device": "huawei",
+          "desc": "成功执行: sysname LSW3"
+        },
+        {
+          "cmd": "sysname AC1",
+          "device": "huawei",
+          "desc": "成功执行: sysname AC1"
+        },
+        {
+          "cmd": "interface Vlanif100",
+          "device": "huawei",
+          "desc": "成功执行: interface Vlanif100"
+        },
+        {
+          "cmd": "dhcp select interface",
+          "device": "huawei",
+          "desc": "成功执行: dhcp select interface"
+        },
+        {
+          "cmd": "interface Vlanif101",
+          "device": "huawei",
+          "desc": "成功执行: interface Vlanif101"
+        },
+        {
+          "cmd": "dhcp select interface",
+          "device": "huawei",
+          "desc": "成功执行: dhcp select interface"
+        },
+        {
+          "cmd": "dhcp enable",
+          "device": "huawei",
+          "desc": "成功执行: dhcp enable"
+        },
+        {
+          "cmd": "wlan",
+          "device": "huawei",
+          "desc": "成功执行: wlan"
+        },
+        {
+          "cmd": "ap auth-mode mac-auth",
+          "device": "huawei",
+          "desc": "成功执行: ap auth-mode mac-auth"
+        }
+      ],
+      "lessons_learned": [
+        "VLAN配置 全部命令执行成功",
+        "本次执行了 19 条相关命令",
+        "本次执行了 7 条相关命令",
+        "本次执行了 10 条相关命令",
+        "本次执行了 9 条相关命令",
+        "本次执行了 6 条相关命令",
+        "本次执行了 4 条相关命令",
+        "本次执行了 11 条相关命令",
+        "VLAN配置 部分命令失败，成功率 80%",
+        "本次执行了 15 条相关命令"
+      ],
+      "troubleshooting_cases": [
+        {
+          "problem": "ip address 192.168.100.1 255.255.255.0 执行失败",
+          "root_cause": "Error: The address already exists.",
+          "solution": "检查命令语法和当前视图",
+          "diagnosis_cmd": "display current-configuration | include sysname"
+        },
+        {
+          "problem": "ip address 192.168.101.1 255.255.255.0 执行失败",
+          "root_cause": "Error: The address already exists.",
+          "solution": "检查命令语法和当前视图",
+          "diagnosis_cmd": "display current-configuration | include sysname"
+        },
+        {
+          "problem": "capwap source interface vlanif100 执行失败",
+          "root_cause": "Error: The capwap source interface has been configured.",
+          "solution": "检查命令语法和当前视图",
+          "diagnosis_cmd": "display current-configuration | include sysname"
+        }
+      ]
+    },
+    {
+      "experiment": "自动记录-AC/WLAN配置-20260619",
+      "date": "2026-06-19",
+      "topology": "",
+      "features_implemented": [
+        "AC/WLAN配置"
+      ],
+      "new_commands_learned": [
+        {
+          "cmd": "wlan",
+          "device": "huawei",
+          "desc": "成功执行: wlan"
+        },
+        {
+          "cmd": "security-profile name sec",
+          "device": "huawei",
+          "desc": "成功执行: security-profile name sec"
+        },
+        {
+          "cmd": "ssid-profile name ssid666",
+          "device": "huawei",
+          "desc": "成功执行: ssid-profile name ssid666"
+        },
+        {
+          "cmd": "ssid 666",
+          "device": "huawei",
+          "desc": "成功执行: ssid 666"
+        },
+        {
+          "cmd": "vap-profile name vap666",
+          "device": "huawei",
+          "desc": "成功执行: vap-profile name vap666"
+        },
+        {
+          "cmd": "service-vlan vlan-id 101",
+          "device": "huawei",
+          "desc": "成功执行: service-vlan vlan-id 101"
+        },
+        {
+          "cmd": "ssid-profile ssid666",
+          "device": "huawei",
+          "desc": "成功执行: ssid-profile ssid666"
+        },
+        {
+          "cmd": "security-profile sec",
+          "device": "huawei",
+          "desc": "成功执行: security-profile sec"
+        },
+        {
+          "cmd": "ap-group name default",
+          "device": "huawei",
+          "desc": "成功执行: ap-group name default"
+        },
+        {
+          "cmd": "radio 0",
+          "device": "huawei",
+          "desc": "成功执行: radio 0"
+        },
+        {
+          "cmd": "vap-profile vap666 wlan 1",
+          "device": "huawei",
+          "desc": "成功执行: vap-profile vap666 wlan 1"
+        },
+        {
+          "cmd": "radio 1",
+          "device": "huawei",
+          "desc": "成功执行: radio 1"
+        },
+        {
+          "cmd": "vap-profile vap666 wlan 1",
+          "device": "huawei",
+          "desc": "成功执行: vap-profile vap666 wlan 1"
+        },
+        {
+          "cmd": "interface Vlanif1",
+          "device": "huawei",
+          "desc": "成功执行: interface Vlanif1"
+        },
+        {
+          "cmd": "ip address 192.168.1.1 255.255.255.0",
+          "device": "huawei",
+          "desc": "成功执行: ip address 192.168.1.1 255.255.255.0"
+        },
+        {
+          "cmd": "dhcp select interface",
+          "device": "huawei",
+          "desc": "成功执行: dhcp select interface"
+        },
+        {
+          "cmd": "capwap source interface vlanif1",
+          "device": "huawei",
+          "desc": "成功执行: capwap source interface vlanif1"
+        },
+        {
+          "cmd": "radio-2g-profile name radio-2g",
+          "device": "huawei",
+          "desc": "成功执行: radio-2g-profile name radio-2g"
+        },
+        {
+          "cmd": "radio-type dot11n",
+          "device": "huawei",
+          "desc": "成功执行: radio-type dot11n"
+        },
+        {
+          "cmd": "radio-5g-profile name radio-5g",
+          "device": "huawei",
+          "desc": "成功执行: radio-5g-profile name radio-5g"
+        },
+        {
+          "cmd": "radio-type dot11ac",
+          "device": "huawei",
+          "desc": "成功执行: radio-type dot11ac"
+        },
+        {
+          "cmd": "security-profile name sec-prof1",
+          "device": "huawei",
+          "desc": "成功执行: security-profile name sec-prof1"
+        },
+        {
+          "cmd": "ssid-profile name ssid-prof1",
+          "device": "huawei",
+          "desc": "成功执行: ssid-profile name ssid-prof1"
+        },
+        {
+          "cmd": "vap-profile name vap-prof1",
+          "device": "huawei",
+          "desc": "成功执行: vap-profile name vap-prof1"
+        },
+        {
+          "cmd": "forward-mode tunnel",
+          "device": "huawei",
+          "desc": "成功执行: forward-mode tunnel"
+        },
+        {
+          "cmd": "ssid-profile ssid-prof1",
+          "device": "huawei",
+          "desc": "成功执行: ssid-profile ssid-prof1"
+        },
+        {
+          "cmd": "security-profile sec-prof1",
+          "device": "huawei",
+          "desc": "成功执行: security-profile sec-prof1"
+        },
+        {
+          "cmd": "ap-group name ap-group1",
+          "device": "huawei",
+          "desc": "成功执行: ap-group name ap-group1"
+        },
+        {
+          "cmd": "vap-profile vap-prof1 wlan 1",
+          "device": "huawei",
+          "desc": "成功执行: vap-profile vap-prof1 wlan 1"
+        },
+        {
+          "cmd": "vap-profile vap-prof1 wlan 1",
+          "device": "huawei",
+          "desc": "成功执行: vap-profile vap-prof1 wlan 1"
+        },
+        {
+          "cmd": "ap-id 1 ap-mac 00e0-fcc7-1b40",
+          "device": "huawei",
+          "desc": "成功执行: ap-id 1 ap-mac 00e0-fcc7-1b40"
+        },
+        {
+          "cmd": "ap-name AP1",
+          "device": "huawei",
+          "desc": "成功执行: ap-name AP1"
+        },
+        {
+          "cmd": "ap-id 2 ap-mac 00e0-fcf8-1cb0",
+          "device": "huawei",
+          "desc": "成功执行: ap-id 2 ap-mac 00e0-fcf8-1cb0"
+        },
+        {
+          "cmd": "ap-name AP2",
+          "device": "huawei",
+          "desc": "成功执行: ap-name AP2"
+        }
+      ],
+      "lessons_learned": [
+        "AC/WLAN配置 部分命令失败，成功率 92%",
+        "本次执行了 14 条相关命令",
+        "AC/WLAN配置 部分命令失败，成功率 85%",
+        "AC/WLAN配置 部分命令失败，成功率 80%",
+        "本次执行了 5 条相关命令",
+        "AC/WLAN配置 全部命令执行成功",
+        "AC/WLAN配置 部分命令失败，成功率 66%",
+        "本次执行了 6 条相关命令",
+        "本次执行了 7 条相关命令",
+        "AC/WLAN配置 部分命令失败，成功率 71%"
+      ],
+      "troubleshooting_cases": [
+        {
+          "problem": "security wpa-wpa2 psk pass-phrase 12345678 aes 执行失败",
+          "root_cause": "Error: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:y",
+          "solution": "检查命令语法和当前视图",
+          "diagnosis_cmd": "display current-configuration | include wlan"
+        },
+        {
+          "problem": "ssid-profile ssid666 执行失败",
+          "root_cause": "Error: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:y",
+          "solution": "检查命令语法和当前视图",
+          "diagnosis_cmd": "display current-configuration | include wlan"
+        },
+        {
+          "problem": "undo capwap source interface vlanif100 执行失败",
+          "root_cause": "Error: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:y",
+          "solution": "检查命令语法和当前视图",
+          "diagnosis_cmd": "display current-configuration | include interface"
+        },
+        {
+          "problem": "security wpa2 psk pass-phrase 12345678 aes 执行失败",
+          "root_cause": "Error: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:y",
+          "solution": "检查命令语法和当前视图",
+          "diagnosis_cmd": "display current-configuration | include wlan"
+        },
+        {
+          "problem": "yes 执行失败",
+          "root_cause": "Error: Unrecognized command found at '^' position.",
+          "solution": "检查命令语法和当前视图",
+          "diagnosis_cmd": "display current-configuration | include wlan"
+        },
+        {
+          "problem": "radio-2g-profile radio-2g 执行失败",
+          "root_cause": "Error: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:y",
+          "solution": "检查命令语法和当前视图",
+          "diagnosis_cmd": "display current-configuration | include wlan"
+        },
+        {
+          "problem": "radio-5g-profile radio-5g 执行失败",
+          "root_cause": "Error: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:y",
+          "solution": "检查命令语法和当前视图",
+          "diagnosis_cmd": "display current-configuration | include wlan"
+        },
+        {
+          "problem": "ap-group ap-group1 执行失败",
+          "root_cause": "Error: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:y",
+          "solution": "检查命令语法和当前视图",
+          "diagnosis_cmd": "display current-configuration | include wlan"
+        },
+        {
+          "problem": "ap-group ap-group1 执行失败",
+          "root_cause": "Error: Please choose 'YES' or 'NO' first before pressing 'Enter'. [Y/N]:y",
+          "solution": "检查命令语法和当前视图",
+          "diagnosis_cmd": "display current-configuration | include wlan"
+        }
+      ]
+    },
+    {
+      "experiment": "自动记录-DHCP配置-20260619",
+      "date": "2026-06-19",
+      "topology": "",
+      "features_implemented": [
+        "DHCP配置"
+      ],
+      "new_commands_learned": [
+        {
+          "cmd": "dhcp enable",
+          "device": "huawei",
+          "desc": "成功执行: dhcp enable"
+        },
+        {
+          "cmd": "interface Vlanif100",
+          "device": "huawei",
+          "desc": "成功执行: interface Vlanif100"
+        },
+        {
+          "cmd": "dhcp select interface",
+          "device": "huawei",
+          "desc": "成功执行: dhcp select interface"
+        },
+        {
+          "cmd": "interface Vlanif1",
+          "device": "huawei",
+          "desc": "成功执行: interface Vlanif1"
+        }
+      ],
+      "lessons_learned": [
+        "DHCP配置 全部命令执行成功",
+        "本次执行了 3 条相关命令",
+        "DHCP配置 部分命令失败，成功率 66%"
+      ],
+      "troubleshooting_cases": [
+        {
+          "problem": "dhcp server option 43 hex 0104c0a80101 执行失败",
+          "root_cause": "Error: Parse IP address failed.",
+          "solution": "检查命令语法和当前视图",
+          "diagnosis_cmd": "display current-configuration | include interface"
+        }
+      ]
+    },
+    {
+      "experiment": "AP上线配置完整指南",
+      "date": "2026-06-19",
+      "topology": "AC6605 + 2xAP3030DN + 3xS5700, AC连LSW1, LSW2/LSW3各连1个AP",
+      "features_implemented": [
+        "AC WLAN配置",
+        "AP注册上线",
+        "WIFI SSID广播",
+        "VLAN规划",
+        "DHCP配置",
+        "CAPWAP隧道"
+      ],
+      "new_commands_learned": [
+        {
+          "cmd": "ap auth-mode mac-auth",
+          "device": "AC6605",
+          "desc": "AC开启MAC认证模式，AP必须用MAC注册才能上线"
+        },
+        {
+          "cmd": "capwap source interface vlanif100",
+          "device": "AC6605",
+          "desc": "AC的CAPWAP源接口，AP必须在同一网段才能发现AC"
+        },
+        {
+          "cmd": "ap-id 1 ap-mac 00e0-fcc7-1b40",
+          "device": "AC6605",
+          "desc": "手动注册AP的MAC地址到AC，瘦AP无法自动发现时必须手动添加"
+        },
+        {
+          "cmd": "ap-name AP1",
+          "device": "AC6605",
+          "desc": "给注册的AP命名"
+        },
+        {
+          "cmd": "ap-group ap-group1",
+          "device": "AC6605",
+          "desc": "将AP加入组，组决定AP使用哪个VAP和Radio配置"
+        },
+        {
+          "cmd": "radio-2g-profile name radio-2g",
+          "device": "AC6605",
+          "desc": "创建2.4G射频模板，radio-type dot11n"
+        },
+        {
+          "cmd": "radio-5g-profile name radio-5g",
+          "device": "AC6605",
+          "desc": "创建5G射频模板，radio-type dot11ac"
+        },
+        {
+          "cmd": "forward-mode tunnel",
+          "device": "AC6605",
+          "desc": "VAP隧道转发模式，用户流量通过CAPWAP隧道回AC再转发"
+        },
+        {
+          "cmd": "security wpa2 psk pass-phrase 12345678 aes",
+          "device": "AC6605",
+          "desc": "WPA2-PSK加密，预共享密钥12345678，AES加密"
+        },
+        {
+          "cmd": "ap-reset ap-id 1",
+          "device": "AC6605",
+          "desc": "重置AP状态，AP fault时使用"
+        }
+      ],
+      "lessons_learned": [
+        "瘦AP(AP3030DN)不支持创建VLAN、设置IP地址等命令，所有配置由AC下发",
+        "AP上线必须满足：(1)AC配置ap auth-mode mac-auth (2)AC配置capwap source接口 (3)AP与AC同网段 (4)AP MAC已注册到AC",
+        "AC的capwap source接口IP决定AP的网段，AP必须通过DHCP或静态IP获得同网段地址",
+        "AP默认只有Vlanif1(169.254.x.x)，需要通过DHCP获取AC同网段地址才能上线",
+        "LSW2/LSW3连接AP的端口必须配置trunk PVID vlan 100，让AP未标记流量进入VLAN 100",
+        "AP获取到错误网段地址时(如192.168.1.x)，在AP上执行interface Vlanif1 shutdown再undo shutdown可重新获取DHCP",
+        "AP fault状态说明AP已注册但无法连接，检查：(1)AP能否ping通AC (2)CAPWAP源接口是否正确 (3)用ap-reset重置",
+        "AC6605的wlan视图下配置顺序：ap-auth-mode -> radio-profile -> security-profile -> ssid-profile -> vap-profile -> ap-group -> ap-id注册",
+        "eNSP中AP的reboot命令有时不会真正重启，需要先发reboot再等设备自动重连",
+        "批量配置时save命令的Y/N确认会导致超时，批量命令中不要包含save"
+      ],
+      "troubleshooting_cases": [
+        {
+          "problem": "AP注册后显示fault状态",
+          "root_cause": "AP获取的IP与AC capwap source接口不在同一网段",
+          "solution": "确认AC capwap source接口IP，检查AP的Vlanif IP是否在同一网段，必要时shutdown/undo shutdown Vlanif重新获取DHCP",
+          "diagnosis_cmd": "display ap all"
+        },
+        {
+          "problem": "AP获取169.254.x.x链路本地地址",
+          "root_cause": "DHCP服务器未配置或AP端口PVID不正确",
+          "solution": "1.检查AC Vlanif100是否配置dhcp select interface 2.检查LSW连接AP端口的trunk PVID是否为100",
+          "diagnosis_cmd": "display ip interface brief"
+        },
+        {
+          "problem": "display ssid-profile等命令报Unrecognized",
+          "root_cause": "Telnet缓冲区未清空，前一条命令回显吃掉了新命令的首字母",
+          "solution": "系统已修复：发送命令前增加二次flush+延迟确保缓冲区干净",
+          "diagnosis_cmd": "重新发送命令"
+        }
+      ]
+    },
+    {
+      "experiment": "排障-AP注册后fault",
+      "troubleshooting_cases": [
+        {
+          "problem": "AP注册后fault",
+          "root_cause": "AP IP与AC capwap source不同网段",
+          "solution": "检查AP IP，shutdown/undo shutdown Vlanif重获DHCP",
+          "diagnosis_cmd": "display ap all"
+        }
+      ],
+      "lessons_learned": [
+        "AP注册后fault: 检查AP IP，shutdown/undo shutdown Vlanif重获DHCP"
+      ]
+    },
+    {
+      "experiment": "排障-AP获取169.254地址",
+      "troubleshooting_cases": [
+        {
+          "problem": "AP获取169.254地址",
+          "root_cause": "DHCP未配置或端口PVID错误",
+          "solution": "AC配置dhcp select interface + LSW端口设trunk pvid vlan 100",
+          "diagnosis_cmd": "display ip interface brief"
+        }
+      ],
+      "lessons_learned": [
+        "AP获取169.254地址: AC配置dhcp select interface + LSW端口设trunk pvid vlan 100"
+      ]
+    },
+    {
+      "experiment": "排障-display命令首字母丢失",
+      "troubleshooting_cases": [
+        {
+          "problem": "display命令首字母丢失",
+          "root_cause": "Telnet缓冲区未清空",
+          "solution": "系统已修复：发送前二次flush+延迟",
+          "diagnosis_cmd": "重新发送"
+        }
+      ],
+      "lessons_learned": [
+        "display命令首字母丢失: 系统已修复：发送前二次flush+延迟"
       ]
     }
   ]

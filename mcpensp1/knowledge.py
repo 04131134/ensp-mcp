@@ -78,6 +78,15 @@ class KnowledgeBase:
 
     def record_command(self, command, output, device_type="unknown", device_path=None, success=True):
         with self.lock:
+            # ── Data quality guards (Phase 5) ──
+            # Guard 1: Auto-detect success from output
+            if output and output.strip():
+                _err_patterns = ['Error:', 'Unrecognized command', 'Wrong parameter',
+                                 'Too many parameters', 'Ambiguous command',
+                                 'Incomplete command', 'Please renew the default configurations']
+                if any(kw in output for kw in _err_patterns):
+                    success = False
+
             gkb = self._gkb_cache or self._load(self.global_path)
             dkb = self._dkb_cache or self._load(self.devices_path)
             cmd_lower = command.strip().lower()
@@ -86,7 +95,11 @@ class KnowledgeBase:
             cat_entry = COMMAND_CATALOG.get(cmd_lower) or COMMAND_CATALOG.get(base_cmd)
             desc = cat_entry['description'] if cat_entry else ''
             cat = cat_entry['category'] if cat_entry else self._guess_cat(cmd_lower)
-            risk = cat_entry['risk'] if cat_entry else 'unknown'
+            # Guard 2: Risk defaults: known catalog → catalog value, else → medium
+            risk = cat_entry['risk'] if cat_entry else 'medium'
+            # Guard 3: Description must not be empty
+            if not desc or desc.strip() == '':
+                desc = base_cmd or 'network command'
             cmd_key = hashlib.sha256(f'{device_type}:{cmd_lower}'.encode()).hexdigest()[:16]
             cmds = gkb.setdefault("commands", [])
             existing = next((i for i, c in enumerate(cmds) if c.get("key") == cmd_key), None)

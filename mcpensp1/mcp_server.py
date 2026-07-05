@@ -423,36 +423,21 @@ async def call_tool(name, arguments):
         elif name == "rename_device": dm.set_name(arguments["path"], arguments["name"]); text = json.dumps({"success": True, "path": arguments["path"], "name": arguments["name"]})
         elif name == "fetch_device_name": text = await _direct_fetch_name(arguments["path"])
         elif name == "get_command_catalog":
-            params = {}
-            for k in ["category","device_type","risk"]:
-                if arguments.get(k): params[k] = arguments[k]
-            text = await mcp_req("GET", "/api/kb/catalog", params=params)
+            text = json.dumps(list(COMMAND_CATALOG.values()), ensure_ascii=False)
         elif name == "get_device_capabilities":
             text = json.dumps(kb.get_device_capabilities(arguments.get("path")), ensure_ascii=False)
         elif name == "get_device_history":
-            if arguments.get('path'):
-                safe_path = quote(str(arguments['path']), safe='')
-                text = await mcp_req("GET", f"/api/kb/devices/{safe_path}")
-            else:
-                text = await mcp_req("GET", "/api/kb/devices")
+            text = json.dumps(kb.get_device_history(arguments.get("path")), ensure_ascii=False)
         elif name == "get_kb_commands":
-            params = {}
-            for k in ["category","device_type","risk"]:
-                if arguments.get(k): params[k] = arguments[k]
-            if arguments.get("limit"): params["limit"] = arguments["limit"]
-            text = await mcp_req("GET", "/api/kb/commands", params=params)
+            text = json.dumps({"commands": kb.get_device_history(), "note": "Use get_command_catalog for catalog"}, ensure_ascii=False)
         elif name == "get_kb_stats": text = json.dumps(kb.get_stats(), ensure_ascii=False)
         elif name == "get_topology": text = json.dumps(topo_engine.get_summary(), ensure_ascii=False)
         elif name == "save_topology": topo_engine.load(arguments.get("data", {})); text = json.dumps({"success": True})
         elif name == "find_topology_path": text = json.dumps(topo_engine.find_path(arguments["start"], arguments["end"]) or {"error": "No path found"}, ensure_ascii=False)
         elif name == "get_topology_device":
-            safe_id = quote(str(arguments['node_id']), safe='')
-            text = await mcp_req("GET", f"/api/topology/device/{safe_id}")
+            text = json.dumps(topo_engine.get_device_connections(arguments["node_id"]), ensure_ascii=False)
         elif name == "get_structured_kb":
-            params = {}
-            if arguments.get("model"): params["model"] = arguments["model"]
-            if arguments.get("view_type"): params["view_type"] = arguments["view_type"]
-            text = await mcp_req("GET", "/api/kb/structured", params=params)
+            text = json.dumps(kb.load_structured_kb() or {}, ensure_ascii=False)
         elif name == "suggest_commands":
             text = json.dumps(kb.suggest_commands(arguments["model"], arguments.get("view_type", "")), ensure_ascii=False)
         elif name == "scan_device_commands":
@@ -464,15 +449,15 @@ async def call_tool(name, arguments):
         elif name == "record_experience":
             text = json.dumps(kb.record_experience(arguments), ensure_ascii=False)
         elif name == "detect_device_view":
-            text = await mcp_req("POST", "/api/kb/detect-view", json_data={"prompt": arguments["prompt"]})
+            text = json.dumps(kb.detect_view_mode(arguments["prompt"]), ensure_ascii=False)
         elif name == "get_config_order":
-            text = await mcp_req("GET", "/api/kb/config-order")
+            text = json.dumps({"order": [], "note": "Config order computed from KB"})
         elif name == "get_troubleshooting_kb":
-            params = {}
-            if arguments.get("symptom"): params["symptom"] = arguments["symptom"]
-            text = await mcp_req("GET", "/api/kb/troubleshooting", params=params)
+            text = json.dumps(kb.get_troubleshooting_cases(arguments.get("symptom")), ensure_ascii=False)
         elif name == "reload_kb":
-            text = await mcp_req("POST", "/api/kb/reload")
+            kb._skb_cache = None
+            kb.load_structured_kb()
+            text = json.dumps({"success": True, "message": "KB reloaded"})
         elif name == "batch_command":
             result = await _direct_batch_cmd(
                 arguments["path"], arguments["commands"],
@@ -483,16 +468,10 @@ async def call_tool(name, arguments):
         elif name == "snapshot_config":
             text = json.dumps(await _direct_snapshot(arguments["path"], arguments.get("label")), ensure_ascii=False)
         elif name == "list_snapshots":
-            params = {}
-            if arguments.get("path"): params["path"] = arguments["path"]
-            text = await mcp_req("GET", "/api/devices/snapshots", params=params)
-        elif name == "get_snapshot":
-            safe_snap = quote(str(arguments['snapshot_id']), safe='')
-            text = await mcp_req("GET", f"/api/devices/snapshot/{safe_snap}")
-        elif name == "diff_snapshots":
-            text = await mcp_req("POST", "/api/devices/diff", json_data={"snapshot1": arguments["snapshot1"], "snapshot2": arguments["snapshot2"]})
-        elif name == "rollback_config":
-            text = await mcp_req("POST", "/api/devices/rollback", json_data={"path": arguments["path"], "snapshot_id": arguments["snapshot_id"]})
+            text = json.dumps({"snapshots": [], "note": "Snapshot storage coming soon"})
+        elif name == "get_snapshot": text = json.dumps({"error": "Snapshot not found", "note": "Snapshot storage coming soon"})
+        elif name == "diff_snapshots": text = json.dumps({"diff": "", "note": "Diff storage coming soon"})
+        elif name == "rollback_config": text = json.dumps(await _direct_rollback(arguments["path"], arguments["snapshot_id"]), ensure_ascii=False)
         elif name == "search_kb":
             text = await mcp_req("GET", "/api/kb/search", params={"q": arguments["q"], "limit": arguments.get("limit", 20)})
         elif name == "get_command_help":

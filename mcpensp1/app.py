@@ -8,7 +8,7 @@ from flask import Flask, render_template, jsonify, request, make_response
 from flask_socketio import SocketIO, emit, join_room
 from agent.bootstrap import init_agent_runtime, get_agent_runtime
 from device_manager import dm
-from services import kb, topo_engine
+from services import kb, topo_engine, config_methods
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('ENSP_SECRET_KEY', secrets.token_hex(32))
@@ -1508,7 +1508,7 @@ class TelnetConnection:
                 self.sock = None
 
 def _extract_topo_names(data):
-    """Extract port鈫抧ame mapping from topology data."""
+    """Extract port→name mapping from topology data."""
     global topo_names
     mapping = {}
     for n in data.get('nodes', []):
@@ -1521,12 +1521,16 @@ def _extract_topo_names(data):
                 continue
     if mapping:
         topo_names = mapping
+        # Sync to DeviceManager for MCP Server consistency
+        for port_int, topo_name in mapping.items():
+            dm.set_topo_name(port_int, topo_name)
         # Update already-connected devices with topo names
         with name_lock:
             for port_int, topo_name in mapping.items():
                 path = f'127.0.0.1:{port_int}'
                 if path in devices:
                     device_names[path] = topo_name
+                    dm.set_name(path, topo_name)
 
 heartbeat = HeartbeatMonitor(kb)
 
@@ -3144,10 +3148,7 @@ def api_topo_device(nid): return jsonify({"node_id": nid, "connections": topo_en
 def api_health(): return jsonify({"status": "ok", "devices": len(devices), "kb": kb.get_stats()})
 
 # ==================== 配置方法库 API ====================
-from config_method_store import ConfigMethodStore
-
-# 初始化配置方法库
-config_methods = ConfigMethodStore(os.path.join(os.path.dirname(__file__), 'kb'))
+# config_methods 已通过 services.py 共享单例导入（与 MCP Server 共用同一实例）
 
 @app.route('/api/config-methods/list')
 @require_auth

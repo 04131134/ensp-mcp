@@ -1,6 +1,11 @@
 import asyncio, json, os, httpx, logging
 
 logger = logging.getLogger(__name__)
+
+# Direct module imports for Phase 3 (bypass HTTP round-trip)
+from device_manager import dm
+from command_executor import cmd_executor, BLOCKED_COMMANDS, BLOCKED_PREFIXES, is_blocked_command
+
 from urllib.parse import quote
 ENSP_API_KEY = os.environ.get('ENSP_API_KEY', '')
 from mcp.server import Server
@@ -16,6 +21,157 @@ _http_client = httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=5.0))
 
 _MAX_RETRIES = 2
 _RETRY_DELAY = 1.0
+
+
+# ==================== Phase 3: Direct tool helpers (no HTTP) ====================
+
+async def _direct_connect(port: int) -> str:
+    """Direct connect to eNSP device without HTTP round-trip."""
+    try:
+        from connection import TelnetConnection
+        import time
+        path = f'127.0.0.1:{port}'
+        existing = dm.get(path)
+        if existing:
+            try:
+                existing.sock.send(b'')
+                return json.dumps({
+                    'success': True, 'port': port, 'path': path,
+                    'name': dm.get_name(path), 'device_type': dm.get_type(path),
+                    'reconnected': False
+                })
+            except Exception:
+                dm.remove(path)
+
+        conn = TelnetConnection('127.0.0.1', port)
+        conn.connect()
+        conn.handle_firewall_login()
+        try:
+            conn.send_cmd('undo terminal monitor')
+            time.sleep(0.1)
+        except Exception:
+            pass
+        dm.set(path, conn)
+
+        # Fetch device name
+        try:
+            raw = conn.send_cmd('display version')
+            name = None
+            dt = 'unknown'
+            if raw:
+                lower = raw.lower()
+                if 'huawei' in lower:
+                    dt = 'huawei'
+                elif 'h3c' in lower or 'hpe' in lower:
+                    dt = 'h3c'
+                elif 'cisco' in lower:
+                    dt = 'cisco'
+                elif 'juniper' in lower:
+                    dt = 'juniper'
+                if dt in ('huawei', 'h3c'):
+                    nr = conn.send_cmd('display current-configuration | include sysname')
+                    if nr and 'Unrecognized' not in nr and 'Error' not in nr:
+                        import re
+                        m = re.search(r'^sysname\s+(\S+)', nr, re.IGNORECASE | re.MULTILINE)
+                        if m:
+                            name = m.group(1)
+            if name:
+                dm.set_name(path, name)
+            dm.set_type(path, dt)
+            display = f'{dm.get_name(path)} ({dt.upper()})' if dt != 'unknown' else dm.get_name(path)
+            return json.dumps({
+                'success': True, 'port': port, 'path': path,
+                'name': dm.get_name(path), 'display_name': display,
+                'device_type': dt
+            })
+        except Exception:
+            dm.remove(path)
+            return json.dumps({'success': False, 'error': 'Connection failed'})
+    except Exception as e:
+        return json.dumps({'success': False, 'error': str(e)[:200]})
+
+
+async def _direct_send_cmd(path: str, command: str) -> str:
+    """Directly send command to device via Telnet, bypassing Flask."""
+    conn = dm.get(path)
+    if not conn:
+        return json.dumps({'success': False, 'error': 'Device not connected'})
+    cmd_lower = command.strip().lower()
+    if is_blocked_command(cmd_lower):
+        return json.dumps({'success': False, 'error': f'Blocked dangerous command: {cmd_lower}'})
+    try:
+        import time
+        t0 = time.time()
+        result = await conn.send_cmd_async(command)
+        elapsed = round(time.time() - t0, 3)
+        _errs = ['Error:', 'Unrecognized command', 'Wrong parameter',
+                 'Too many parameters', 'Ambiguous command', 'Incomplete command',
+                 'Please renew the default configurations']
+        ok = bool(result and not any(kw in result for kw in _errs))
+        return json.dumps({
+            'success': True, 'path': path, 'output': result,
+            'response_time': elapsed, 'cmd_success': ok
+        })
+    except ConnectionError:
+        dm.remove(path)
+        dm.remove_name(path)
+        return json.dumps({'success': False, 'error': 'Connection lost, device disconnected'})
+    except Exception as e:
+        logger.error('Direct command failed for %s: %s', path, str(e)[:200])
+        return json.dumps({'success': False, 'error': str(e)[:200]})
+
+
+async def _direct_disconnect(path: str) -> str:
+    """Direct disconnect without HTTP."""
+    result = dm.remove(path)
+    dm.remove_name(path)
+    if result:
+        try:
+            result.close()
+        except OSError:
+            pass
+    return json.dumps({'success': True, 'path': path})
+
+
+async def _direct_batch_cmd(path: str, commands: list, **opts) -> dict:
+    """Direct batch command execution."""
+    conn = dm.get(path)
+    if not conn:
+        return {'success': False, 'error': 'Device not connected'}
+    import time
+    wait = opts.get('wait', 0.1)
+    results = []
+    cmd_count = 0
+    success_count = 0
+    for cmd in commands:
+        cmd_lower = cmd.strip().lower()
+        if is_blocked_command(cmd_lower):
+            results.append({'command': cmd, 'success': False, 'output': 'Blocked'})
+            continue
+        cmd_count += 1
+        try:
+            t0 = time.time()
+            output = await conn.send_cmd_async(cmd)
+            elapsed = round(time.time() - t0, 3)
+            _errs = ['Error:', 'Unrecognized command', 'Wrong parameter']
+            ok = bool(output and not any(kw in output for kw in _errs))
+            if ok:
+                success_count += 1
+            results.append({'command': cmd, 'success': ok, 'output': output, 'response_time': elapsed})
+            time.sleep(wait)
+        except ConnectionError:
+            dm.remove(path)
+            dm.remove_name(path)
+            results.append({'command': cmd, 'success': False, 'output': 'Connection lost'})
+            return {'success': False, 'error': 'Connection lost', 'results': results,
+                    'total': cmd_count, 'success_count': success_count}
+        except Exception as e:
+            results.append({'command': cmd, 'success': False, 'output': str(e)[:200]})
+    return {'success': True, 'path': path, 'results': results,
+            'total': cmd_count, 'success_count': success_count}
+
+
+# ==================== HTTP fallback (legacy) ====================
 
 # ==================== AGENT SYSTEM PROMPT v3.0 ====================
 
@@ -173,11 +329,18 @@ async def call_tool(name, arguments):
         if missing:
             return [TextContent(type="text", text=json.dumps({"error": "Missing required parameters: " + ", ".join(missing)}))]
 
-        if name == "scan_devices": text = await mcp_req("GET", "/api/devices/scan", params={"start": arguments.get("start",2000), "end": arguments.get("end",2050)})
-        elif name == "connect_device": text = await mcp_req("POST", "/api/devices/connect", json_data={"port": arguments["port"]})
-        elif name == "send_command": text = await mcp_req("POST", "/api/devices/command", json_data={"path": arguments["path"], "command": arguments["command"]})
-        elif name == "disconnect_device": text = await mcp_req("POST", "/api/devices/disconnect", json_data={"path": arguments["path"]})
-        elif name == "get_connected_devices": text = await mcp_req("GET", "/api/devices")
+        if name == "scan_devices":
+            start = arguments.get("start", 2000)
+            end = arguments.get("end", 2050)
+            text = json.dumps(dm.scan_devices(start, end), ensure_ascii=False)
+        elif name == "connect_device":
+            text = await _direct_connect(arguments["port"])
+        elif name == "send_command":
+            text = await _direct_send_cmd(arguments["path"], arguments["command"])
+        elif name == "disconnect_device":
+            text = await _direct_disconnect(arguments["path"])
+        elif name == "get_connected_devices":
+            text = json.dumps(dm.get_connected_summary(), ensure_ascii=False)
         elif name == "rename_device": text = await mcp_req("POST", "/api/devices/rename", json_data={"path": arguments["path"], "name": arguments["name"]})
         elif name == "fetch_device_name": text = await mcp_req("POST", "/api/devices/fetch-name", json_data={"path": arguments["path"]})
         elif name == "get_command_catalog":
@@ -238,7 +401,12 @@ async def call_tool(name, arguments):
         elif name == "reload_kb":
             text = await mcp_req("POST", "/api/kb/reload")
         elif name == "batch_command":
-            text = await mcp_req("POST", "/api/devices/batch-command", json_data={"path": arguments["path"], "commands": arguments["commands"], "wait": arguments.get("wait", 0.1), "auto_view": arguments.get("auto_view", True), "auto_undo_tm": arguments.get("auto_undo_tm", True)})
+            result = await _direct_batch_cmd(
+                arguments["path"], arguments["commands"],
+                wait=arguments.get("wait", 0.1),
+                auto_view=arguments.get("auto_view", True),
+                auto_undo_tm=arguments.get("auto_undo_tm", True))
+            text = json.dumps(result, ensure_ascii=False)
         elif name == "snapshot_config":
             text = await mcp_req("POST", "/api/devices/snapshot", json_data={"path": arguments["path"], "label": arguments.get("label")})
         elif name == "list_snapshots":

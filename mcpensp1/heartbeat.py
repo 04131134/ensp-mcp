@@ -61,38 +61,48 @@ class HeartbeatMonitor:
             stale_rc = [p for p in self.reconnect_counts if p not in devices]
             for p in stale_rc: self.reconnect_counts.pop(p, None)
 
-    def _ping(self, path):
-        """Check device liveness by probing socket, without sending commands."""
-        with devices_lock:
-            conn = devices.get(path)
-        if not conn or not conn.sock:
-            return False
-        try:
-            t0 = time.time()
-            import select  # already imported at top
-            # Use select to check if socket is still alive (very fast)
-            _, writable, errored = select.select([], [conn.sock], [conn.sock], 0.5)
-            if errored:
-                raise ConnectionError('Socket error')
-            if not writable:
-                raise ConnectionError('Socket not writable')
-            with self.lock:
-                self.status.setdefault(path, {})['response_time'] = round(time.time() - t0, 3)
-            return True
-        except Exception:
-            try:
-                port = int(path.split(':')[1])
-                nc = TelnetConnection('127.0.0.1', port)
-                nc.connect()
-                with devices_lock:
-                    old = devices.get(path)
-                    if old:
-                        try: old.close()
-                        except OSError: pass
-                    devices[path] = nc
-                return True
-            except Exception as e:
-                logger.debug('Ping reconnect failed for %s: %s', path, e)
+    def _ping(self, path):
+        """Check device liveness by probing with real prompt detection.
+
+        Uses TelnetConnection.probe_prompt() (v2.1) which sends \r\n
+        and waits for a recognised device prompt.  Falls back to
+        select()-based socket check on older TelnetConnection objects.
+        """
+        with devices_lock:
+            conn = devices.get(path)
+        if not conn or not conn.sock:
+            return False
+        try:
+            t0 = time.time()
+            # Prefer prompt-based probe (more accurate)
+            if hasattr(conn, 'probe_prompt'):
+                alive = conn.probe_prompt(timeout=3.0)
+            else:
+                # Fallback: select-based socket check
+                import select
+                _, writable, errored = select.select([], [conn.sock], [conn.sock], 0.5)
+                if errored:
+                    raise ConnectionError('Socket error')
+                if not writable:
+                    raise ConnectionError('Socket not writable')
+                alive = True
+            with self.lock:
+                self.status.setdefault(path, {})['response_time'] = round(time.time() - t0, 3)
+            return alive
+        except Exception:
+            try:
+                port = int(path.split(':')[1])
+                nc = TelnetConnection('127.0.0.1', port)
+                nc.connect()
+                with devices_lock:
+                    old = devices.get(path)
+                    if old:
+                        try: old.close()
+                        except OSError: pass
+                    devices[path] = nc
+                return True
+            except Exception as e:
+                logger.debug('Ping reconnect failed for %s: %s', path, e)
                 return False
     def _try_reconnect(self, path):
         with devices_lock:

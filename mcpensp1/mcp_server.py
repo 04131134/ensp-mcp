@@ -5,6 +5,7 @@ logger = logging.getLogger(__name__)
 # Direct module imports for Phase 3 (bypass HTTP round-trip)
 from device_manager import dm
 from command_executor import cmd_executor, BLOCKED_COMMANDS, BLOCKED_PREFIXES, is_blocked_command
+from services import kb, topo_engine, config_methods
 
 from urllib.parse import quote
 ENSP_API_KEY = os.environ.get('ENSP_API_KEY', '')
@@ -169,6 +170,84 @@ async def _direct_batch_cmd(path: str, commands: list, **opts) -> dict:
             results.append({'command': cmd, 'success': False, 'output': str(e)[:200]})
     return {'success': True, 'path': path, 'results': results,
             'total': cmd_count, 'success_count': success_count}
+
+
+
+# ---- Snapshot / Rollback / Fetch Name / Group Cmd helpers ----
+
+async def _direct_fetch_name(path: str) -> str:
+    """Fetch device name directly via Telnet."""
+    conn = dm.get(path)
+    if not conn:
+        return json.dumps({'success': False, 'error': 'Device not connected'})
+    try:
+        raw = await conn.send_cmd_async('display version')
+        name = None
+        dt = 'unknown'
+        if raw:
+            lower = raw.lower()
+            if 'huawei' in lower:
+                dt = 'huawei'
+            elif 'h3c' in lower or 'hpe' in lower:
+                dt = 'h3c'
+            elif 'cisco' in lower:
+                dt = 'cisco'
+            elif 'juniper' in lower:
+                dt = 'juniper'
+            if dt in ('huawei', 'h3c'):
+                nr = await conn.send_cmd_async('display current-configuration | include sysname')
+                if nr and 'Unrecognized' not in nr and 'Error' not in nr:
+                    import re
+                    m = re.search(r'^sysname\s+(\S+)', nr, re.IGNORECASE | re.MULTILINE)
+                    if m:
+                        name = m.group(1)
+        dm.set_name(path, name or path)
+        dm.set_type(path, dt)
+        return json.dumps({'success': True, 'path': path, 'name': dm.get_name(path), 'device_type': dt})
+    except Exception as e:
+        return json.dumps({'success': False, 'error': str(e)[:200]})
+
+
+async def _direct_group_cmd(paths: list, command: str) -> dict:
+    """Send command to multiple devices directly."""
+    results = []
+    for path in paths:
+        r = await _direct_send_cmd(path, command)
+        try:
+            results.append({'path': path, **json.loads(r)})
+        except Exception:
+            results.append({'path': path, 'success': False, 'error': r[:200]})
+    return {'success': True, 'results': results}
+
+
+async def _direct_snapshot(path: str, label: str = None) -> dict:
+    """Create a config snapshot directly."""
+    conn = dm.get(path)
+    if not conn:
+        return {'success': False, 'error': 'Device not connected'}
+    try:
+        config = await conn.send_cmd_async('display current-configuration')
+        import time as _time
+        snap_id = f"{path.replace(':', '_')}_{int(_time.time())}"
+        return kb.save_snapshot(snap_id, config, path, label)
+    except Exception as e:
+        return {'success': False, 'error': str(e)[:200]}
+
+
+async def _direct_rollback(path: str, snapshot_id: str) -> dict:
+    """Directly rollback device config from snapshot."""
+    snap = kb.get_snapshot_data(snapshot_id) if hasattr(kb, 'get_snapshot_data') else None
+    if not snap:
+        return {'success': False, 'error': 'Snapshot not found'}
+    conn = dm.get(path)
+    if not conn:
+        return {'success': False, 'error': 'Device not connected'}
+    try:
+        for cmd in snap.get('commands', []):
+            await conn.send_cmd_async(cmd)
+        return {'success': True, 'path': path, 'snapshot_id': snapshot_id}
+    except Exception as e:
+        return {'success': False, 'error': str(e)[:200]}
 
 
 # ==================== HTTP fallback (legacy) ====================
@@ -341,16 +420,15 @@ async def call_tool(name, arguments):
             text = await _direct_disconnect(arguments["path"])
         elif name == "get_connected_devices":
             text = json.dumps(dm.get_connected_summary(), ensure_ascii=False)
-        elif name == "rename_device": text = await mcp_req("POST", "/api/devices/rename", json_data={"path": arguments["path"], "name": arguments["name"]})
-        elif name == "fetch_device_name": text = await mcp_req("POST", "/api/devices/fetch-name", json_data={"path": arguments["path"]})
+        elif name == "rename_device": dm.set_name(arguments["path"], arguments["name"]); text = json.dumps({"success": True, "path": arguments["path"], "name": arguments["name"]})
+        elif name == "fetch_device_name": text = await _direct_fetch_name(arguments["path"])
         elif name == "get_command_catalog":
             params = {}
             for k in ["category","device_type","risk"]:
                 if arguments.get(k): params[k] = arguments[k]
             text = await mcp_req("GET", "/api/kb/catalog", params=params)
         elif name == "get_device_capabilities":
-            params = {"path": arguments["path"]} if arguments.get("path") else {}
-            text = await mcp_req("GET", "/api/kb/capabilities", params=params)
+            text = json.dumps(kb.get_device_capabilities(arguments.get("path")), ensure_ascii=False)
         elif name == "get_device_history":
             if arguments.get('path'):
                 safe_path = quote(str(arguments['path']), safe='')
@@ -363,10 +441,10 @@ async def call_tool(name, arguments):
                 if arguments.get(k): params[k] = arguments[k]
             if arguments.get("limit"): params["limit"] = arguments["limit"]
             text = await mcp_req("GET", "/api/kb/commands", params=params)
-        elif name == "get_kb_stats": text = await mcp_req("GET", "/api/kb/stats")
-        elif name == "get_topology": text = await mcp_req("GET", "/api/topology")
-        elif name == "save_topology": text = await mcp_req("POST", "/api/topology", json_data=arguments.get("data", {}))
-        elif name == "find_topology_path": text = await mcp_req("GET", "/api/topology/path", params={"start": arguments["start"], "end": arguments["end"]})
+        elif name == "get_kb_stats": text = json.dumps(kb.get_stats(), ensure_ascii=False)
+        elif name == "get_topology": text = json.dumps(topo_engine.get_summary(), ensure_ascii=False)
+        elif name == "save_topology": topo_engine.load(arguments.get("data", {})); text = json.dumps({"success": True})
+        elif name == "find_topology_path": text = json.dumps(topo_engine.find_path(arguments["start"], arguments["end"]) or {"error": "No path found"}, ensure_ascii=False)
         elif name == "get_topology_device":
             safe_id = quote(str(arguments['node_id']), safe='')
             text = await mcp_req("GET", f"/api/topology/device/{safe_id}")
@@ -376,20 +454,15 @@ async def call_tool(name, arguments):
             if arguments.get("view_type"): params["view_type"] = arguments["view_type"]
             text = await mcp_req("GET", "/api/kb/structured", params=params)
         elif name == "suggest_commands":
-            text = await mcp_req("GET", "/api/kb/suggest", params={"model": arguments["model"], "view_type": arguments.get("view_type", "")})
+            text = json.dumps(kb.suggest_commands(arguments["model"], arguments.get("view_type", "")), ensure_ascii=False)
         elif name == "scan_device_commands":
-            text = await mcp_req("POST", "/api/kb/scan", json_data={"path": arguments["path"]})
+            text = json.dumps(kb.scan_device_commands(arguments["path"]), ensure_ascii=False)
         elif name == "get_best_practices":
-            params = {}
-            if arguments.get("priority"): params["priority"] = arguments["priority"]
-            if arguments.get("applies_to"): params["applies_to"] = arguments["applies_to"]
-            text = await mcp_req("GET", "/api/kb/best-practice", params=params)
+            text = json.dumps(kb.get_best_practices(arguments.get("priority"), arguments.get("applies_to")), ensure_ascii=False)
         elif name == "get_experiences":
-            params = {}
-            if arguments.get("experiment"): params["experiment"] = arguments["experiment"]
-            text = await mcp_req("GET", "/api/kb/experience", params=params)
+            text = json.dumps(kb.get_experiences(arguments.get("experiment")), ensure_ascii=False)
         elif name == "record_experience":
-            text = await mcp_req("POST", "/api/kb/experience", json_data=arguments)
+            text = json.dumps(kb.record_experience(arguments), ensure_ascii=False)
         elif name == "detect_device_view":
             text = await mcp_req("POST", "/api/kb/detect-view", json_data={"prompt": arguments["prompt"]})
         elif name == "get_config_order":
@@ -408,7 +481,7 @@ async def call_tool(name, arguments):
                 auto_undo_tm=arguments.get("auto_undo_tm", True))
             text = json.dumps(result, ensure_ascii=False)
         elif name == "snapshot_config":
-            text = await mcp_req("POST", "/api/devices/snapshot", json_data={"path": arguments["path"], "label": arguments.get("label")})
+            text = json.dumps(await _direct_snapshot(arguments["path"], arguments.get("label")), ensure_ascii=False)
         elif name == "list_snapshots":
             params = {}
             if arguments.get("path"): params["path"] = arguments["path"]
@@ -429,15 +502,15 @@ async def call_tool(name, arguments):
         elif name == "list_templates":
             text = await mcp_req("GET", "/api/kb/templates")
         elif name == "group_command":
-            text = await mcp_req("POST", "/api/devices/group-command", json_data={"paths": arguments["paths"], "command": arguments["command"]})
+            text = json.dumps(await _direct_group_cmd(arguments["paths"], arguments["command"]), ensure_ascii=False)
         elif name == "suggest_next_steps":
-            text = await mcp_req("POST", "/api/devices/suggest-next", json_data={"path": arguments["path"]})
+            text = json.dumps({"suggested": [], "note": "Direct mode - query KB for suggestions"})
         elif name == "generate_lab_report":
             text = await mcp_req("POST", "/api/kb/lab-report", json_data={"name": arguments.get("name", "eNSP Lab Report"), "paths": arguments.get("paths")})
         elif name == "auto_record_experience":
             text = await mcp_req("POST", "/api/kb/auto-extract", json_data={"path": arguments["path"]})
         elif name == "get_config_guidance":
-            text = await mcp_req("GET", "/api/kb/config-guidance", params={"topic": arguments["topic"]})
+            text = json.dumps(kb.get_config_guidance(arguments["topic"]), ensure_ascii=False)
         # ---- Agent Runtime v3.0 ----
         elif name == "agent_memory_query":
             params = {"limit": arguments.get("limit", 20)}
@@ -469,18 +542,12 @@ async def call_tool(name, arguments):
         elif name == "agent_daily_review":
             text = await mcp_req("POST", "/api/agent/learning/daily-review")
         # ---- ÷ ----
-        elif name == "config_method_list":
-            text = await mcp_req("GET", "/api/config-methods/list", params={"category": arguments.get("category", "")})
-        elif name == "config_method_get":
-            text = await mcp_req("GET", f"/api/config-methods/get/{arguments['method_id']}")
-        elif name == "config_method_search":
-            text = await mcp_req("GET", "/api/config-methods/search", params={"keyword": arguments["keyword"]})
-        elif name == "config_method_add":
-            text = await mcp_req("POST", "/api/config-methods/add", json_data=arguments["method_data"])
-        elif name == "config_method_steps":
-            text = await mcp_req("GET", f"/api/config-methods/steps/{arguments['method_id']}")
-        elif name == "config_method_update":
-            text = await mcp_req("POST", f"/api/config-methods/update/{arguments['method_id']}", json_data=arguments["updates"])
+        elif name == "config_method_list": text = json.dumps(config_methods.list_methods(arguments.get("category")), ensure_ascii=False)
+        elif name == "config_method_get": text = json.dumps(config_methods.get_method(arguments["method_id"]), ensure_ascii=False)
+        elif name == "config_method_search": text = json.dumps(config_methods.search_methods(arguments["keyword"]), ensure_ascii=False)
+        elif name == "config_method_add": text = json.dumps(config_methods.add_method(arguments["method_data"]), ensure_ascii=False)
+        elif name == "config_method_steps": text = json.dumps(config_methods.get_method_steps(arguments["method_id"]), ensure_ascii=False)
+        elif name == "config_method_update": text = json.dumps(config_methods.update_method(arguments["method_id"], arguments["updates"]), ensure_ascii=False)
         elif name == "config_summary":
             text = await mcp_req("POST", "/api/config-summary", json_data={
                 "goal": arguments["goal"],

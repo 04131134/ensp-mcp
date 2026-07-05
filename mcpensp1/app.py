@@ -8,6 +8,7 @@ from flask import Flask, render_template, jsonify, request, make_response
 from flask_socketio import SocketIO, emit, join_room
 from agent.bootstrap import init_agent_runtime, get_agent_runtime
 from device_manager import dm
+from services import kb, topo_engine
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('ENSP_SECRET_KEY', secrets.token_hex(32))
@@ -1506,7 +1507,6 @@ class TelnetConnection:
                 except OSError: pass
                 self.sock = None
 
-kb = KnowledgeBase(app.config['KB_FOLDER'])
 def _extract_topo_names(data):
     """Extract port鈫抧ame mapping from topology data."""
     global topo_names
@@ -1528,7 +1528,6 @@ def _extract_topo_names(data):
                 if path in devices:
                     device_names[path] = topo_name
 
-topo_engine = TopologyEngine()
 heartbeat = HeartbeatMonitor(kb)
 
 # ==================== Agent Runtime v3.0 集成 ====================

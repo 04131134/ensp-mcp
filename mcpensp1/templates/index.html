@@ -1,272 +1,422 @@
-﻿<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' ws: wss:; frame-ancestors 'self';"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<title>eNSP MCP</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' ws: wss:; frame-ancestors 'self';">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>eNSP MCP — 智能网络实验平台</title>
 <style>
+/* ====== 基础重置 ====== */
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:sans-serif;background:#1e1e2e;color:#cdd6f4;height:100vh;display:flex;flex-direction:column}
-.hdr{padding:10px 16px;background:#181825;border-bottom:1px solid #313244;display:flex;justify-content:space-between;align-items:center}
-.hdr h1{font-size:14px}.hl{display:flex;align-items:center;gap:8px}.hr{display:flex;align-items:center;gap:6px}
-.btn{border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px}
-.btn-scan{background:#89b4fa;color:#1e1e2e}.btn-upload{background:#a6e3a1;color:#1e1e2e}
-.btn-nav{background:#313244;color:#cdd6f4}.btn-nav.active{background:#89b4fa;color:#1e1e2e}
-.btn-refresh{background:#313244;color:#cdd6f4;font-size:10px;padding:4px 8px}
-.btn:hover{opacity:0.85}#topoIn{display:none}.topo-ind{font-size:11px;color:#a6e3a1}
+:root{
+  --bg-base:#1e1e2e;--bg-mantle:#181825;--bg-crust:#11111b;
+  --surface0:#313244;--surface1:#45475a;--surface2:#585b70;
+  --text:#cdd6f4;--subtext:#a6adc8;--overlay:#6c7086;
+  --blue:#89b4fa;--green:#a6e3a1;--red:#f38ba8;--yellow:#f9e2af;
+  --mauve:#cba6f7;--peach:#fab387;--teal:#94e2d5;--sky:#89dceb;
+  --radius:6px;--radius-lg:10px;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-base);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+button{font-family:inherit}
+input,textarea,select{font-family:inherit}
+
+/* ====== 顶部栏 ====== */
+.hdr{padding:8px 16px;background:var(--bg-mantle);border-bottom:1px solid var(--surface0);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.hdr h1{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.hdr h1 .logo{font-size:18px}
+.hl{display:flex;align-items:center;gap:8px}
+.hr{display:flex;align-items:center;gap:6px}
+
+/* ====== 按钮 ====== */
+.btn{border:none;padding:5px 12px;border-radius:var(--radius);cursor:pointer;font-size:12px;font-weight:500;transition:all .15s}
+.btn-scan{background:var(--blue);color:var(--bg-base)}.btn-scan:hover{filter:brightness(1.1)}
+.btn-upload{background:var(--green);color:var(--bg-base)}.btn-upload:hover{filter:brightness(1.1)}
+.btn-warn{background:var(--yellow);color:var(--bg-base)}.btn-warn:hover{filter:brightness(1.1)}
+.btn-danger{background:var(--red);color:var(--bg-base)}.btn-danger:hover{filter:brightness(1.1)}
+.btn-mauve{background:var(--mauve);color:var(--bg-base)}.btn-mauve:hover{filter:brightness(1.1)}
+.btn-teal{background:var(--teal);color:var(--bg-base)}.btn-teal:hover{filter:brightness(1.1)}
+.btn-nav{background:var(--surface0);color:var(--text);font-size:11px}.btn-nav:hover{background:var(--surface1)}
+.btn-nav.active{background:var(--blue);color:var(--bg-base)}
+.btn-ghost{background:transparent;color:var(--overlay);border:1px solid var(--surface0);padding:4px 10px;font-size:11px}
+.btn-ghost:hover{color:var(--text);border-color:var(--surface1)}
+.btn-sm{padding:3px 8px;font-size:10px}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+
+/* ====== 输入框 ====== */
+.inp{background:var(--bg-crust);border:1px solid var(--surface0);padding:5px 8px;border-radius:var(--radius);color:var(--text);font-size:12px}
+.inp:focus{outline:none;border-color:var(--blue)}
+.inp-sm{padding:4px 6px;font-size:11px;width:50px}
+
+/* ====== 主布局 ====== */
 .content{flex:1;display:flex;overflow:hidden}
-.sidebar{width:240px;background:#181825;border-right:1px solid #313244;display:flex;flex-direction:column;flex-shrink:0}
-.pr{padding:10px 12px;border-bottom:1px solid #313244;display:flex;gap:6px;align-items:center}
-.pr input{width:50px;background:#11111b;border:1px solid #313244;padding:4px;border-radius:4px;color:#cdd6f4;font-size:11px}
-.dl{flex:1;overflow-y:auto;padding:6px}
-.di{padding:8px;margin-bottom:4px;background:#11111b;border-radius:6px;display:flex;flex-direction:column;gap:4px;border-left:3px solid transparent}
-.di:hover{background:#181825}.di.connected{border-left-color:#a6e3a1}
-.di.unresponsive{border-left-color:#f9e2af}
-.dh{display:flex;justify-content:space-between;align-items:center}.dinf{flex:1}
-.dn{font-size:12px;display:flex;align-items:center;gap:4px}
-.dn .ei{opacity:0;cursor:pointer;font-size:10px}.dn:hover .ei{opacity:1}
-.dm{display:flex;gap:8px;align-items:center;margin-top:2px}
-.dp{font-size:10px;color:#6c7086}.dt{font-size:9px;padding:1px 4px;border-radius:3px;background:#313244;color:#89b4fa}
-.hb{width:6px;height:6px;border-radius:50%;display:inline-block}
-.hb.alive{background:#a6e3a1}.hb.unresponsive{background:#f9e2af}.hb.dead{background:#f38ba8}
-.dar{display:flex;gap:4px;justify-content:flex-end}
-.cb{background:#a6e3a1;padding:3px 8px;border-radius:4px;cursor:pointer;color:#1e1e2e;font-size:10px;flex:1;border:none}
-.cbg{background:#313244;color:#a6e3a1;padding:3px 8px;border-radius:4px;font-size:10px;cursor:pointer;flex:1;text-align:center;border:none}
-.rnb{background:#313244;border:none;padding:3px 6px;border-radius:4px;cursor:pointer;color:#6c7086;font-size:9px}
-.fnb{background:#313244;border:none;padding:3px 6px;border-radius:4px;cursor:pointer;color:#f9e2af;font-size:9px}
-.db{background:#f38ba8;border:none;padding:3px 8px;border-radius:4px;cursor:pointer;color:#1e1e2e;font-size:10px;width:100%;margin-top:2px}
+
+/* ====== 左侧边栏 ====== */
+.sidebar{width:260px;background:var(--bg-mantle);border-right:1px solid var(--surface0);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-section{border-bottom:1px solid var(--surface0)}
+.sidebar-title{padding:8px 12px;font-size:11px;font-weight:600;color:var(--overlay);text-transform:uppercase;letter-spacing:0.5px;display:flex;justify-content:space-between;align-items:center}
+
+/* 端口扫描区域 */
+.pr{padding:8px 12px;display:flex;gap:6px;align-items:center}
+.pr label{font-size:11px;color:var(--overlay);white-space:nowrap}
+
+/* 设备列表 */
+.device-list{flex:1;overflow-y:auto;padding:4px 6px}
+.di{padding:8px 10px;margin-bottom:3px;background:var(--bg-crust);border-radius:var(--radius);border-left:3px solid transparent;cursor:pointer;transition:all .15s}
+.di:hover{background:var(--bg-mantle)}
+.di.selected{background:var(--bg-mantle);border-left-color:var(--blue)}
+.di.connected{border-left-color:var(--green)}
+.di.unresponsive{border-left-color:var(--yellow)}
+.dh{display:flex;justify-content:space-between;align-items:center}
+.dn{font-size:12px;font-weight:500;display:flex;align-items:center;gap:6px}
+.dn .edit-icon{opacity:0;cursor:pointer;font-size:10px;color:var(--overlay);transition:opacity .15s}
+.di:hover .dn .edit-icon{opacity:1}
+.dm{display:flex;gap:8px;align-items:center;margin-top:3px}
+.dp{font-size:10px;color:var(--overlay)}
+.dt{font-size:9px;padding:1px 5px;border-radius:3px;background:var(--surface0);color:var(--blue);font-weight:500}
+.hb{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+.hb.alive{background:var(--green)}.hb.unresponsive{background:var(--yellow)}.hb.dead{background:var(--red)}
+
+/* 设备操作按钮组 */
+.dar{display:flex;gap:3px;margin-top:5px;flex-wrap:wrap}
+.dar .btn{flex:1;min-width:0;text-align:center}
+
+/* ====== 主内容区 ====== */
 .ma{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.tabs{background:#181825;border-bottom:1px solid #313244;display:flex;padding:0 8px;overflow-x:auto;min-height:36px}
-.tab{padding:8px 14px;font-size:11px;color:#6c7086;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:6px;flex-shrink:0}
-.tab:hover{color:#cdd6f4}.tab.active{color:#cdd6f4;border-bottom-color:#89b4fa}
-.tab .cls{width:14px;height:14px;border-radius:50%;background:#313244;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;border:none;color:#6c7086;cursor:pointer}
-.tab .cls:hover{background:#f38ba8;color:#1e1e2e}
-.et{padding:8px 14px;font-size:11px;color:#6c7086}
+
+/* 选项卡栏 */
+.tabs-bar{background:var(--bg-mantle);border-bottom:1px solid var(--surface0);display:flex;align-items:center;min-height:38px;flex-shrink:0}
+.tabs{display:flex;overflow-x:auto;flex:1;padding:0 4px}
+.tabs::-webkit-scrollbar{height:2px}
+.tabs::-webkit-scrollbar-thumb{background:var(--surface0);border-radius:2px}
+.tab{padding:8px 14px;font-size:11px;color:var(--overlay);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:6px;flex-shrink:0;transition:all .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--text);border-bottom-color:var(--blue)}
+.tab .cls{width:15px;height:15px;border-radius:50%;background:transparent;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;border:none;color:var(--overlay);cursor:pointer;transition:all .15s}
+.tab .cls:hover{background:var(--red);color:var(--bg-base)}
+.tab-actions{padding:0 8px;display:flex;gap:4px;flex-shrink:0}
+
+/* 终端区域 */
 .terminals{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px}
-.tp{background:#11111b;border-radius:8px;display:none;flex-direction:column;height:300px;overflow:hidden}
+.tp{background:var(--bg-crust);border-radius:var(--radius-lg);display:none;flex-direction:column;flex:1;min-height:200px;overflow:hidden;border:1px solid var(--surface0)}
 .tp.active{display:flex}
-.th{padding:6px 12px;background:#181825;border-bottom:1px solid #313244;font-size:11px;color:#89b4fa;display:flex;justify-content:space-between;align-items:center}
-.th .ri{opacity:0;cursor:pointer;font-size:10px}.th:hover .ri{opacity:1}
-.tb{flex:1;padding:10px;overflow-y:auto;font-family:Consolas,monospace;font-size:11px;line-height:1.5}
-.tb .output{color:#a6e3a1;white-space:pre-wrap;word-break:break-all}
-.tb .input{color:#89b4fa;white-space:pre-wrap}.tb .error{color:#f38ba8}.tb .system{color:#6c7086;font-style:italic}
-.ti{display:flex;padding:6px 12px;gap:8px;border-top:1px solid #313244;background:#181825}
-.ti .pm{color:#a6e3a1;font-size:11px;font-family:Consolas,monospace}
-.ti input{flex:1;background:transparent;border:none;color:#cdd6f4;font-size:11px;font-family:Consolas,monospace;outline:none}
-.logs{background:#181825;border-top:1px solid #313244;max-height:80px;overflow-y:auto;padding:6px 8px;font-size:10px}
-.li{padding:1px 0}.li.success{color:#a6e3a1}.li.error{color:#f38ba8}
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:1000}
-.mc{background:#181825;padding:20px;border-radius:8px;min-width:300px}
-.mt{font-size:14px;margin-bottom:12px}
-.mi{width:100%;background:#11111b;border:1px solid #313244;padding:8px;border-radius:4px;color:#cdd6f4;font-size:12px;margin-bottom:12px}
-.mb{display:flex;justify-content:flex-end;gap:8px}
-.mbtn{padding:6px 12px;border-radius:4px;cursor:pointer;font-size:12px;border:none}
-.mbtn.cancel{background:#313244;color:#cdd6f4}.mbtn.confirm{background:#89b4fa;color:#1e1e2e}
-.sp{display:none;flex:1;overflow-y:auto;padding:12px}
-.sp.active{display:flex;flex-direction:column}
-.cmd-card{background:#11111b;border-radius:6px;padding:10px;margin-bottom:6px}
-.cmd-name{font-size:12px;color:#89b4fa;margin-bottom:4px}
-.cmd-desc{font-size:11px;color:#a6adc8;margin-bottom:4px}
-.cmd-meta{display:flex;gap:8px;font-size:10px;color:#6c7086}
-.cmd-output{font-size:10px;color:#a6e3a1;background:#181825;padding:4px 6px;border-radius:3px;margin-top:4px;font-family:monospace}
-.cmd-tag{font-size:9px;padding:1px 4px;border-radius:3px;background:#313244;color:#cba6f7;margin-right:4px}
-.cmd-tags{margin-top:4px}
-.risk-safe{color:#a6e3a1}.risk-low{color:#f9e2af}.risk-medium{color:#fab387}.risk-high{color:#f38ba8}
-.status-badge{font-size:9px;padding:1px 4px;border-radius:3px}
-.status-badge.verified{background:#1e1e2e;color:#a6e3a1}.status-badge.supported{background:#1e1e2e;color:#cba6f7}
-.status-badge.failed{background:#1e1e2e;color:#f38ba8}.status-badge.unsupported{background:#1e1e2e;color:#6c7086}
-.cmd-card.verified{border-left:3px solid #a6e3a1}.cmd-card.failed{border-left:3px solid #f38ba8}
-.cmd-card.supported{border-left:3px solid #cba6f7}.cmd-card.unsupported{border-left:3px solid #6c7086}
-.cap-section{margin-bottom:12px}
-.cap-title{font-size:13px;margin-bottom:6px;font-weight:bold}
-.cap-count{font-size:10px;color:#6c7086;margin-left:8px;font-weight:normal}
-.filter-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
-.filter-row select,.filter-row input{background:#11111b;border:1px solid #313244;padding:4px 6px;border-radius:4px;color:#cdd6f4;font-size:11px}
-.filter-row select{min-width:80px}
-.kb-stats{display:flex;gap:16px;margin-bottom:12px;padding:8px;background:#11111b;border-radius:6px}
-.kb-stat{text-align:center}.kb-stat .num{font-size:18px;color:#89b4fa;font-weight:bold}.kb-stat .lbl{font-size:10px;color:#6c7086}
-.topo-empty{text-align:center;padding:40px;color:#6c7086;font-size:12px}
-#topoCanvas{width:100%;flex:1;min-height:300px;background:#11111b;border-radius:6px;overflow:hidden;position:relative}
-#topoInfo{font-size:11px;color:#6c7086;margin-top:6px}
-.kb-tabs{display:flex;gap:2px;margin-bottom:10px;flex-wrap:wrap}
-.kb-tab{padding:5px 10px;font-size:11px;color:#6c7086;cursor:pointer;border-radius:4px;background:#181825;border:1px solid #313244}
-.kb-tab:hover{color:#cdd6f4;background:#313244}
-.kb-tab.active{color:#1e1e2e;background:#89b4fa;border-color:#89b4fa}
-.kb-section{display:none;flex:1;overflow-y:auto}
-.kb-section.active{display:flex;flex-direction:column}
-.bp-card{background:#11111b;border-radius:6px;padding:10px;margin-bottom:6px;border-left:3px solid #f9e2af}
-.bp-card.critical{border-left-color:#f38ba8}.bp-card.high{border-left-color:#fab387}.bp-card.medium{border-left-color:#f9e2af}
-.bp-rule{font-size:12px;color:#cdd6f4;font-weight:bold;margin-bottom:4px}
-.bp-detail{font-size:11px;color:#a6adc8;margin-bottom:4px}
-.bp-meta{display:flex;gap:8px;font-size:10px;color:#6c7086}
-.exp-card{background:#11111b;border-radius:6px;padding:12px;margin-bottom:8px;border-left:3px solid #89b4fa}
-.exp-title{font-size:13px;color:#89b4fa;font-weight:bold;margin-bottom:6px}
-.exp-section{margin-top:8px}
-.exp-section-title{font-size:11px;color:#cba6f7;font-weight:bold;margin-bottom:4px}
-.exp-item{font-size:11px;color:#a6adc8;padding:2px 0;padding-left:8px;border-left:2px solid #313244;margin-bottom:2px}
-.exp-cmd{font-family:Consolas,monospace;color:#a6e3a1;font-size:11px}
-.ts-card{background:#11111b;border-radius:6px;padding:10px;margin-bottom:6px;border-left:3px solid #f38ba8}
-.ts-title{font-size:12px;color:#f38ba8;font-weight:bold;margin-bottom:4px}
-.ts-field{font-size:11px;margin-bottom:3px}
-.ts-label{color:#cba6f7;font-weight:bold}
-.ts-value{color:#a6adc8}
-.ts-cmd{font-family:Consolas,monospace;color:#a6e3a1;font-size:10px}
-.topic-card{background:#11111b;border-radius:6px;padding:10px;margin-bottom:8px}
-.topic-title{font-size:12px;color:#cba6f7;font-weight:bold;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
-.topic-cmds{margin-top:6px}
-.topic-cmd{font-size:11px;padding:3px 0;display:flex;gap:8px;border-bottom:1px solid #1e1e2e}
-.topic-cmd .cmd-c{font-family:Consolas,monospace;color:#a6e3a1;min-width:280px}
-.topic-cmd .cmd-d{color:#a6adc8}
-.topic-tip{font-size:10px;color:#f9e2af;padding:4px 8px;background:#1e1e2e;border-radius:3px;margin-top:4px}
-.order-step{font-size:11px;color:#a6adc8;padding:4px 8px;background:#11111b;border-radius:4px;margin-bottom:3px;display:flex;gap:8px}
-.order-step .step-n{color:#89b4fa;font-weight:bold;min-width:24px}
-.device-sel{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
-.device-sel-btn{padding:3px 8px;font-size:10px;border-radius:4px;border:1px solid #313244;background:#181825;color:#6c7086;cursor:pointer}
-.device-sel-btn:hover{color:#cdd6f4;background:#313244}
-.device-sel-btn.active{background:#89b4fa;color:#1e1e2e;border-color:#89b4fa}
-.view-sel{display:flex;gap:4px;margin-bottom:8px}
-.view-sel-btn{padding:3px 10px;font-size:10px;border-radius:4px;border:1px solid #313244;background:#181825;color:#6c7086;cursor:pointer}
-.view-sel-btn:hover{color:#cdd6f4}
-.view-sel-btn.active{background:#cba6f7;color:#1e1e2e;border-color:#cba6f7}
+.th{padding:8px 14px;background:var(--bg-mantle);border-bottom:1px solid var(--surface0);font-size:12px;color:var(--blue);display:flex;justify-content:space-between;align-items:center;font-weight:500}
+.th .ri{opacity:0;cursor:pointer;font-size:11px;color:var(--overlay);transition:opacity .15s}
+.th:hover .ri{opacity:1}
+.tb{flex:1;padding:10px;overflow-y:auto;font-family:'Cascadia Code','Fira Code',Consolas,monospace;font-size:12px;line-height:1.6}
+.tb .output{color:var(--green);white-space:pre-wrap;word-break:break-all}
+.tb .input{color:var(--blue);white-space:pre-wrap}
+.tb .error{color:var(--red)}
+.tb .system{color:var(--overlay);font-style:italic;font-size:11px}
+.tb .batch{color:var(--mauve)}
+.tb .verify{color:var(--teal)}
+.ti{display:flex;padding:6px 12px;gap:8px;border-top:1px solid var(--surface0);background:var(--bg-mantle);align-items:center}
+.ti .pm{color:var(--green);font-size:12px;font-family:Consolas,monospace;font-weight:bold}
+.ti input{flex:1;background:transparent;border:none;color:var(--text);font-family:Consolas,monospace;font-size:12px;outline:none}
+.ti input:disabled{opacity:0.4;cursor:not-allowed;color:var(--surface1)}
+
+/* 设备操作栏 */
+.device-toolbar{padding:6px 10px;background:var(--bg-mantle);border-bottom:1px solid var(--surface0);display:none;gap:4px;flex-wrap:wrap;align-items:center;flex-shrink:0}
+.device-toolbar.visible{display:flex}
+.device-toolbar .sep{width:1px;height:20px;background:var(--surface0);margin:0 4px}
+.device-toolbar label{font-size:10px;color:var(--overlay);margin-right:2px}
+
+/* ====== 面板（知识库/拓扑/实验/日志） ====== */
+.panel-container{flex:1;display:none;flex-direction:column;overflow:hidden}
+.panel-container.active{display:flex}
+
+/* 知识库面板 */
+.kb-header{padding:12px 16px;background:var(--bg-mantle);border-bottom:1px solid var(--surface0)}
+.kb-stats{display:flex;gap:12px;margin-bottom:10px}
+.kb-stat{text-align:center;padding:8px 16px;background:var(--bg-crust);border-radius:var(--radius);flex:1}
+.kb-stat .num{font-size:20px;font-weight:700;color:var(--blue)}
+.kb-stat .lbl{font-size:10px;color:var(--overlay);margin-top:2px}
+.kb-tabs{display:flex;gap:2px;overflow-x:auto;flex-wrap:wrap}
+.kb-tab{padding:6px 12px;font-size:11px;color:var(--overlay);cursor:pointer;border-radius:var(--radius) var(--radius) 0 0;transition:all .15s;white-space:nowrap}
+.kb-tab:hover{color:var(--text);background:var(--surface0)}
+.kb-tab.active{color:var(--bg-base);background:var(--blue);font-weight:500}
+.kb-body{flex:1;overflow-y:auto;padding:12px 16px}
+.kb-section{display:none}.kb-section.active{display:block}
+.device-sel{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.device-sel-btn{padding:3px 8px;font-size:10px;background:var(--surface0);color:var(--text);border:none;border-radius:var(--radius);cursor:pointer}
+.device-sel-btn.active{background:var(--blue);color:var(--bg-base)}
+.view-sel{display:flex;gap:4px;margin-bottom:10px}
+.view-sel-btn{padding:3px 8px;font-size:10px;background:var(--surface0);color:var(--text);border:none;border-radius:var(--radius);cursor:pointer}
+.view-sel-btn.active{background:var(--mauve);color:var(--bg-base)}
+
+/* 拓扑面板 */
+.topo-container{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topo-toolbar{padding:8px 12px;background:var(--bg-mantle);border-bottom:1px solid var(--surface0);display:flex;gap:6px;align-items:center}
+#topoCanvas{flex:1;overflow:auto;padding:16px;position:relative}
+.topo-node{position:absolute;padding:8px 14px;background:var(--bg-crust);border:2px solid var(--surface0);border-radius:var(--radius-lg);cursor:move;font-size:11px;text-align:center;min-width:80px;transition:border-color .15s}
+.topo-node:hover{border-color:var(--blue)}
+.topo-node.core{border-color:var(--red)}
+.topo-node.distribution{border-color:var(--yellow)}
+.topo-node.access{border-color:var(--green)}
+.topo-node.router{border-color:var(--peach)}
+.topo-link{position:absolute;height:2px;background:var(--surface1);transform-origin:0 0}
+.topo-info{padding:8px 12px;background:var(--bg-mantle);border-top:1px solid var(--surface0);font-size:11px;color:var(--overlay)}
+
+/* 实验引擎面板 */
+.exp-header{padding:12px 16px;background:var(--bg-mantle);border-bottom:1px solid var(--surface0);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.exp-body{flex:1;overflow-y:auto;padding:12px 16px}
+.exp-card{background:var(--bg-crust);border:1px solid var(--surface0);border-radius:var(--radius-lg);padding:14px;margin-bottom:10px;transition:border-color .15s}
+.exp-card:hover{border-color:var(--surface1)}
+.exp-card h3{font-size:13px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.exp-card h3 .badge{font-size:9px;padding:2px 6px;border-radius:3px;font-weight:500}
+.badge-running{background:var(--green);color:var(--bg-base)}
+.badge-paused{background:var(--yellow);color:var(--bg-base)}
+.badge-done{background:var(--blue);color:var(--bg-base)}
+.badge-error{background:var(--red);color:var(--bg-base)}
+.exp-detail{font-size:11px;color:var(--subtext);line-height:1.6}
+.exp-detail dt{color:var(--overlay);font-size:10px;margin-top:6px}
+.exp-detail dd{margin-left:0}
+.exp-phases{margin-top:8px}
+.phase-item{padding:4px 8px;font-size:11px;background:var(--bg-mantle);border-radius:var(--radius);margin-bottom:3px;display:flex;justify-content:space-between;align-items:center}
+.phase-status{font-size:9px;padding:1px 5px;border-radius:3px}
+.phase-status.pass{background:rgba(166,227,161,0.2);color:var(--green)}
+.phase-status.fail{background:rgba(243,139,168,0.2);color:var(--red)}
+.phase-status.pending{background:rgba(108,112,134,0.2);color:var(--overlay)}
+
+/* 日志面板 */
+.logs-bar{background:var(--bg-mantle);border-top:1px solid var(--surface0);display:flex;align-items:center;flex-shrink:0}
+.logs-bar .tab{padding:6px 12px;font-size:10px}
+.logs-content{height:180px;overflow-y:auto;padding:6px 10px;font-family:Consolas,monospace;font-size:11px;line-height:1.5;background:var(--bg-crust);flex-shrink:0;transition:height .2s}
+.logs-content.collapsed{height:0;padding:0;overflow:hidden}
+.logs-content .log-line{padding:1px 0}
+.logs-content .log-time{color:var(--overlay);font-size:10px;margin-right:6px}
+.logs-content .log-info{color:var(--text)}
+.logs-content .log-success{color:var(--green)}
+.logs-content .log-error{color:var(--red)}
+.logs-content .log-warn{color:var(--yellow)}
+
+/* ====== 模态框 ====== */
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10000}
+.mc{background:var(--bg-base);border:1px solid var(--surface1);border-radius:var(--radius-lg);padding:20px;min-width:360px;max-width:500px}
+.mt{font-size:14px;font-weight:600;margin-bottom:12px}
+.mi{width:100%;padding:8px 10px;background:var(--bg-crust);border:1px solid var(--surface0);border-radius:var(--radius);color:var(--text);font-size:12px;margin-bottom:12px}
+.mi:focus{outline:none;border-color:var(--blue)}
+.mb{display:flex;gap:8px;justify-content:flex-end}
+.mbtn{padding:6px 16px;border:none;border-radius:var(--radius);cursor:pointer;font-size:12px;font-weight:500}
+.mbtn.cancel{background:var(--surface0);color:var(--text)}
+.mbtn.confirm{background:var(--blue);color:var(--bg-base)}
+
+/* ====== 命令输出卡片 ====== */
+.cmd-card{background:var(--bg-crust);border:1px solid var(--surface0);border-radius:var(--radius);padding:10px;margin-bottom:8px}
+.cmd-card .cmd-title{font-size:12px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.cmd-card .cmd-output{font-family:Consolas,monospace;font-size:11px;line-height:1.5;max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;color:var(--subtext)}
+.cmd-card .cmd-tag{font-size:9px;padding:1px 5px;border-radius:3px;background:var(--surface0);color:var(--blue)}
+
+/* ====== 滚动条 ====== */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface0);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--surface1)}
+
+/* ====== 工具提示 ====== */
+.tooltip{position:absolute;background:var(--surface1);color:var(--text);padding:4px 8px;border-radius:var(--radius);font-size:10px;white-space:nowrap;z-index:9999;pointer-events:none}
 </style>
 </head>
 <body>
+
+<!-- ====== 顶部栏 ====== -->
 <div class="hdr">
   <div class="hl">
-    <h1>eNSP MCP</h1>
-    <button class="btn btn-scan" onclick="scanDevices()">扫描</button>
-    <button class="btn btn-upload" onclick="document.getElementById('topoIn').click()">上传拓扑</button>
-    <input type="file" id="topoIn" style="display:none" accept=".json,.txt,.xml,.topo,.yml,.yaml,.csv,.cfg,.conf" onchange="uploadTopo(this.files[0])">
+    <h1><span class="logo">🌐</span> eNSP MCP</h1>
+    <input type="file" id="topoIn" accept=".topo,.xml">
+    <button class="btn btn-scan btn-sm" onclick="doScan()" title="扫描 eNSP 设备">🔍 扫描</button>
+    <button class="btn btn-upload btn-sm" onclick="document.getElementById('topoIn').click()" title="上传拓扑文件">📁 上传拓扑</button>
+    <button class="btn btn-ghost btn-sm" onclick="doRefresh()" title="刷新设备列表">↻ 刷新</button>
+    <span id="topoInd" class="topo-ind" style="font-size:11px;color:var(--green)"></span>
   </div>
   <div class="hr">
-    <span id="topoInd" class="topo-ind"></span>
-    <button class="btn btn-nav" id="nCat" onclick="sw('cat')">命令目录</button>
-    <button class="btn btn-nav" id="nCap" onclick="sw('cap')">设备能力</button>
-    <button class="btn btn-nav" id="nKb" onclick="sw('kb')">知识库</button>
-    <button class="btn btn-nav" id="nTopo" onclick="sw('topo')">拓扑</button>
+    <button class="btn btn-nav active" id="nDevices" onclick="sw('devices')">🖥️ 设备</button>
+    <button class="btn btn-nav" id="nKb" onclick="sw('kb')">📚 知识库</button>
+    <button class="btn btn-nav" id="nTopo" onclick="sw('topo')">🗺️ 拓扑</button>
+    <button class="btn btn-nav" id="nExp" onclick="sw('exp')">🧪 实验</button>
+    <button class="btn btn-ghost btn-sm" onclick="toggleLogs()" title="切换日志面板">📋 日志</button>
   </div>
 </div>
 
+<!-- ====== 主内容区 ====== -->
 <div class="content">
+
+  <!-- 左侧边栏 -->
   <div class="sidebar">
-    <div class="pr">
-      <input type="number" id="sP" value="2000" min="1" max="65535">
-      <span style="color:#6c7086">-</span>
-      <input type="number" id="eP" value="2050" min="1" max="65535">
+    <div class="sidebar-section">
+      <div class="sidebar-title">端口范围</div>
+      <div class="pr">
+        <label>起始</label><input type="number" id="pS" value="2000" class="inp inp-sm">
+        <label>结束</label><input type="number" id="pE" value="2050" class="inp inp-sm">
+      </div>
     </div>
-    <div class="dl" id="dList">
-      <div style="padding:20px;text-align:center;color:#6c7086;font-size:11px">点击扫描搜索设备</div>
-    </div>
+    <div class="sidebar-title" style="padding:8px 12px">设备列表 <span id="devCount" style="color:var(--blue)">0</span></div>
+    <div class="device-list" id="dList"></div>
   </div>
 
+  <!-- 主内容 -->
   <div class="ma">
-    <div class="tabs" id="tabs">
-      <div class="et">等待设备连接...</div>
-    </div>
-    <div class="terminals" id="terminals"></div>
-    <div id="deviceActions" style="display:none;padding:6px 8px;background:#181825;border-top:1px solid #313244;gap:6px;flex-wrap:wrap">
-      <button class="btn btn-scan" onclick="doBatchCmd()" style="font-size:10px;padding:3px 8px" title="批量发送命令">批量命令</button>
-      <button class="btn btn-scan" onclick="doSuggestNext()" style="font-size:10px;padding:3px 8px" title="根据已执行命令推荐下一步">推荐下一步</button>
-      <button class="btn btn-scan" onclick="doSnapshot()" style="font-size:10px;padding:3px 8px" title="保存当前配置快照">配置快照</button>
-      <button class="btn btn-scan" onclick="doListSnapshots()" style="font-size:10px;padding:3px 8px" title="查看快照列表">快照列表</button>
-    </div>
 
-
-    <div class="sp" id="vCat">
-      <div class="filter-row">
-        <select id="catCat"><option value="">全部分类</option><option value="display">Display</option><option value="config">Config</option><option value="verify">Verify</option><option value="diagnostic">Diagnostic</option></select>
-        <select id="catDev"><option value="">全部设备</option><option value="huawei">Huawei</option><option value="h3c">H3C</option><option value="cisco">Cisco</option><option value="juniper">Juniper</option></select>
-        <select id="catRisk"><option value="">全部风险</option><option value="safe">Safe</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select>
-        <button class="btn btn-scan" onclick="loadCat()" style="font-size:10px;padding:3px 8px">筛选</button>
+    <!-- ====== 设备视图 ====== -->
+    <div class="panel-container active" id="vDevices">
+      <div class="device-toolbar" id="deviceToolbar">
+        <label>快捷操作:</label>
+        <button class="btn btn-sm btn-teal" onclick="doBatchCmd()" title="批量执行多条命令">📦 批量命令</button>
+        <button class="btn btn-sm btn-mauve" onclick="doSuggestNext()" title="分析进度并推荐下一步">💡 建议下一步</button>
+        <div class="sep"></div>
+        <label>快照:</label>
+        <button class="btn btn-sm btn-ghost" onclick="doSnapshot()" title="保存当前配置快照">📸 保存</button>
+        <button class="btn btn-sm btn-ghost" onclick="doListSnapshots()" title="列出所有快照">📋 列表</button>
+        <div class="sep"></div>
+        <label>验证:</label>
+        <button class="btn btn-sm btn-teal" onclick="doVerify('all')" title="全面验证设备配置">✅ 全面验证</button>
+        <button class="btn btn-sm btn-ghost" onclick="doVerify('vlan')">VLAN</button>
+        <button class="btn btn-sm btn-ghost" onclick="doVerify('ospf')">OSPF</button>
+        <button class="btn btn-sm btn-ghost" onclick="doVerify('vrrp')">VRRP</button>
+        <button class="btn btn-sm btn-ghost" onclick="doVerify('stp')">STP</button>
+        <button class="btn btn-sm btn-ghost" onclick="doVerify('ping')">Ping</button>
+        <div class="sep"></div>
+        <label>报告:</label>
+        <button class="btn btn-sm btn-warn" onclick="genLabReport()" title="生成实验报告">📊 生成报告</button>
       </div>
-      <div style="font-size:11px;color:#6c7086;margin-bottom:8px">Total: <span id="catCount">0</span> 条命令</div>
-      <div id="catList"></div>
-    </div>
-
-    <div class="sp" id="vCap">
-      <div style="font-size:11px;color:#6c7086;margin-bottom:8px">已记录设备: <span id="capDevCount">0</span></div>
-      <div id="capList"></div>
-    </div>
-
-    <div class="sp" id="vKb">
-      <div class="kb-stats">
-        <div class="kb-stat"><div class="num" id="kbTotal">0</div><div class="lbl">运行时命令</div></div>
-        <div class="kb-stat"><div class="num" id="kbDevs">0</div><div class="lbl">设备数</div></div>
-        <div class="kb-stat"><div class="num" id="kbExpCount">0</div><div class="lbl">实验经验</div></div>
-        <div class="kb-stat"><div class="num" id="kbBpCount">0</div><div class="lbl">操作规范</div></div>
-        <div class="kb-stat"><div class="num" id="kbTsCount">0</div><div class="lbl">排障案例</div></div>
-      </div>
-      <div class="kb-tabs">
-        <div class="kb-tab active" onclick="switchKbTab('structured', this)">结构化命令</div>
-        <div class="kb-tab" onclick="switchKbTab('bestpractice', this)">操作规范</div>
-        <div class="kb-tab" onclick="switchKbTab('experience', this)">实验经验</div>
-        <div class="kb-tab" onclick="switchKbTab('troubleshoot', this)">排障知识</div>
-        <div class="kb-tab" onclick="switchKbTab('configorder', this)">配置顺序</div>
-        <div class="kb-tab" onclick="switchKbTab('runtime', this)">运行时记录</div>
-        <div class="kb-tab" onclick="switchKbTab('search', this)">搜索</div>
-        <div class="kb-tab" onclick="switchKbTab('templates', this)">配置模板</div>
-        <div class="kb-tab" onclick="switchKbTab('report', this)">实验报告</div>
-      </div>
-      <div class="kb-section active" id="kbStructured">
-        <div class="device-sel" id="kbDeviceSel"></div>
-        <div class="view-sel">
-          <div class="view-sel-btn active" onclick="switchKbView('both', this)">全部视图</div>
-          <div class="view-sel-btn" onclick="switchKbView('user_view', this)">用户视图 &lt;&gt;</div>
-          <div class="view-sel-btn" onclick="switchKbView('system_view', this)">系统视图 []</div>
+      <div class="tabs-bar">
+        <div class="tabs" id="termTabs"></div>
+        <div class="tab-actions">
+          <button class="btn btn-ghost btn-sm" onclick="clearCurTerm()" title="清空当前终端">🗑️ 清空</button>
         </div>
-        <div id="kbStructuredContent"></div>
       </div>
-      <div class="kb-section" id="kbBestpractice"><div id="kbBpContent"></div></div>
-      <div class="kb-section" id="kbExperience"><div id="kbExpContent"></div></div>
-      <div class="kb-section" id="kbTroubleshoot"><div id="kbTsContent"></div></div>
-      <div class="kb-section" id="kbConfigorder"><div id="kbCoContent"></div></div>
-      <div class="kb-section" id="kbSearch">
-        <div style="display:flex;gap:8px;margin-bottom:10px">
-          <input type="text" id="kbSearchInput" placeholder="搜索命令、排障经验..." style="flex:1;padding:6px 10px;background:#1e1e2e;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:12px">
-          <button class="btn btn-scan" onclick="doKbSearch()" style="font-size:11px;padding:4px 12px">搜索</button>
+      <div class="terminals" id="terminals">
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--overlay);font-size:13px;flex-direction:column;gap:8px">
+          <span style="font-size:32px">🖥️</span>
+          <span>选择左侧设备开始操作</span>
+          <span style="font-size:11px">或点击「扫描」发现新设备</span>
         </div>
-        <div id="kbSearchContent"></div>
-      </div>
-      <div class="kb-section" id="kbTemplates">
-        <div style="margin-bottom:10px">
-          <select id="kbTplType" style="padding:6px;background:#1e1e2e;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:12px">
-            <option value="vlan">VLAN</option>
-            <option value="vrrp">VRRP</option>
-            <option value="mstp">MSTP</option>
-            <option value="dhcp">DHCP</option>
-            <option value="ospf">OSPF</option>
-            <option value="lacp">LACP</option>
-            <option value="wlan">WLAN</option>
-          </select>
-          <button class="btn btn-scan" onclick="loadKbTemplate()" style="font-size:11px;padding:4px 12px">生成模板</button>
-        </div>
-        <div id="kbTemplateContent"></div>
-      </div>
-      <div class="kb-section" id="kbReport">
-        <div style="margin-bottom:10px">
-          <input type="text" id="kbReportName" placeholder="实验名称" value="eNSP Lab Report" style="flex:1;padding:6px 10px;background:#1e1e2e;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:12px;width:60%">
-          <button class="btn btn-scan" onclick="genLabReport()" style="font-size:11px;padding:4px 12px">生成报告</button>
-        </div>
-        <div id="kbReportContent"></div>
-      </div>
-
-      <div class="kb-section" id="kbRuntime">
-        <div class="filter-row">
-          <select id="kbCatF"><option value="">全部分类</option><option value="display">Display</option><option value="config">Config</option><option value="verify">Verify</option></select>
-          <button class="btn btn-scan" onclick="loadKbRuntime()" style="font-size:10px;padding:3px 8px">筛选</button>
-        </div>
-        <div id="kbList"></div>
       </div>
     </div>
 
-    <div class="sp" id="vTopo">
+    <!-- ====== 知识库视图 ====== -->
+    <div class="panel-container" id="vKb">
+      <div class="kb-header">
+        <div class="kb-stats">
+          <div class="kb-stat"><div class="num" id="kbTotalCmds">0</div><div class="lbl">总命令数</div></div>
+          <div class="kb-stat"><div class="num" id="kbDevCount">0</div><div class="lbl">设备数</div></div>
+          <div class="kb-stat"><div class="num" id="kbExpCount">0</div><div class="lbl">实验经验</div></div>
+          <div class="kb-stat"><div class="num" id="kbBpCount">0</div><div class="lbl">操作规范</div></div>
+          <div class="kb-stat"><div class="num" id="kbTsCount">0</div><div class="lbl">排障案例</div></div>
+        </div>
+        <div class="kb-tabs">
+          <div class="kb-tab active" onclick="switchKbTab('structured', this)">结构化命令</div>
+          <div class="kb-tab" onclick="switchKbTab('bestpractice', this)">操作规范</div>
+          <div class="kb-tab" onclick="switchKbTab('experience', this)">实验经验</div>
+          <div class="kb-tab" onclick="switchKbTab('troubleshoot', this)">排障知识</div>
+          <div class="kb-tab" onclick="switchKbTab('configorder', this)">配置顺序</div>
+          <div class="kb-tab" onclick="switchKbTab('runtime', this)">运行时记录</div>
+          <div class="kb-tab" onclick="switchKbTab('search', this)">搜索</div>
+          <div class="kb-tab" onclick="switchKbTab('templates', this)">配置模板</div>
+          <div class="kb-tab" onclick="switchKbTab('report', this)">实验报告</div>
+        </div>
+      </div>
+      <div class="kb-body">
+        <div class="kb-section active" id="kbStructured">
+          <div class="device-sel" id="kbDeviceSel"></div>
+          <div class="view-sel">
+            <div class="view-sel-btn active" onclick="switchKbView('both', this)">全部视图</div>
+            <div class="view-sel-btn" onclick="switchKbView('user_view', this)">用户视图 &lt;&gt;</div>
+            <div class="view-sel-btn" onclick="switchKbView('system_view', this)">系统视图 []</div>
+          </div>
+          <div id="kbStructuredContent"></div>
+        </div>
+        <div class="kb-section" id="kbBestpractice"><div id="kbBpContent"></div></div>
+        <div class="kb-section" id="kbExperience"><div id="kbExpContent"></div></div>
+        <div class="kb-section" id="kbTroubleshoot"><div id="kbTsContent"></div></div>
+        <div class="kb-section" id="kbConfigorder"><div id="kbCoContent"></div></div>
+        <div class="kb-section" id="kbSearch">
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <input type="text" id="kbSearchInput" class="inp" placeholder="搜索命令、排障经验..." style="flex:1">
+            <button class="btn btn-scan btn-sm" onclick="doKbSearch()">🔍 搜索</button>
+          </div>
+          <div id="kbSearchContent"></div>
+        </div>
+        <div class="kb-section" id="kbTemplates">
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <select id="kbTplType" class="inp" style="width:140px">
+              <option value="vlan">VLAN</option>
+              <option value="vrrp">VRRP</option>
+              <option value="mstp">MSTP</option>
+              <option value="dhcp">DHCP</option>
+              <option value="ospf">OSPF</option>
+              <option value="lacp">LACP</option>
+              <option value="wlan">WLAN</option>
+            </select>
+            <button class="btn btn-scan btn-sm" onclick="loadKbTemplate()">生成模板</button>
+          </div>
+          <div id="kbTemplateContent"></div>
+        </div>
+        <div class="kb-section" id="kbReport">
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <input type="text" id="kbReportName" class="inp" placeholder="实验名称" value="eNSP Lab Report" style="flex:1">
+            <button class="btn btn-warn btn-sm" onclick="genLabReport()">📊 生成报告</button>
+          </div>
+          <div id="kbReportContent"></div>
+        </div>
+        <div class="kb-section" id="kbRuntime">
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <select id="kbCatF" class="inp" style="width:120px">
+              <option value="">全部分类</option>
+              <option value="display">Display</option>
+              <option value="config">Config</option>
+              <option value="verify">Verify</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="loadKbRuntime()">筛选</button>
+          </div>
+          <div id="kbList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== 拓扑视图 ====== -->
+    <div class="panel-container" id="vTopo">
+      <div class="topo-toolbar">
+        <button class="btn btn-ghost btn-sm" onclick="loadTopo()">↻ 刷新拓扑</button>
+        <span id="topoSummary" style="font-size:11px;color:var(--overlay)"></span>
+      </div>
       <div id="topoCanvas"></div>
-      <div id="topoInfo"></div>
+      <div class="topo-info" id="topoInfo">点击节点查看设备详情</div>
     </div>
 
-    <div class="logs" id="logs"></div>
+    <!-- ====== 实验引擎视图 ====== -->
+    <div class="panel-container" id="vExp">
+      <div class="exp-header">
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:13px;font-weight:600">🧪 实验管理</span>
+          <span id="expCount" style="font-size:11px;color:var(--overlay)">0 个实验</span>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-scan btn-sm" onclick="showCreateExp()">➕ 新建实验</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadExperiments()">↻ 刷新</button>
+        </div>
+      </div>
+      <div class="exp-body" id="expList">
+        <div style="text-align:center;color:var(--overlay);padding:40px;font-size:13px">
+          <span style="font-size:32px;display:block;margin-bottom:8px">🧪</span>
+          暂无实验，点击「新建实验」开始
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
+<!-- ====== 日志面板 ====== -->
+<div class="logs-bar">
+  <div class="tab active" onclick="toggleLogs()" style="cursor:pointer">📋 操作日志 <span id="logCount" style="color:var(--overlay);margin-left:4px">(0)</span></div>
+  <div style="margin-left:auto;padding-right:8px">
+    <button class="btn btn-ghost btn-sm" onclick="clearLogs()">清空</button>
+  </div>
+</div>
+<div class="logs-content" id="logs"></div>
+
+<!-- ====== 重命名模态框 ====== -->
 <div id="renameModal" class="modal" style="display:none">
   <div class="mc">
     <div class="mt">重命名设备</div>
@@ -274,6 +424,32 @@ body{font-family:sans-serif;background:#1e1e2e;color:#cdd6f4;height:100vh;displa
     <div class="mb">
       <button class="mbtn cancel" onclick="closeRM()">取消</button>
       <button class="mbtn confirm" onclick="confirmRM()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 新建实验模态框 ====== -->
+<div id="createExpModal" class="modal" style="display:none">
+  <div class="mc" style="min-width:450px">
+    <div class="mt">新建实验</div>
+    <label style="font-size:11px;color:var(--overlay);display:block;margin-bottom:4px">实验名称</label>
+    <input type="text" id="expName" class="mi" placeholder="例如：校园网 VLAN 互通实验">
+    <label style="font-size:11px;color:var(--overlay);display:block;margin-bottom:4px">实验目标</label>
+    <textarea id="expGoal" class="mi" rows="3" placeholder="描述实验要达成的目标..." style="resize:vertical"></textarea>
+    <div class="mb">
+      <button class="mbtn cancel" onclick="closeCreateExp()">取消</button>
+      <button class="mbtn confirm" onclick="confirmCreateExp()">创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 快照详情模态框 ====== -->
+<div id="snapshotModal" class="modal" style="display:none">
+  <div class="mc" style="min-width:600px;max-width:800px">
+    <div class="mt">配置快照</div>
+    <div id="snapshotContent" style="max-height:400px;overflow-y:auto;font-family:Consolas,monospace;font-size:11px;line-height:1.5;white-space:pre-wrap;background:var(--bg-crust);padding:10px;border-radius:var(--radius);margin-bottom:12px"></div>
+    <div class="mb">
+      <button class="mbtn cancel" onclick="closeSnapshotModal()">关闭</button>
     </div>
   </div>
 </div>

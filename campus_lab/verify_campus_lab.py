@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Campus lab verification script aligned with Word section 4.1~4.8.
 Requires manual server service configuration on eNSP (DNS/HTTP/FTP).

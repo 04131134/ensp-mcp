@@ -7,20 +7,17 @@ __pycache__/
 dist/
 build/
 *.egg
-*.pyc
 
 # Virtual environment
 python312/
 .venv/
 venv/
-env/
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*.sublime-*
 
 # Logs
 *.log
@@ -34,9 +31,8 @@ pdf_page_*.png
 exp34_page*.png
 exp41_page*.png
 
-# Uploads and snapshots
+# Uploads
 uploads/
-snapshots/
 
 # OS
 Thumbs.db
@@ -50,13 +46,23 @@ _probe*.py
 _extract*.py
 _cfgdump.py
 
-# Backup files
+# Corrupted/backup files
 *_backup_*.py
 *_corrupted.py
-backup*/
 
-# Codex workspace
-.codex/
+# Old backup directories
+backup-website/
+backup_20260624/
+backup_20260626/
 
-# Project duplicates (use mcpensp1/ as canonical)
-project_001*/
+# Legacy patch scripts
+_patch*.py
+_experiment_engine_src.py
+_mcp_patch*.py
+
+# KB backups (created by Phase 5 data fix)
+mcpensp1/kb/_backup_*.json
+
+# Temp diagnostic files
+*_diagnostic.py
+*.dmp

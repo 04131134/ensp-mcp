@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Campus lab verification via eNSP MCP service.
 Maps to Word section 4.1~4.8 verification points.

@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Campus lab configuration (Word-strict, final).
 Implements: MSTP instances, VRRP master/backup, VLAN520/521 interconnects,

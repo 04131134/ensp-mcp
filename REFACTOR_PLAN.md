@@ -29,27 +29,30 @@
 
 ### 目标架构
 
-**当前：**
+**重构前：**
 
 ```
 MCP Server (空壳代理,517行) ──HTTP──> Flask (God Object,3616行) ──Telnet──> eNSP
 ```
 
-**目标：**
+**重构后（实际达成）：**
 
 ```
-MCP Server (唯一运行时进程)
+MCP Server (直连核心模块,544行, 58个工具)
     │
-    ├── DeviceManager ──> TelnetConnectionPool ──> eNSP
-    ├── CommandExecutor
-    ├── KnowledgeStore
-    └── AgentRuntime
+    ├── DeviceManager (dm) ──────── 设备连接/命名/扫描
+    ├── CommandExecutor ─────────── 命令执行/拦截
+    ├── KnowledgeBase (kb) ──────── 知识库 CRUD/搜索/统计
+    ├── TopologyEngine ──────────── 拓扑图/最短路径
+    ├── ConfigMethodStore ───────── 配置方法库
+    └── TelnetConnection (async) ── Telnet 异步接口
+    │
+    └── 仅 4 个 Agent Runtime 工具保留 HTTP ──> Flask ──> AgentRuntime
 
-Flask Web UI (可选调试器,只读)
-    └── HTTP GET ──> DeviceManager 状态查询端点
+Flask Web UI (app.py, 可选, 约 3400 行)
 ```
 
-MCP Server 是唯一的运行时进程。Flask 降级为可选的只读调试面板：需要时手动启动 `python app.py`，只能查询设备状态和历史日志，不写入。
+**成果：HTTP 调用从 45+ 降至 10 个。MCP Server 是主要运行时，Flask 仅服务 Agent 闭环逻辑。**
 
 ---
 

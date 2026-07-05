@@ -1639,58 +1639,53 @@ def scan_devices(start=2000, end=2050):
     return dm.scan_devices(start, end)
 
 def connect_device(port):
+    """Connect to eNSP device. Delegates to DeviceManager."""
     path = f'127.0.0.1:{port}'
-    with devices_lock:
-        existing = devices.get(path)
+
+    # Check if already connected via dm
+    existing = dm.get(path)
     if existing:
-        # Check if existing connection is actually alive
         try:
             existing.sock.send(b'')
-            return {'success': True, 'port': port, 'path': path, 'name': device_names.get(path, path), 'device_type': device_types.get(path, 'unknown'), 'reconnected': False}
+            return {'success': True, 'port': port, 'path': path,
+                    'name': dm.get_name(path), 'device_type': dm.get_type(path),
+                    'reconnected': False}
         except Exception:
-            # Dead connection, remove and reconnect
             logger.info('Dead connection detected for %s, reconnecting', path)
-            with devices_lock:
-                devices.pop(path, None)
+            dm.remove(path)
             try: existing.close()
             except Exception: pass
+
     conn = None
     try:
         conn = TelnetConnection('127.0.0.1', port)
         conn.connect()
-        # Try firewall login if device has login prompt
         conn.handle_firewall_login()
-        # Auto undo terminal monitor on connect
         try:
             conn.send_cmd('undo terminal monitor')
             time.sleep(0.1)
         except Exception:
             pass
-        with devices_lock:
-            # Close old connection if exists (race condition fix)
-            old_conn = devices.get(path)
-            if old_conn:
-                try: old_conn.close()
-                except OSError: pass
-            devices[path] = conn
+        dm.set(path, conn)
+
         name, dt = _fetch_device_name(conn)
         topo_name = topo_names.get(port)
-        with name_lock:
-            if topo_name:
-                device_names[path] = topo_name
-            elif name:
-                device_names[path] = name
-            device_types[path] = dt
+        if topo_name:
+            dm.set_name(path, topo_name)
+        elif name:
+            dm.set_name(path, name)
+        dm.set_type(path, dt)
+
         with heartbeat.reconnect_lock:
             heartbeat.reconnect_counts[path] = 0
-        display = f'{device_names.get(path, path)} ({dt.upper()})' if dt != 'unknown' else device_names.get(path, path)
-        return {'success': True, 'port': port, 'path': path, 'name': device_names.get(path, path), 'display_name': display, 'device_type': dt}
+        display = f'{dm.get_name(path)} ({dt.upper()})' if dt != 'unknown' else dm.get_name(path)
+        return {'success': True, 'port': port, 'path': path,
+                'name': dm.get_name(path), 'display_name': display, 'device_type': dt}
     except Exception as e:
         if conn:
             try: conn.close()
             except OSError: pass
-        with devices_lock:
-            devices.pop(path, None)
+        dm.remove(path)
         return {'success': False, 'error': 'Connection failed'}
 
 BLOCKED_COMMANDS = {
@@ -1784,19 +1779,16 @@ def send_command(path, command):
                 result, elapsed, cmd_success = _exec_and_check()
                 logger.info('View auto-corrected for %s: %s -> retry cmd_success=%s', path, view_before, cmd_success)
 
-        with name_lock: dt = device_types.get(path, "unknown")
+        dt = dm.get_type(path)
         kb.record_command(command, result, device_type=dt, device_path=path, success=cmd_success)
         return {'success': True, 'path': path, 'output': result, 'response_time': elapsed, 'cmd_success': cmd_success}
     except ConnectionError:
-        with devices_lock:
-            devices.pop(path, None)
-        with name_lock:
-            device_names.pop(path, None)
-            device_types.pop(path, None)
+        dm.remove(path)
+        dm.remove_name(path)
         return {'success': False, 'error': 'Connection lost, device disconnected'}
     except Exception as e:
         logger.error('Command failed for %s: %s', path, str(e)[:200])
-        with name_lock: dt = device_types.get(path, "unknown")
+        dt = dm.get_type(path)
         kb.record_command(command, 'Error', device_type=dt, device_path=path, success=False)
         return {'success': False, 'error': 'Command execution failed'}
 
@@ -2582,17 +2574,14 @@ def send_command_to_group(paths, command):
     return {'success': all(r.get('success') for r in results), 'total': len(results), 'results': results}
 
 def disconnect_device(path):
-    with devices_lock:
-        conn = devices.pop(path, None)
+    conn = dm.remove(path)
     # Cleanup _undo_done tracking
     if hasattr(send_command, "_undo_done"):
         send_command._undo_done.discard(f"_undo_tm_{path}")
     if not conn: return {'success': False, 'error': 'Not connected'}
     try:
         conn.close()
-        with name_lock:
-            device_names.pop(path, None)
-            device_types.pop(path, None)
+        dm.remove_name(path)
         return {'success': True, 'path': path}
     except Exception as e:
         logger.error('Disconnect failed for %s: %s', path, e)
@@ -2600,23 +2589,20 @@ def disconnect_device(path):
 
 def get_connected_devices():
     result = []
-    with devices_lock:
-        paths = list(devices.keys())
-    for path in paths:
+    for path in list(dm.list_all().keys()):
         port = int(path.split(':')[1])
-        with name_lock:
-            topo_name = topo_names.get(port)
-            name = topo_name or device_names.get(path, path)
-            dt = device_types.get(path, "unknown")
+        topo_name = topo_names.get(port)
+        name = topo_name or dm.get_name(path)
+        dt = dm.get_type(path)
         hb = heartbeat.get_status(path)
         display = f'{name} ({dt.upper()})' if name and dt != 'unknown' else name if name else path
         result.append({'port': port, 'path': path, 'name': name, 'display_name': display, 'device_type': dt, 'alive': hb.get('alive', False), 'response_time': hb.get('response_time', 0)})
     return result
 
 def rename_device(path, name):
-    with devices_lock:
-        if path not in devices: return {'success': False, 'error': 'Not connected'}
-    with name_lock: device_names[path] = name
+    if not dm.has(path):
+        return {'success': False, 'error': 'Not connected'}
+    dm.set_name(path, name)
     return {'success': True, 'path': path, 'name': name}
 
 def _validate_topology(data):
@@ -2714,14 +2700,12 @@ def api_fetch_name():
     if not data: return jsonify({'success': False}), 400
     path = data.get('path')
     if not _validate_path(path): return jsonify({'success': False, 'error': 'Invalid path'}), 400
-    with devices_lock:
-        conn = devices.get(path)
+    conn = dm.get(path)
     if not conn: return jsonify({'success': False, 'error': 'Device not connected'}), 404
     name, dt = _fetch_device_name(conn)
     if name:
-        with name_lock:
-            device_names[path] = name
-            device_types[path] = dt
+        dm.set_name(path, name)
+        dm.set_type(path, dt)
         return jsonify({'success': True, 'path': path, 'name': name, 'device_type': dt})
     return jsonify({'success': False, 'error': 'Could not fetch name'})
 @app.route('/api/devices/heartbeat')

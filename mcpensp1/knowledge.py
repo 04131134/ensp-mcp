@@ -475,6 +475,40 @@ class KnowledgeBase:
             return next((e for e in exps if experiment.lower() in e.get('experiment', '').lower()), None)
         return exps
 
+    def search_experiences(self, query: str = "", category: str = None, limit: int = 20):
+        """Search experiences by query text (for agent tools)."""
+        exps = self.get_experiences()
+        if not query and not category:
+            return exps[:limit]
+        results = []
+        for e in exps:
+            e_text = json.dumps(e, ensure_ascii=False).lower()
+            if query and query.lower() in e_text:
+                results.append(e)
+            elif category and category.lower() in e.get('experiment', '').lower():
+                results.append(e)
+        return results[:limit]
+
+    def get_troubleshooting_cases(self, query: str = None):
+        """Get troubleshooting cases, optionally filtered by symptom."""
+        skb = self._skb_cache or {}
+        cases = skb.get('troubleshooting_cases', [])
+        if not cases:
+            # try loading from external file
+            cases_path = os.path.join(self.folder, 'troubleshooting_cases.json')
+            if os.path.exists(cases_path):
+                try:
+                    with open(cases_path, 'r', encoding='utf-8') as f:
+                        cases = json.load(f)
+                        if isinstance(cases, dict):
+                            cases = cases.get('cases', [])
+                except Exception:
+                    cases = []
+        if query:
+            ql = query.lower()
+            return [c for c in cases if ql in json.dumps(c, ensure_ascii=False).lower()][:20]
+        return cases[:20]
+
     def detect_view_mode(self, prompt_text):
         """Detect whether a device is in user view < > or system view [ ].
         

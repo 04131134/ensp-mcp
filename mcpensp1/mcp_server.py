@@ -513,26 +513,13 @@ async def call_tool(name, arguments):
             text = json.dumps(kb.get_config_guidance(arguments["topic"]), ensure_ascii=False)
         # ---- Agent Runtime v3.0 ----
         elif name == "agent_memory_query":
-            params = {"limit": arguments.get("limit", 20)}
-            if arguments.get("query"): params["query"] = arguments["query"]
-            if arguments.get("category"): params["category"] = arguments["category"]
-            text = await mcp_req("GET", "/api/agent/memory", params=params)
-        elif name == "agent_memory_lessons":
-            text = await mcp_req("GET", "/api/agent/memory/lessons")
-        elif name == "agent_memory_stats":
-            text = await mcp_req("GET", "/api/agent/memory/stats")
+            text = json.dumps(kb.search_experiences(arguments.get("query", ""), arguments.get("category"), arguments.get("limit", 20)), ensure_ascii=False)
+        elif name == "agent_memory_lessons": text = json.dumps(kb.get_experiences(), ensure_ascii=False)
+        elif name == "agent_memory_stats": text = json.dumps(kb.get_stats(), ensure_ascii=False)
         elif name == "agent_knowledge_search":
-            params = {"limit": arguments.get("limit", 20)}
-            if arguments.get("query"): params["query"] = arguments["query"]
-            if arguments.get("category"): params["category"] = arguments["category"]
-            if arguments.get("device_type"): params["device_type"] = arguments["device_type"]
-            text = await mcp_req("GET", "/api/agent/knowledge/search", params=params)
-        elif name == "agent_knowledge_best_practices":
-            text = await mcp_req("GET", "/api/agent/knowledge/best-practices")
-        elif name == "agent_knowledge_troubleshooting":
-            params = {}
-            if arguments.get("query"): params["query"] = arguments["query"]
-            text = await mcp_req("GET", "/api/agent/knowledge/troubleshooting", params=params)
+            text = json.dumps(kb.search_experiences(arguments.get("query", ""), arguments.get("category"), arguments.get("limit", 20)), ensure_ascii=False)
+        elif name == "agent_knowledge_best_practices": text = json.dumps(kb.get_best_practices(), ensure_ascii=False)
+        elif name == "agent_knowledge_troubleshooting": text = json.dumps(kb.get_troubleshooting_cases(arguments.get("query")), ensure_ascii=False)
         elif name == "agent_plan":
             text = await mcp_req("POST", "/api/agent/plan", json_data={"goal": arguments["goal"], "experiment_type": arguments.get("experiment_type", "general")})
         elif name == "agent_execute":
@@ -549,20 +536,21 @@ async def call_tool(name, arguments):
         elif name == "config_method_steps": text = json.dumps(config_methods.get_method_steps(arguments["method_id"]), ensure_ascii=False)
         elif name == "config_method_update": text = json.dumps(config_methods.update_method(arguments["method_id"], arguments["updates"]), ensure_ascii=False)
         elif name == "config_summary":
-            text = await mcp_req("POST", "/api/config-summary", json_data={
-                "goal": arguments["goal"],
-                "commands": arguments["commands"],
-                "success": arguments["success"],
-                "verification_results": arguments.get("verification_results", []),
+            result = kb.record_experience({
+                "experiment": arguments["goal"],
+                "commands": arguments.get("commands", []),
+                "success": arguments.get("success", False),
                 "lessons": arguments.get("lessons", [])
             })
+            text = json.dumps(result, ensure_ascii=False)
         elif name == "config_record_experience":
-            text = await mcp_req("POST", "/api/kb/experience", json_data={
+            result = kb.record_experience({
                 "experiment": arguments["experiment"],
-                "commands": arguments["commands"],
-                "success": arguments["success"],
+                "commands": arguments.get("commands", []),
+                "success": arguments.get("success", False),
                 "lessons": arguments.get("lessons", [])
             })
+            text = json.dumps(result, ensure_ascii=False)
 
         else: text = json.dumps({"error": "Unknown tool"})
         return [TextContent(type="text", text=text)]

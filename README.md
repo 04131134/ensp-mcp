@@ -1,266 +1,290 @@
-﻿# eNSP MCP Server — 知识库驱动的设备配置工具
+# eNSP Network Agent Runtime v3.1
 
-## 核心理念
+> **版本：** v3.1 | **更新日期：** 2026-07-06 | **分支：** `refactor/p0`
 
-这个工具的目标是：**通过持续积累经验，让AI仅靠本地知识库就能完成eNSP模拟器的所有设备配置，无需联网。**
+一个能够自主完成网络实验、持续成长、共享知识、自动学习、自动规划、自动验证、自动修复的 **Network Agent Runtime**。
 
-知识库不是一次性产物，而是随每次实验持续增长的经验库。每次实验后提取新发现的命令、排障经验、最佳实践，写入知识库，使AI工具越来越熟练。
+---
+## 目录
+
+- [系统架构](#系统架构)
+- [Agent 工作流](#agent-工作流)
+- [核心模块](#核心模块)
+- [知识库架构](#知识库架构)
+- [MCP 工具总览](#mcp-工具总览)
+- [环境要求](#环境要求)
+- [快速开始](#快速开始)
+- [项目结构](#项目结构)
+- [重构记录](#重构记录)
+- [兼容性说明](#兼容性说明)
 
 ---
 
-## ⚠️ 操作规范（每次配置前必须遵守）
-
-### 规则一：配置前检测视图类型
-
-**发送任何命令前，必须先检测设备当前处于哪种视图：**
-
-| 视图 | 提示符格式 | 可执行命令 |
-|------|-----------|-----------|
-| **用户视图** | `<设备名>` 以 `>` 结尾 | `display`、`save`、`ping`、`system-view`、`undo t m` |
-| **系统视图** | `[设备名]` 以 `]` 结尾 | `interface`、`vlan`、`ospf`、`vrrp`、`ip address` 等配置命令 |
-
-**检测方法：** 读取终端提示符
-- 包含 `<` 和 `>` → 用户视图
-- 包含 `[` 和 `]` → 系统视图
-
-**错误视图下发送命令会报 `Unrecognized command` 错误！**
+## 系统架构
 
 ```
-# 正确流程
-1. 读取提示符 → 确定当前视图
-2. 如果需要系统视图但当前在用户视图 → 发送 system-view
-3. 如果需要用户视图但当前在系统视图 → 发送 return 或 quit
-4. 发送目标命令
+┌─────────────────────────────────────────────────────────────┐
+│                     用户 / AI Agent                         │
+└─────────────────────────┬───────────────────────────────────┘
+                          │ MCP (stdio)
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│              MCP Server (mcp_server.py, 58 个工具)           │
+│                                                             │
+│  ┌────────────────── 直接调用（无 HTTP 转发）─────────────┐ │
+│  │  DeviceManager (dm)     │  CommandExecutor             │ │
+│  │  KnowledgeBase (kb)     │  TopologyEngine              │ │
+│  │  ConfigMethodStore      │  TelnetConnection (async)    │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                                                             │
+│  仅 4 个 Agent Runtime 工具保留 HTTP → Flask 后端            │
+└─────────────────────────┬───────────────────────────────────┘
+                          │ HTTP (仅 agent_plan/execute/status/daily_review)
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│           Flask Web UI (app.py, 可选只读调试面板)            │
+│                                                             │
+│  ┌─────────────────── Agent Runtime v3.0 ─────────────────┐ │
+│  │  Memory | KnowledgeStore | Planner | Runtime           │ │
+│  │  Verifier | Recovery | Reflection | Learning           │ │
+│  └────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### 规则二：配置前关闭日志
-
-**所有设备配置前的第一条命令必须是：**
-
-```
-undo terminal monitor
-```
-
-简写 `undo t m`。不执行此命令，设备日志会不断弹出，干扰命令输入和输出解析。
-
-### 规则三：配置后保存
-
-**所有设备配置完成后必须执行 `save` 命令保存配置。**
+**关键变化（v3.0 → v3.1）：**
+- MCP Server 直连核心模块，**HTTP 调用从 45+ 降至 10 个**
+- 新增 `device_manager.py`、`command_executor.py`、`services.py` 独立模块
+- `AGENT_SYSTEM_PROMPT` 外部化至 `prompts/v3/system.md`（UTF-8 可读）
 
 ---
 
-## 知识库架构
-
-### 四层知识体系
+## Agent 工作流
 
 ```
-┌─────────────────────────────────────────┐
-│  第1层：操作规范 (best_practices)        │ ← 永远适用的规则
-├─────────────────────────────────────────┤
-│  第2层：设备命令库 (user/system_view)    │ ← 按设备型号×视图×主题分类
-├─────────────────────────────────────────┤
-│  第3层：实验经验 (experiences)           │ ← 每次实验后积累
-├─────────────────────────────────────────┤
-│  第4层：运行时记录 (global/devices_kb)   │ ← 每次命令执行自动记录
-└─────────────────────────────────────────┘
+Receive Task
+    ↓
+Understand Goal（理解需求，识别协议/设备/拓扑）
+    ↓
+Load Memory（加载长期记忆，查询历史经验）
+    ↓
+Search Knowledge（搜索知识库：最佳实践/模板/排障案例）
+    ↓
+Planning（生成 DAG 执行计划，分析依赖，确定顺序）
+    ↓
+Check Dependencies（检查循环依赖，验证前置条件）
+    ↓
+Execute（按 DAG 顺序执行配置命令）
+    ↓
+Observe（观察命令输出和设备响应）
+    ↓
+Verify（语义化验证：接口/VLAN/OSPF/路由/连通性）
+    ↓
+Repair（验证失败 → 分析原因 → 重规划 → 重执行，最多 3 轮）
+    ↓
+Reflect（反思总结：成功/失败原因、优化建议）
+    ↓
+Update Memory（更新记忆和知识库：经验/命令/排障/模板）
+    ↓
+Finish
 ```
 
-### 知识库文件
+**关键约束：**
+- 收到实验需求后，**禁止立即调用 Tool**
+- 必须按上述流程逐步执行
+- 知识库能回答时，**禁止外部搜索**
 
-| 文件 | 说明 | 增长方式 |
-|------|------|---------|
-| `kb/structured_commands_kb.json` | 结构化经验知识库 | 每次实验后手动/API写入 |
-| `kb/global_kb.json` | 运行时命令记录 | 每次执行命令自动记录 |
-| `kb/devices_kb.json` | 设备维度命令历史 | 每次执行命令自动记录 |
+---
 
-### 结构化知识库内容
+## 核心模块
 
-`structured_commands_kb.json` 包含：
+### 模块清单
 
-| 字段 | 说明 |
+| 模块 | 文件 | 职责 |
+|------|------|------|
+| **DeviceManager** | `device_manager.py` | 设备连接/断开/命名/扫描（线程安全） |
+| **CommandExecutor** | `command_executor.py` | 单条/批量命令执行、危险命令拦截 |
+| **KnowledgeBase** | `knowledge.py` | 知识库 CRUD、搜索、统计（原有） |
+| **KnowledgeStore** | `knowledge_store.py` | 知识库统一封装（桥接层） |
+| **Services** | `services.py` | kb/topo_engine/config_methods 共享单例 |
+| **TopologyEngine** | `topology.py` | 拓扑图加载/最短路径/设备连接查询 |
+| **HeartbeatMonitor** | `heartbeat.py` | 设备存活检测/自动重连 |
+| **TelnetConnection** | `connection.py` | Telnet 连接、同步/异步双接口 |
+| **ConfigMethodStore** | `config_method_store.py` | 配置方法库（标准配置流程） |
+| **Memory** | `agent/memory.py` | 长期记忆系统，跨会话持久化 |
+| **KnowledgeStore** | `agent/knowledge_store.py` | Agent 专用可成长知识库 |
+| **DAGPlanner** | `agent/planner.py` | DAG 执行计划生成 |
+| **SemanticVerifier** | `agent/verifier.py` | 语义化验证引擎 |
+| **RecoveryEngine** | `agent/recovery.py` | 自动恢复引擎 |
+| **ReflectionEngine** | `agent/reflection.py` | 实验反思引擎 |
+| **LearningEngine** | `agent/learning.py` | 自主学习引擎 |
+| **AgentRuntime** | `agent/runtime.py` | 运行时编排器（闭环） |
+| **Routes** | `agent/routes.py` | Agent API 路由（含认证） |
+
+---
+
+## MCP 工具总览
+
+共 **58 个** MCP 工具。
+
+### 直连工具（54 个，无 HTTP 转发）
+
+**设备管理（7）：** `scan_devices`, `connect_device`, `send_command`, `disconnect_device`, `get_connected_devices`, `rename_device`, `fetch_device_name`
+
+**命令执行（3）：** `batch_command`, `group_command`, `suggest_next_steps`
+
+**知识库（16）：** `get_command_catalog`, `get_kb_commands`, `get_kb_stats`, `suggest_commands`, `scan_device_commands`, `get_best_practices`, `get_experiences`, `record_experience`, `search_kb`, `get_command_help`, `generate_config_template`, `list_templates`, `get_config_guidance`, `generate_lab_report`, `auto_record_experience`, `reload_kb`
+
+**拓扑（4）：** `get_topology`, `save_topology`, `find_topology_path`, `get_topology_device`
+
+**快照（4）：** `snapshot_config`, `list_snapshots`, `get_snapshot`, `diff_snapshots`, `rollback_config`
+
+**配置方法（6）：** `config_method_list`, `config_method_get`, `config_method_search`, `config_method_add`, `config_method_steps`, `config_method_update`
+
+**Agent 知识/内存（6）：** `agent_memory_query`, `agent_memory_lessons`, `agent_memory_stats`, `agent_knowledge_search`, `agent_knowledge_best_practices`, `agent_knowledge_troubleshooting`
+
+**配置总结（3）：** `config_summary`, `config_record_experience`, `detect_device_view`
+
+**其他（5）：** `get_device_capabilities`, `get_device_history`, `get_structured_kb`, `get_config_order`, `get_troubleshooting_kb`
+
+### HTTP 转发工具（4 个）
+
+`agent_plan`, `agent_execute`, `agent_status`, `agent_daily_review` — Agent Runtime 闭环逻辑驻留在 Flask 路由中。
+
+---
+
+## 环境要求
+
+| 项目 | 要求 |
 |------|------|
-| `meta` | 版本、实验计数、已记录实验列表 |
-| `best_practices` | 操作规范（视图检测、undo t m、保存等） |
-| `user_view_commands` | `<>` 用户视图命令，按设备型号分类 |
-| `system_view_commands` | `[]` 系统视图命令，按设备型号×配置主题分类 |
-| `experiments` | 实验经验记录（新命令、教训、排障案例） |
-| `troubleshooting` | 排障知识库 |
-| `config_order` | 推荐配置顺序 |
-
-### 支持的设备型号
-
-| 型号 | 类型 | 用户视图 | 系统视图主题 |
-|------|------|---------|-------------|
-| S5700 | 核心/汇聚交换机 | 17条命令 | 基础、VLAN端口、VLANIF、VRRP、MSTP、DHCP、OSPF、LACP |
-| S3700 | 接入层交换机 | 5条命令 | 基础、端口配置、上行口配置 |
-| USG6000V | 防火墙 | 10条命令 | 接口配置、安全区域、安全策略、OSPF路由、静态路由、AAA账户 |
-| AR2220 | 路由器 | 8条命令 | 接口配置、静态路由、环回接口 |
-| AC6605 | 无线控制器 | 8条命令 | 基础配置、WLAN安全、SSID、VAP、AP组、AP注册 |
-
----
-
-## AI Agent 使用流程
-
-### 标准配置流程
-
-```
-1. 扫描设备 → GET /api/devices/scan?start=2000&end=2024
-2. 连接设备 → POST /api/devices/connect {path, name}
-3. 获取命令建议 → GET /api/kb/suggest?model=LSW1
-4. 检测视图 → 发送空命令或读取提示符
-5. 关闭日志 → send_command("undo t m")
-6. 进入系统视图 → send_command("system-view")
-7. 按知识库建议逐条配置
-8. 保存 → send_command("save")
-9. 记录经验 → POST /api/kb/experience
-```
-
-### 配置前：获取命令建议
-
-```
-GET /api/kb/suggest?model=LSW1
-```
-
-返回该设备型号在用户视图和系统视图下的所有可用命令，按主题分组。
-
-### 配置中：检测视图
-
-```
-POST /api/kb/detect-view
-Body: {"prompt": "<LSW1>"}
-→ {"view": "user_view", "can_commands": "display/save/ping/system-view"}
-```
-
-### 配置后：记录经验
-
-```
-POST /api/kb/experience
-Body: {
-  "experiment": "实验名称",
-  "date": "2026-06-16",
-  "topology": "拓扑描述",
-  "features_implemented": ["VRRP", "OSPF"],
-  "new_commands_learned": [
-    {"cmd": "新命令", "device": "S5700", "desc": "命令说明"}
-  ],
-  "lessons_learned": ["教训1", "教训2"],
-  "troubleshooting_cases": [
-    {"problem": "问题", "root_cause": "原因", "solution": "解决方案", "diagnosis_cmd": "诊断命令"}
-  ]
-}
-```
-
-新命令会自动加入对应设备型号的「经验积累」主题下。
-
----
-
-## API 端点总览
-
-### 设备管理
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/devices/scan?start=2000&end=2024` | 扫描端口范围内的设备 |
-| POST | `/api/devices/connect` | 连接设备 `{path, name}` |
-| POST | `/api/devices/disconnect` | 断开设备 `{path}` |
-| GET | `/api/devices` | 已连接设备列表 |
-| POST | `/api/devices/command` | 发送命令 `{path, command}` |
-| GET | `/api/devices/command/history` | 命令执行历史 |
-
-### 知识库 — 结构化命令
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/kb/structured` | 完整结构化知识库 |
-| GET | `/api/kb/structured/<type>` | 按设备型号过滤 |
-| GET | `/api/kb/suggest?model=LSW1` | 命令建议 |
-| POST | `/api/kb/scan` | 扫描设备返回建议 `{path}` |
-| GET | `/api/kb/config-order` | 推荐配置顺序（20步） |
-
-### 知识库 — 经验与规范
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/kb/best-practice` | 操作规范（?priority=critical） |
-| POST | `/api/kb/best-practice` | 添加新规范 `{rule, detail, priority}` |
-| GET | `/api/kb/experience` | 实验经验列表 |
-| POST | `/api/kb/experience` | 记录实验经验 |
-| GET | `/api/kb/troubleshooting` | 排障知识库 |
-
-### 知识库 — 运行时
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/kb/commands` | 全局命令记录 |
-| GET | `/api/kb/catalog` | 命令目录（76条预置命令） |
-| GET | `/api/kb/devices` | 设备维度记录 |
-| GET | `/api/kb/capabilities` | 设备能力矩阵 |
-| GET | `/api/kb/stats` | 知识库统计 |
-| POST | `/api/kb/reload` | 重新加载知识库 |
-| POST | `/api/kb/detect-view` | 视图检测 `{prompt}` |
-
-### 拓扑
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/topology` | 拓扑摘要 |
-| POST | `/api/topology` | 保存拓扑 |
-| POST | `/api/topology/file` | 上传.topo文件 |
-| GET | `/api/topology/path` | 路径查找 |
-| GET | `/api/topology/neighbor` | 邻居查询 |
-
----
-
-## 知识库增长机制
-
-### 自动增长（运行时）
-每次通过 `/api/devices/command` 执行命令，自动记录到 `global_kb.json` 和 `devices_kb.json`。
-
-### 手动增长（实验后）
-每次实验完成后，调用 `POST /api/kb/experience` 记录：
-- 本次实验发现了哪些新命令
-- 踩了哪些坑（教训）
-- 遇到了什么问题、怎么解决的（排障案例）
-
-新命令会自动归入对应设备型号的「经验积累」主题。
-
-### 目标
-随着实验次数增加，知识库覆盖所有eNSP设备的所有命令，AI仅靠本地知识库即可完成任何拓扑的配置。
+| **操作系统** | Windows（eNSP 依赖） |
+| **Python** | 3.12+ |
+| **eNSP** | 已安装且设备运行中 |
+| **MCP 客户端** | TRAE / Claude Desktop / Cursor 等 |
 
 ---
 
 ## 快速开始
 
+### 1. 启动 MCP Server（唯一必需组件）
+
 ```bash
-pip install -r requirements.txt
+cd mcpensp1
+python mcp_server.py
+```
+
+MCP Server 现在**直连设备**，不依赖 Flask 后端。
+
+### 2. （可选）启动 Flask Web 调试面板
+
+```bash
 python app.py
 ```
 
-服务地址：http://127.0.0.1:5000
+浏览器打开 `http://127.0.0.1:5000` 查看设备状态。
 
-## 环境变量
+### 3. 配置 MCP 客户端
 
-| 变量 | 说明 | 默认值 |
-|------|------|--------|
-| `ENSP_SECRET_KEY` | Flask密钥 | 随机生成 |
-| `CORS_ORIGINS` | CORS来源 | `http://127.0.0.1:5000` |
-| `HEARTBEAT_INTERVAL` | 心跳间隔(秒) | `15` |
-| `HEARTBEAT_RECONNECT` | 最大重连次数 | `3` |
+```json
+{
+  "mcpServers": {
+    "ensp": {
+      "command": "python",
+      "args": ["mcp_server.py"],
+      "cwd": "e:/eNSP-MCP/mcpensp1"
+    }
+  }
+}
+```
+
+不再需要 `ENSP_SERVER_URL` 环境变量。
+
+---
 
 ## 项目结构
 
 ```
-mcpensp1/
-├── app.py                          # 主服务器（知识库+心跳+拓扑+18个KB API）
-├── mcp_server.py                   # MCP服务器
-├── mcp.json                        # MCP配置
-├── requirements.txt                # 依赖
-├── README.md                       # 本文档
-├── kb/                             # 知识库数据
-│   ├── structured_commands_kb.json # 结构化经验知识库（核心）
-│   ├── global_kb.json              # 运行时命令记录
-│   └── devices_kb.json             # 设备维度命令历史
-├── templates/
-│   └── index.html                  # Web UI
-└── uploads/
+eNSP-MCP/
+├── mcpensp1/
+│   ├── app.py                       # Flask Web UI (可选, ~3400行)
+│   ├── mcp_server.py                # MCP Server (544行, 58个工具)
+│   ├── connection.py                # Telnet连接 (同步+异步双接口)
+│   ├── device_manager.py            # 设备状态管理 (线程安全) ★新
+│   ├── command_executor.py          # 命令执行器 ★新
+│   ├── knowledge.py                 # 知识库 (原有, 修复import)
+│   ├── knowledge_store.py           # 知识库统一封装 (桥接层) ★新
+│   ├── services.py                  # kb/topo/config共享单例 ★新
+│   ├── topology.py                  # 拓扑引擎
+│   ├── heartbeat.py                 # 心跳监控
+│   ├── config_method_store.py       # 配置方法库
+│   ├── experiment_engine.py         # 实验引擎
+│   ├── requirements.txt
+│   ├── mcp.json
+│   ├── prompts/v3/
+│   │   └── system.md                # Agent System Prompt (UTF-8) ★新
+│   ├── agent/
+│   │   ├── __init__.py
+│   │   ├── types.py                 # 共享数据类型
+│   │   ├── memory.py                # 长期记忆系统
+│   │   ├── knowledge_store.py       # 可成长知识库
+│   │   ├── planner.py               # DAG 执行规划器
+│   │   ├── verifier.py              # 语义化验证引擎
+│   │   ├── recovery.py              # 自动恢复引擎 (修复KeyError)
+│   │   ├── reflection.py            # 实验反思引擎
+│   │   ├── learning.py              # 自主学习引擎
+│   │   ├── runtime.py               # 运行时编排器
+│   │   ├── routes.py                # API 路由 (修复认证)
+│   │   └── bootstrap.py             # 集成引导
+│   ├── agent_data/                  # Agent 数据
+│   ├── kb/                          # 知识库 JSON
+│   ├── static/
+│   └── templates/
+├── tests/
+│   └── test_smoke.py                # 34个冒烟测试 ★新
+├── _baseline_20260706/              # Phase 0基线备份 ★新
+├── REFACTOR_PLAN.md                 # 重构方案
+└── README.md
 ```
+
+---
+
+## 重构记录
+
+| Phase | Commit | 内容 |
+|-------|--------|------|
+| **P0** | `43b373d` | 安全网：分支/备份/34个冒烟测试 |
+| **P1** | `4ba467f` | Bug修复：names→device_names、recovery KeyError、认证、裸except、Prompt外部化、乱码 |
+| **P2** | `8865ff0` | 模块拆分：device_manager.py、command_executor.py、knowledge_store.py |
+| **P2.5** | `deb7a6d` | async桥接：TelnetConnection.send_cmd_async() |
+| **P3 B1** | `8a4e4dd` | 核心设备工具直连：scan/connect/send/batch/disconnect |
+| **P3 B2** | `1507042` | KB/拓扑/快照/配置方法 ~22个工具直连 + services.py |
+| **P3 B3** | `e5b73d5` | Agent Memory/Knowledge/Config 工具直连 |
+| **P3 B3b** | `398ba8a` | KB/topo/detect/snapshot 剩余工具直连 |
+| **复查** | `ab9e757` | config_methods共享单例 + topo_names同步dm |
+
+**成果：HTTP调用 45+ → 10，冒烟测试 28/28 PASS。**
+
+---
+
+## 兼容性说明
+
+### 向后兼容
+
+- ✅ 所有原有 MCP Tool 完全兼容
+- ✅ 所有原有 API 路径完全兼容
+- ✅ 原有知识库 JSON 文件继续使用
+- ✅ 前端和 WebSocket 事件不变
+- ✅ Agent Runtime 加载失败不影响原有功能
+
+### 新增能力
+
+- ✅ MCP Server 直连设备（无 HTTP 转发延迟）
+- ✅ 4 个新增核心模块（device_manager, command_executor, services, knowledge_store）
+- ✅ TelnetConnection 异步接口
+- ✅ `_require_auth` 认证生效
+- ✅ AGENT_SYSTEM_PROMPT 外部可编辑
+
+---
+
+## 许可证
+
+MIT License

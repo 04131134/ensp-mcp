@@ -6,6 +6,7 @@ from collections import defaultdict, deque
 from datetime import datetime, timezone
 from flask import Flask, render_template, jsonify, request, make_response
 from flask_socketio import SocketIO, emit, join_room
+from agent.bootstrap import init_agent_runtime, get_agent_runtime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('ENSP_SECRET_KEY', secrets.token_hex(32))
@@ -234,8 +235,11 @@ class KnowledgeBase:
             cat = cat_entry['category'] if cat_entry else self._guess_cat(cmd_lower)
             risk = cat_entry['risk'] if cat_entry else 'unknown'
             cmd_key = hashlib.sha256(f'{device_type}:{cmd_lower}'.encode()).hexdigest()[:16]
-            cmds = gkb.setdefault("commands", [])
-            existing = next((i for i, c in enumerate(cmds) if c.get("key") == cmd_key), None)
+            cmds = gkb.get("commands", [])
+            if not isinstance(cmds, list):
+                cmds = []
+                gkb["commands"] = cmds
+            existing = next((i for i, c in enumerate(cmds) if isinstance(c, dict) and c.get("key") == cmd_key), None)
             entry = {"key": cmd_key, "command": command.strip(), "description": desc,
                      "device_type": device_type, "category": cat, "risk": risk,
                      "output_preview": (output[:500] if output else ""),
@@ -855,9 +859,9 @@ class KnowledgeBase:
             if any('dhcp' in c.lower() for c in cmd_sequence):
                 lessons.append('DHCP???????VLAN???????????????IP')
 
-            # ?????????
+            # 获取设备名称
             with name_lock:
-                device_name = names.get(device_path, device_path)
+                device_name = device_names.get(device_path, device_path)
 
             exp_data = {
                 'experiment': exp_name,
@@ -1170,6 +1174,7 @@ class TelnetConnection:
         self.sock.settimeout(10)
         self.sock.connect((self.host, self.port))
         time.sleep(0.5)
+        self.current_view = 'unknown'
         # Flush initial data
         self.sock.settimeout(0.5)
         try:
@@ -1179,10 +1184,25 @@ class TelnetConnection:
         except (socket.timeout, OSError):
             pass
         self.sock.settimeout(10)
-        # Send enter and flush prompt
+        # Send multiple enters to wake device and detect prompt
         self.sock.send(b'\r\n')
         time.sleep(0.3)
         self._flush()
+        self.sock.send(b'\r\n')
+        time.sleep(0.3)
+        chunks = []
+        try:
+            self.sock.settimeout(1)
+            while True:
+                d = self.sock.recv(65536)
+                if d: chunks.append(d)
+                else: break
+        except (socket.timeout, OSError):
+            pass
+        self.sock.settimeout(10)
+        if chunks:
+            output = self._strip_escape(b''.join(chunks)).decode('gbk', errors='ignore')
+            self._detect_view(output)
         return True
 
     def _flush(self):
@@ -1201,6 +1221,67 @@ class TelnetConnection:
         """Remove ANSI/VT escape codes from data."""
         return re.sub(rb'\x1b\[[0-9;]*[A-Za-z]', b'', data)
 
+    def _detect_view(self, output):
+        """Detect current CLI view from output."""
+        last_prompt = 'unknown'
+        for line in output.split('\n'):
+            line = line.strip()
+            if '<' in line and ('>' in line or '#' in line) and not line.startswith('Error'):
+                last_prompt = 'user'
+            elif line.startswith('[') and ']' in line:
+                bracket = line[1:line.rfind(']')]
+                if '-' in bracket:
+                    last_prompt = bracket
+                else:
+                    last_prompt = 'system'
+        if last_prompt != 'unknown':
+            self.current_view = last_prompt
+        return last_prompt
+
+    def ensure_user_view(self):
+        """Ensure device is in user view."""
+        for _ in range(5):
+            view = getattr(self, 'current_view', 'unknown')
+            if view == 'user':
+                return True
+            with self.lock:
+                self._flush()
+                self.sock.send(b'quit\r\n')
+                time.sleep(0.3)
+                chunks = []
+                try:
+                    self.sock.settimeout(1)
+                    while True:
+                        d = self.sock.recv(65536)
+                        if d: chunks.append(d)
+                        else: break
+                except: pass
+                output = self._strip_escape(b''.join(chunks)).decode('gbk', errors='ignore')
+                self._detect_view(output)
+        return False
+
+    def ensure_system_view(self):
+        """Ensure device is in system view."""
+        view = getattr(self, 'current_view', 'unknown')
+        if view == 'system':
+            return True
+        self.ensure_user_view()
+        with self.lock:
+            self._flush()
+            self.sock.send(b'system-view\r\n')
+            time.sleep(0.3)
+            chunks = []
+            try:
+                self.sock.settimeout(1)
+                while True:
+                    d = self.sock.recv(65536)
+                    if d: chunks.append(d)
+                    else: break
+            except: pass
+            output = self._strip_escape(b''.join(chunks)).decode('gbk', errors='ignore')
+            self._detect_view(output)
+            return self.current_view != 'user'
+
     def send_cmd(self, cmd):
         MAX_RECV = 4 * 1024 * 1024
         with self.lock:
@@ -1209,14 +1290,16 @@ class TelnetConnection:
             cmd_lower = cmd.strip().lower()
             is_display = cmd_lower.startswith('display') or cmd_lower.startswith('dir')
             is_diag = cmd_lower.startswith(('ping', 'tracert'))
-            recv_timeout = 3 if is_display else (4 if is_diag else 1.5)
-            # Flush pending data thoroughly
+            recv_timeout = 5 if is_display else (8 if is_diag else 2)
+            # Flush pending data thoroughly (triple flush prevents command粘连)
             self._flush()
             time.sleep(0.15)
             self._flush()
-            # Send command
+            time.sleep(0.1)
+            self._flush()
+            # Send command with longer wait to prevent粘连
             self.sock.send(f'{cmd}\r\n'.encode())
-            time.sleep(0.3 if is_display else 0.2)
+            time.sleep(0.5 if is_display else 0.3)
             # Read response
             chunks = []
             total = 0
@@ -1266,13 +1349,48 @@ class TelnetConnection:
                     auto_yn += 1
                 else:
                     break
+            # Auto-handle ---- More ---- pagination (send Enter to continue)
+            more_count = 0
+            while more_count < 100:  # safety limit
+                tail = output[-300:] if len(output) > 300 else output
+                # Huawei VRP: '  ---- More ----' pattern
+                if re.search(r'[-]+\s*More\s*[-]+', tail, re.IGNORECASE):
+                    self.sock.send(b'\r\n')
+                    time.sleep(0.3)
+                    more_deadline = time.time() + recv_timeout
+                    while time.time() < more_deadline:
+                        try:
+                            self.sock.settimeout(0.1)
+                            c = self.sock.recv(65536)
+                            if c:
+                                chunks.append(c)
+                                total += len(c)
+                                if total >= MAX_RECV:
+                                    break
+                                more_deadline = time.time() + 0.5
+                        except socket.timeout:
+                            pass
+                        except OSError:
+                            break
+                    self.sock.settimeout(10)
+                    output = self._strip_escape(b''.join(chunks)).decode('gbk', errors='ignore')
+                    more_count += 1
+                else:
+                    break
+            # Detect current view from output
+            self._detect_view(output)
             return output
 
-    def handle_firewall_login(self, username='admin', password='Admin@1234'):
-        """Handle USG6000V firewall login flow."""
+    def handle_firewall_login(self, username='admin', password='admin@123', new_password='Admin@1234'):
+        """Handle USG6000V firewall login with mandatory password change.
+        
+        Flow: enter -> username -> old_password -> [Y/N] -> 
+              old_password -> new_password -> confirm -> prompt
+        """
         if not self.sock:
             return False
         try:
+            # Step 1: Wake up device, wait for login prompt
             initial = ''
             for _attempt in range(3):
                 self.sock.send(b'\r\n')
@@ -1283,62 +1401,98 @@ class TelnetConnection:
                 except Exception:
                     initial = ''
                 self.sock.settimeout(10)
-                if 'Username' in initial or 'Login' in initial:
+                logger.debug('FW wake attempt %d: %s', _attempt+1, repr(initial[:100]))
+                if 'Username' in initial or 'username' in initial or 'Login' in initial:
                     break
+                if any(p in initial for p in ['<', '#', ']', '>']):
+                    logger.info('Firewall: already at prompt, skip login')
+                    return True
             else:
+                logger.debug('Firewall login: no username prompt after 3 attempts')
                 return False
-            # Send username
+
+            # Step 2: Send username
             self.sock.send((username + '\r\n').encode())
             time.sleep(2)
             try:
-                self.sock.settimeout(3)
+                self.sock.settimeout(5)
                 resp = self.sock.recv(65536).decode('gbk', errors='ignore')
             except Exception:
                 resp = ''
             self.sock.settimeout(10)
-            if 'Password' not in resp:
+            logger.debug('FW after username: %s', repr(resp[:200]))
+            if 'Password' not in resp and 'password' not in resp:
                 return False
-            # Send password
+
+            # Step 3: Send OLD password (Admin@123)
             self.sock.send((password + '\r\n').encode())
             time.sleep(3)
             try:
-                self.sock.settimeout(3)
+                self.sock.settimeout(5)
                 resp = self.sock.recv(65536).decode('gbk', errors='ignore')
             except Exception:
                 resp = ''
             self.sock.settimeout(10)
-            # Handle password change
-            if '[Y/N]' in resp or '(Y/N)' in resp:
-                self.sock.send(b'y')
-                time.sleep(0.5)
-                self.sock.send(b'\r\n')
+            logger.debug('FW after password: %s', repr(resp[:300]))
+
+            # Step 4: Handle password change [Y/N] prompt
+            if '[Y/N]' in resp or '(Y/N)' in resp or 'change' in resp.lower():
+                logger.info('FW: password change required, answering Y')
+                self.sock.send(b'y\r\n')
                 time.sleep(3)
                 try:
-                    self.sock.settimeout(3)
+                    self.sock.settimeout(5)
                     resp = self.sock.recv(65536).decode('gbk', errors='ignore')
                 except Exception:
                     resp = ''
                 self.sock.settimeout(10)
-                if 'old password' in resp.lower():
-                    # Send the OLD password (same as login password)
-                    # New password (change to same for simplicity, or use a new one)
-                    new_pw = password
-                    self.sock.send((new_pw + '\r\n').encode())
-                    time.sleep(2)
-                    try: self.sock.recv(65536)
-                    except Exception: pass
-                    # Confirm new password
-                    self.sock.send((new_pw + '\r\n').encode())
-                    time.sleep(3)
-                    try: self.sock.recv(65536)
-                    except Exception: pass
-                    self.sock.settimeout(10)
-            # Flush
+                logger.debug('FW after Y: %s', repr(resp[:300]))
+
+                # Send OLD password when prompted
+                self.sock.send((password + '\r\n').encode())
+                time.sleep(2)
+                try:
+                    self.sock.settimeout(5)
+                    resp = self.sock.recv(65536).decode('gbk', errors='ignore')
+                except Exception:
+                    resp = ''
+                self.sock.settimeout(10)
+                logger.debug('FW after old pw: %s', repr(resp[:300]))
+
+                # Send NEW password
+                self.sock.send((new_password + '\r\n').encode())
+                time.sleep(2)
+                try:
+                    self.sock.settimeout(5)
+                    resp = self.sock.recv(65536).decode('gbk', errors='ignore')
+                except Exception:
+                    resp = ''
+                self.sock.settimeout(10)
+                logger.debug('FW after new pw: %s', repr(resp[:300]))
+
+                # Confirm NEW password
+                self.sock.send((new_password + '\r\n').encode())
+                time.sleep(3)
+                try:
+                    self.sock.settimeout(5)
+                    resp = self.sock.recv(65536).decode('gbk', errors='ignore')
+                except Exception:
+                    resp = ''
+                self.sock.settimeout(10)
+                logger.debug('FW after confirm: %s', repr(resp[:300]))
+
+            # Step 5: Flush and verify prompt
             time.sleep(1)
             self._flush()
             self.sock.send(b'\r\n')
             time.sleep(0.5)
+            try:
+                self.sock.settimeout(2)
+                self.sock.recv(65536)
+            except Exception:
+                pass
             self._flush()
+            logger.info('Firewall login completed: %s:%s', self.host, self.port)
             return True
         except Exception as e:
             logger.debug('Firewall login failed: %s', e)
@@ -1375,6 +1529,14 @@ def _extract_topo_names(data):
 
 topo_engine = TopologyEngine()
 heartbeat = HeartbeatMonitor(kb)
+
+# ==================== Agent Runtime v3.0 集成 ====================
+try:
+    _agent_runtime = init_agent_runtime(app, lambda p, c: send_command(p, c))
+    logger.info('[App] Agent Runtime v3.0 集成成功')
+except Exception as _agent_err:
+    logger.warning(f'[App] Agent Runtime 加载失败，原有功能不受影响: {_agent_err}')
+
 
 def _validate_port(p):
     try: return 1 <= int(p) <= 65535
@@ -1481,8 +1643,19 @@ def scan_devices(start=2000, end=2050):
 def connect_device(port):
     path = f'127.0.0.1:{port}'
     with devices_lock:
-        if path in devices:
+        existing = devices.get(path)
+    if existing:
+        # Check if existing connection is actually alive
+        try:
+            existing.sock.send(b'')
             return {'success': True, 'port': port, 'path': path, 'name': device_names.get(path, path), 'device_type': device_types.get(path, 'unknown'), 'reconnected': False}
+        except Exception:
+            # Dead connection, remove and reconnect
+            logger.info('Dead connection detected for %s, reconnecting', path)
+            with devices_lock:
+                devices.pop(path, None)
+            try: existing.close()
+            except Exception: pass
     conn = None
     try:
         conn = TelnetConnection('127.0.0.1', port)
@@ -1573,11 +1746,47 @@ def send_command(path, command):
                     pass
             elif cmd_lower in ('undo terminal monitor', 'undo t m'):
                 send_command._undo_done.add(_undo_key)
-        t0 = time.time()
-        result = conn.send_cmd(command)
-        elapsed = round(time.time() - t0, 3)
+        # Classify which view the command needs
+        _needs_system = cmd_lower.startswith(('interface ', 'vlan', 'ospf', 'vrrp', 'stp ',
+            'dhcp', 'ip pool', 'ip route', 'firewall', 'capwap', 'wlan', 'sysname',
+            'undo info', 'security-policy', 'aaa', 'manager-user', 'eth-trunk',
+            'ip address', 'port ', 'traffic-filter', 'rule ', 'description '))
+        _needs_user = cmd_lower.startswith(('display ', 'save', 'ping', 'tracert', 'telnet'))
+
+        def _exec_and_check():
+            t = time.time()
+            res = conn.send_cmd(command)
+            el = round(time.time() - t, 3)
+            _errs = ['Error:', 'Unrecognized command', 'Wrong parameter',
+                     'Too many parameters', 'Ambiguous command', 'Incomplete command',
+                     'Please renew the default configurations']
+            ok = bool(res and not any(kw in res for kw in _errs))
+            return res, el, ok
+
+        result, elapsed, cmd_success = _exec_and_check()
+
+        # View auto-correction: if failed due to wrong view, correct and retry once
+        if not cmd_success and ('Unrecognized command' in (result or '') or 'Wrong parameter' in (result or '')):
+            view_before = getattr(conn, 'current_view', 'unknown')
+            corrected = False
+            if _needs_system and view_before == 'user':
+                try:
+                    conn.send_cmd('system-view')
+                    time.sleep(0.2)
+                    corrected = True
+                except Exception:
+                    pass
+            elif _needs_user and view_before != 'user':
+                try:
+                    conn.ensure_user_view()
+                    corrected = True
+                except Exception:
+                    pass
+            if corrected:
+                result, elapsed, cmd_success = _exec_and_check()
+                logger.info('View auto-corrected for %s: %s -> retry cmd_success=%s', path, view_before, cmd_success)
+
         with name_lock: dt = device_types.get(path, "unknown")
-        cmd_success = bool(result and not result.strip().startswith('Error') and 'Unrecognized command' not in result)
         kb.record_command(command, result, device_type=dt, device_path=path, success=cmd_success)
         return {'success': True, 'path': path, 'output': result, 'response_time': elapsed, 'cmd_success': cmd_success}
     except ConnectionError:
@@ -2041,35 +2250,35 @@ SNAPSHOT_DIR = os.path.join(app.config.get('KB_FOLDER', 'kb'), 'snapshots')
 os.makedirs(SNAPSHOT_DIR, exist_ok=True)
 
 def _detect_prompt_view(conn):
-    try:
-        result = conn.send_cmd('')
-        if not result:
-            return 'unknown', ''
-        lines = result.strip().splitlines()
-        prompt = lines[-1].strip() if lines else ''
-        if '<' in prompt and '>' in prompt:
-            return 'user_view', prompt
-        if '[' in prompt and ']' in prompt:
-            return 'system_view', prompt
-        return 'unknown', prompt
-    except Exception:
-        return 'unknown', ''
+    # Use the conn.current_view which is maintained by send_cmd/_detect_view
+    view = getattr(conn, 'current_view', 'unknown')
+    if view == 'user':
+        return 'user_view', ''
+    elif view in ('system',) or (isinstance(view, str) and '-' in view and view != 'unknown'):
+        return 'system_view', view
+    return 'unknown', ''
 
 def _ensure_user_view(conn):
-    view, prompt = _detect_prompt_view(conn)
-    if view == 'system_view':
-        conn.send_cmd('return')
-        time.sleep(0.2)
+    view = getattr(conn, 'current_view', 'unknown')
+    if view == 'user':
         return True
+    # Try return first, then quit repeatedly
+    for _ in range(5):
+        out = conn.send_cmd('return')
+        if getattr(conn, 'current_view', '') == 'user':
+            return True
+        out = conn.send_cmd('quit')
+        if getattr(conn, 'current_view', '') == 'user':
+            return True
     return False
 
 def _ensure_system_view(conn):
-    view, prompt = _detect_prompt_view(conn)
-    if view == 'user_view':
-        conn.send_cmd('system-view')
-        time.sleep(0.3)
+    view = getattr(conn, 'current_view', 'unknown')
+    if view in ('system',) or (isinstance(view, str) and '-' in view and view != 'unknown'):
         return True
-    return False
+    _ensure_user_view(conn)
+    conn.send_cmd('system-view')
+    return getattr(conn, 'current_view', '') != 'user'
 
 def send_command_batch(path, commands, wait=0.1, auto_view=True, auto_undo_tm=True):
     with devices_lock:
@@ -2082,7 +2291,9 @@ def send_command_batch(path, commands, wait=0.1, auto_view=True, auto_undo_tm=Tr
     if auto_undo_tm and commands:
         first_cmd = commands[0].strip().lower()
         if first_cmd not in ('undo terminal monitor', 'undo t m'):
+            # Ensure user view before undo terminal monitor
             try:
+                _ensure_user_view(conn)
                 out = conn.send_cmd('undo t m')
                 results.append({'command': 'undo t m', 'output': out, 'success': True})
             except Exception:
@@ -2102,25 +2313,43 @@ def send_command_batch(path, commands, wait=0.1, auto_view=True, auto_undo_tm=Tr
                     _ensure_user_view(conn)
                 elif cmd_lower in ('return', 'quit'):
                     pass
+                elif cmd_lower in ('undo terminal monitor', 'undo t m'):
+                    _ensure_user_view(conn)
                 elif cmd_lower.startswith(('interface ', 'vlan', 'ospf', 'vrrp', 'stp ', 'dhcp', 'ip pool', 'ip route', 'firewall', 'capwap', 'wlan', 'sysname', 'undo info', 'security-policy', 'aaa', 'manager-user')):
                     _ensure_system_view(conn)
                 elif cmd_lower.startswith(('display ', 'save', 'ping', 'tracert', 'telnet')):
                     _ensure_user_view(conn)
             result = conn.send_cmd(cmd)
-            cmd_ok = bool(result and 'Error' not in result[:100] and 'Unrecognized command' not in result)
+            _errs = ['Error:', 'Unrecognized command', 'Wrong parameter',
+                     'Too many parameters', 'Ambiguous command', 'Incomplete command',
+                     'Please renew the default configurations']
+            cmd_ok = bool(result and not any(kw in result for kw in _errs))
             results.append({'command': cmd, 'output': result, 'success': cmd_ok})
             if not cmd_ok:
                 errors.append('Failed: ' + cmd)
             with name_lock:
                 dt = device_types.get(path, 'unknown')
             kb.record_command(cmd, result, device_type=dt, device_path=path, success=cmd_ok)
+            if not cmd_ok:
+                try:
+                    socketio.emit('batch_error', {'path': path, 'command': cmd, 'output': result[:200], 'error': ''})
+                except Exception:
+                    pass
             time.sleep(wait)
         except ConnectionError:
             results.append({'command': cmd, 'output': '', 'success': False, 'error': 'Connection lost'})
+            try:
+                socketio.emit('batch_error', {'path': path, 'command': cmd, 'output': '', 'error': 'Connection lost'})
+            except Exception:
+                pass
             errors.append('Connection lost at: ' + cmd)
             break
         except Exception as e:
             results.append({'command': cmd, 'output': '', 'success': False, 'error': str(e)[:100]})
+            try:
+                socketio.emit('batch_error', {'path': path, 'command': cmd, 'output': '', 'error': str(e)[:100]})
+            except Exception:
+                pass
             errors.append('Error at ' + cmd + ': ' + str(e)[:100])
     elapsed = round(time.time() - t0, 3)
     # Auto-extract and record structured knowledge after batch completes
@@ -2549,30 +2778,6 @@ def api_kb_stats():
 
 
 
-@app.route('/api/kb/structured')
-@require_auth
-def api_kb_structured():
-    """Get the full structured command knowledge base."""
-    view_type = request.args.get('view_type')
-    device_model = request.args.get('model')
-    return jsonify(kb.get_structured_kb(view_type=view_type, device_model=device_model))
-
-@app.route('/api/kb/structured/<device_type>')
-@require_auth
-def api_kb_structured_by_type(device_type):
-    """Get structured KB filtered by device type/model."""
-    return jsonify(kb.get_structured_kb(device_model=device_type))
-
-@app.route('/api/kb/scan', methods=['POST'])
-@require_auth
-def api_kb_scan():
-    """Scan a connected device and return suggested commands from structured KB."""
-    data = request.get_json(silent=True) or {}
-    path = data.get('path')
-    if not path:
-        return jsonify({'success': False, 'error': 'Missing path parameter'}), 400
-    return jsonify(kb.scan_device_commands(path))
-
 @app.route('/api/kb/suggest')
 @require_auth
 def api_kb_suggest():
@@ -2582,6 +2787,25 @@ def api_kb_suggest():
         return jsonify({'success': False, 'error': 'Missing model parameter'}), 400
     view_type = request.args.get('view_type')
     return jsonify(kb.suggest_commands(model, view_type=view_type))
+
+
+@app.route('/api/kb/structured')
+@require_auth
+def api_kb_structured():
+    """Get structured command knowledge base, optionally filtered."""
+    view_type = request.args.get('view_type')
+    model = request.args.get('model')
+    return jsonify(kb.get_structured_kb(view_type=view_type, device_model=model))
+
+@app.route('/api/kb/scan', methods=['POST'])
+@require_auth
+def api_kb_scan():
+    """Scan a connected device and return command suggestions."""
+    data = request.get_json(silent=True) or {}
+    path = data.get('path')
+    if not path:
+        return jsonify({'success': False, 'error': 'Missing path parameter'}), 400
+    return jsonify(kb.scan_device_commands(path))
 
 @app.route('/api/kb/troubleshooting')
 @require_auth
@@ -2703,51 +2927,6 @@ def api_batch_command():
     auto_undo_tm = data.get('auto_undo_tm', True)
     r = send_command_batch(path, commands, wait=wait, auto_view=auto_view, auto_undo_tm=auto_undo_tm)
     return jsonify(r)
-
-@app.route('/api/devices/snapshot', methods=['POST'])
-@require_auth
-def api_snapshot():
-    data = request.get_json(silent=True)
-    if not data: return jsonify({'success': False, 'error': 'No data'}), 400
-    path = data.get('path')
-    if not _validate_path(path): return jsonify({'success': False, 'error': 'Invalid path'}), 400
-    label = data.get('label')
-    return jsonify(snapshot_config(path, label))
-
-@app.route('/api/devices/snapshots')
-@require_auth
-def api_list_snapshots():
-    path = request.args.get('path')
-    return jsonify(list_snapshots(path))
-
-@app.route('/api/devices/snapshot/<snapshot_id>')
-@require_auth
-def api_get_snapshot(snapshot_id):
-    return jsonify(get_snapshot(snapshot_id))
-
-@app.route('/api/devices/diff', methods=['POST'])
-@require_auth
-def api_diff():
-    data = request.get_json(silent=True)
-    if not data: return jsonify({'success': False, 'error': 'No data'}), 400
-    s1 = data.get('snapshot1')
-    s2 = data.get('snapshot2')
-    if s1 and s2:
-        return jsonify(diff_snapshots(s1, s2))
-    c1 = data.get('config1', '')
-    c2 = data.get('config2', '')
-    return jsonify({'success': True, **diff_configs(c1, c2)})
-
-@app.route('/api/devices/rollback', methods=['POST'])
-@require_auth
-def api_rollback():
-    data = request.get_json(silent=True)
-    if not data: return jsonify({'success': False, 'error': 'No data'}), 400
-    path = data.get('path')
-    snapshot_id = data.get('snapshot_id')
-    if not _validate_path(path): return jsonify({'success': False, 'error': 'Invalid path'}), 400
-    if not snapshot_id: return jsonify({'success': False, 'error': 'Missing snapshot_id'}), 400
-    return jsonify(rollback_config(path, snapshot_id))
 
 @app.route('/api/kb/search')
 @require_auth
@@ -2970,6 +3149,377 @@ def api_topo_device(nid): return jsonify({"node_id": nid, "connections": topo_en
 @require_auth
 def api_health(): return jsonify({"status": "ok", "devices": len(devices), "kb": kb.get_stats()})
 
+# ==================== 配置方法库 API ====================
+from config_method_store import ConfigMethodStore
+
+# 初始化配置方法库
+config_methods = ConfigMethodStore(os.path.join(os.path.dirname(__file__), 'kb'))
+
+@app.route('/api/config-methods/list')
+@require_auth
+def api_config_method_list():
+    category = request.args.get('category', '')
+    if category:
+        methods = config_methods.list_methods(category)
+    else:
+        methods = config_methods.list_methods()
+    return jsonify({
+        "success": True,
+        "count": len(methods),
+        "methods": [{
+            "id": m.get("id"),
+            "name": m.get("name"),
+            "category": m.get("category"),
+            "device_types": m.get("device_types", []),
+            "steps_count": len(m.get("steps", [])),
+            "usage_count": m.get("usage_count", 0),
+            "success_rate": m.get("success_rate", 0.0)
+        } for m in methods]
+    })
+
+@app.route('/api/config-methods/get/<method_id>')
+@require_auth
+def api_config_method_get(method_id):
+    method = config_methods.get_method(method_id)
+    if method:
+        return jsonify({"success": True, "method": method})
+    return jsonify({"success": False, "error": "config method not found: " + method_id}), 404
+
+@app.route('/api/config-methods/search')
+@require_auth
+def api_config_method_search():
+    keyword = request.args.get('keyword', '')
+    if not keyword:
+        return jsonify({"success": False, "error": "keyword required"}), 400
+    results = config_methods.search_methods(keyword)
+    return jsonify({
+        "success": True,
+        "count": len(results),
+        "methods": [{
+            "id": m.get("id"),
+            "name": m.get("name"),
+            "category": m.get("category"),
+            "description": m.get("description", ""),
+            "steps_count": len(m.get("steps", []))
+        } for m in results]
+    })
+
+@app.route('/api/config-methods/add', methods=['POST'])
+@require_auth
+def api_config_method_add():
+    data = request.json
+    if not data:
+        return jsonify({"success": False, "error": "data required"}), 400
+    result = config_methods.add_method(data)
+    if result.get('success'):
+        return jsonify(result)
+    return jsonify(result), 400
+
+@app.route('/api/config-methods/steps/<method_id>')
+@require_auth
+def api_config_method_steps(method_id):
+    method = config_methods.get_method(method_id)
+    if not method:
+        return jsonify({"success": False, "error": "config method not found: " + method_id}), 404
+    steps = method.get('steps', [])
+    commands = config_methods.get_method_commands(method_id)
+    verification = config_methods.get_verification_commands(method_id)
+    return jsonify({
+        "success": True,
+        "method_id": method_id,
+        "name": method.get("name"),
+        "steps": steps,
+        "all_commands": commands,
+        "verification_commands": verification
+    })
+
+@app.route('/api/config-methods/summary')
+@require_auth
+def api_config_method_summary():
+    summary = config_methods.export_methods_summary()
+    return jsonify({"success": True, "summary": summary})
+
+@app.route('/api/config-methods/update/<method_id>', methods=['POST'])
+@require_auth
+def api_config_method_update(method_id):
+    """更新配置方法"""
+    data = request.json
+    if not data:
+        return jsonify({"success": False, "error": "data required"}), 400
+    result = config_methods.update_method(method_id, data)
+    if result.get('success'):
+        return jsonify(result)
+    return jsonify(result), 400
+
+@app.route('/api/config-summary', methods=['POST'])
+@require_auth
+def api_config_summary():
+    """配置总结并记录到知识库"""
+    data = request.json
+    if not data:
+        return jsonify({"success": False, "error": "data required"}), 400
+    
+    goal = data.get('goal', '')
+    commands = data.get('commands', [])
+    success = data.get('success', False)
+    verification_results = data.get('verification_results', [])
+    lessons = data.get('lessons', [])
+    
+    # 生成总结
+    summary = {
+        'goal': goal,
+        'success': success,
+        'commands_count': len(commands),
+        'commands': commands,
+        'verification_results': verification_results,
+        'lessons': lessons,
+    }
+    
+    # 记录到知识库
+    if commands:
+        experience = {
+            'experiment': goal,
+            'commands': commands,
+            'success': success,
+            'lessons': lessons,
+        }
+        kb.record_experience(experience)
+    
+    # 更新配置方法库的使用统计
+    # 尝试匹配已有的配置方法
+    methods = config_methods.search_methods(goal[:20])
+    if methods:
+        method_id = methods[0].get('id')
+        if method_id:
+            config_methods.record_usage(method_id, success=success)
+            summary['matched_method'] = method_id
+    
+    return jsonify({
+        "success": True,
+        "summary": summary,
+        "message": f"配置总结已记录，成功命令 {len(commands)} 条"
+    })
+
+
+
+
+
+# ==================== 设备验证与快照 API ====================
+
+@app.route('/api/devices/verify', methods=['POST'])
+@require_auth
+def api_device_verify():
+    """验证设备配置"""
+    data = request.json
+    if not data or 'path' not in data:
+        return jsonify({'success': False, 'error': '缺少 path 参数'}), 400
+    path = data['path']
+    check_type = data.get('check_type', 'all')
+    target_ip = data.get('target_ip')
+    conn = devices.get(path)
+    if not conn:
+        return jsonify({'success': False, 'error': '设备未连接: ' + path}), 400
+    try:
+        from agent.verifier import SemanticVerifier
+        verifier = SemanticVerifier(devices, state, kb)
+        result = verifier.verify(path, check_type=check_type, target_ip=target_ip)
+        return jsonify({'success': True, 'checks': result.get('checks', [])})
+    except Exception as e:
+        logger.exception('[DeviceVerify] 验证失败')
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/devices/snapshot', methods=['POST'])
+@require_auth
+def api_snapshot():
+    """创建配置快照"""
+    data = request.json
+    if not data or 'path' not in data:
+        return jsonify({'success': False, 'error': '缺少 path 参数'}), 400
+    path = data['path']
+    label = data.get('label')
+    conn = devices.get(path)
+    if not conn:
+        return jsonify({'success': False, 'error': '设备未连接: ' + path}), 400
+    try:
+        result = snapshot_config(path, label=label)
+        if result.get('success'):
+            return jsonify(result)
+        return jsonify(result), 400
+    except Exception as e:
+        logger.exception('[Snapshot] 创建快照失败')
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/devices/snapshots', methods=['GET'])
+@require_auth
+def api_list_snapshots():
+    """获取快照列表"""
+    path = request.args.get('path')
+    try:
+        snapshots = list_snapshots(path=path)
+        return jsonify(snapshots)
+    except Exception as e:
+        logger.exception('[Snapshots] 获取快照列表失败')
+        return jsonify([])
+
+
+# ==================== 实验管理 API ====================
+
+@app.route('/api/experiments', methods=['POST'])
+@require_auth
+def api_create_experiment():
+    """创建新实验"""
+    data = request.json
+    if not data or 'name' not in data:
+        return jsonify({'success': False, 'error': '缺少实验名称'}), 400
+    name = data['name']
+    goal = data.get('goal', '')
+    try:
+        runtime = get_agent_runtime()
+        if runtime:
+            exp_data = {
+                'name': name,
+                'goal': goal,
+                'devices': {},
+                'links': [],
+                'status': 'created',
+                'created_at': datetime.now(timezone.utc).isoformat(),
+                'phase_history': []
+            }
+            exp_id = hashlib.md5((name + str(time.time())).encode()).hexdigest()[:12]
+            if hasattr(runtime, 'experiments'):
+                runtime.experiments[exp_id] = exp_data
+            return jsonify({'success': True, 'experiment_id': exp_id, 'experiment': exp_data})
+        if 'experiments' not in globals():
+            globals()['experiments'] = {}
+        experiments = globals()['experiments']
+        exp_id = hashlib.md5((name + str(time.time())).encode()).hexdigest()[:12]
+        exp_data = {
+            'name': name, 'goal': goal, 'devices': {}, 'links': [],
+            'status': 'created', 'created_at': datetime.now(timezone.utc).isoformat(),
+            'phase_history': []
+        }
+        experiments[exp_id] = exp_data
+        return jsonify({'success': True, 'experiment_id': exp_id, 'experiment': exp_data})
+    except Exception as e:
+        logger.exception('[Experiment] 创建实验失败')
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/experiments', methods=['GET'])
+@require_auth
+def api_list_experiments():
+    """列出所有实验"""
+    try:
+        runtime = get_agent_runtime()
+        if runtime and hasattr(runtime, 'experiments'):
+            return jsonify(runtime.experiments)
+        experiments = globals().get('experiments', {})
+        return jsonify(experiments)
+    except Exception as e:
+        logger.exception('[Experiment] 获取实验列表失败')
+        return jsonify({})
+
+
+@app.route('/api/experiments/<exp_id>', methods=['GET'])
+@require_auth
+def api_get_experiment(exp_id):
+    """获取实验详情"""
+    try:
+        runtime = get_agent_runtime()
+        if runtime and hasattr(runtime, 'experiments') and exp_id in runtime.experiments:
+            return jsonify(runtime.experiments[exp_id])
+        experiments = globals().get('experiments', {})
+        exp = experiments.get(exp_id)
+        if exp:
+            return jsonify(exp)
+        return jsonify({'error': '实验未找到: ' + exp_id}), 404
+    except Exception as e:
+        logger.exception('[Experiment] 获取实验详情失败')
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/experiments/<exp_id>/plan', methods=['POST'])
+@require_auth
+def api_experiment_plan(exp_id):
+    """生成并执行实验计划"""
+    try:
+        runtime = get_agent_runtime()
+        if not runtime:
+            return jsonify({'success': False, 'error': 'Agent Runtime 未初始化'}), 500
+        if not hasattr(runtime, 'experiments') or exp_id not in runtime.experiments:
+            return jsonify({'success': False, 'error': '实验未找到'}), 404
+        exp = runtime.experiments[exp_id]
+        if hasattr(runtime, 'execute_plan'):
+            result = runtime.execute_plan(exp)
+            return jsonify({'success': True, 'result': result})
+        phases = []
+        for path, dev in exp.get('devices', {}).items():
+            phases.append({
+                'name': f"配置 {dev.get('name', path)}",
+                'device_path': path,
+                'status': 'pending'
+            })
+        if 'phase_history' not in exp:
+            exp['phase_history'] = []
+        exp['phase_history'].extend(phases)
+        exp['status'] = 'planned'
+        return jsonify({'success': True, 'phases': phases, 'experiment': exp})
+    except Exception as e:
+        logger.exception('[Experiment] 执行计划失败')
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/experiments/<exp_id>/verify', methods=['POST'])
+@require_auth
+def api_experiment_verify(exp_id):
+    """验证实验中的指定设备"""
+    data = request.json
+    path = data.get('path') if data else None
+    if not path:
+        return jsonify({'success': False, 'error': '缺少 path 参数'}), 400
+    try:
+        runtime = get_agent_runtime()
+        if not runtime:
+            return jsonify({'success': False, 'error': 'Agent Runtime 未初始化'}), 500
+        if hasattr(runtime, 'verify_device'):
+            result = runtime.verify_device(path)
+            return jsonify({'success': True, 'result': result})
+        from agent.verifier import SemanticVerifier
+        verifier = SemanticVerifier(devices, state, kb)
+        result = verifier.verify(path)
+        return jsonify({'success': True, 'checks': result.get('checks', [])})
+    except Exception as e:
+        logger.exception('[Experiment] 验证设备失败')
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/experiments/dependency-graph', methods=['GET'])
+@require_auth
+def api_experiment_dependency_graph():
+    """获取实验阶段依赖图"""
+    try:
+        runtime = get_agent_runtime()
+        if runtime and hasattr(runtime, 'experiments'):
+            graph = {'nodes': [], 'edges': []}
+            for exp_id, exp in runtime.experiments.items():
+                graph['nodes'].append({
+                    'id': exp_id,
+                    'name': exp.get('name', exp_id),
+                    'status': exp.get('status', 'unknown')
+                })
+                phases = exp.get('phase_history', [])
+                for i in range(1, len(phases)):
+                    graph['edges'].append({
+                        'source': f"{exp_id}_phase_{i-1}",
+                        'target': f"{exp_id}_phase_{i}"
+                    })
+            return jsonify(graph)
+        return jsonify({'nodes': [], 'edges': []})
+    except Exception as e:
+        logger.exception('[Experiment] 获取依赖图失败')
+        return jsonify({'nodes': [], 'edges': []})
 
 
 def _ws_check_auth():
@@ -3055,7 +3605,12 @@ def on_fetch_name(data):
 
 
 if __name__ == "__main__":
+    # Add file handler for debugging
+    fh = logging.FileHandler('server_debug.log', encoding='utf-8')
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(name)s: %(message)s'))
+    logging.getLogger().addHandler(fh)
+    logging.getLogger().setLevel(logging.DEBUG)
     print("eNSP Server starting on http://127.0.0.1:5000")
     heartbeat.start()
     socketio.run(app, host="127.0.0.1", port=5000, debug=False, allow_unsafe_werkzeug=True)
-

@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from flask import Flask, render_template, jsonify, request, make_response
 from flask_socketio import SocketIO, emit, join_room
 from agent.bootstrap import init_agent_runtime, get_agent_runtime
+from device_manager import dm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('ENSP_SECRET_KEY', secrets.token_hex(32))
@@ -1631,14 +1632,8 @@ def scan_ports(start=2000, end=2050):
     return found
 
 def scan_devices(start=2000, end=2050):
-    r = scan_ports(start, end)
-    with name_lock:
-        for d in r:
-            port = d['port']
-            topo_name = topo_names.get(port)
-            d['name'] = topo_name or device_names.get(d['path'], d['path'])
-            d['device_type'] = device_types.get(d['path'], 'unknown')
-    return r
+    """Scan for eNSP devices in port range. Delegates to DeviceManager."""
+    return dm.scan_devices(start, end)
 
 def connect_device(port):
     path = f'127.0.0.1:{port}'

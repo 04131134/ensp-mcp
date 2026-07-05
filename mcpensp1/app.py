@@ -9,6 +9,7 @@ from flask_socketio import SocketIO, emit, join_room
 from agent.bootstrap import init_agent_runtime, get_agent_runtime
 from device_manager import dm
 from services import kb, topo_engine, config_methods
+from heartbeat import HeartbeatMonitor
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('ENSP_SECRET_KEY', secrets.token_hex(32))
@@ -1042,470 +1043,8 @@ class TopologyEngine:
             return {'node_count': len(self.nodes), 'link_count': len(self.links),
                     'nodes': [{'id': n.get('id'), 'name': n.get('name', n.get('id')), 'type': n.get('type', 'unknown')} for n in self.nodes],
                     'links': [{'source': l.get('source'), 'target': l.get('target'), 'source_interface': l.get('source_interface', ''), 'target_interface': l.get('target_interface', ''), 'line_type': l.get('line_type', 'Copper')} for l in self.links]}
-
-
-class HeartbeatMonitor:
-    def __init__(self, kb_ref):
-        self.kb = kb_ref
-        self.status = {}
-        self.lock = threading.Lock()
-        self.running = False
-        self.reconnect_counts = {}
-        self.reconnect_lock = threading.Lock()
-
-    def start(self):
-        with self.lock:
-            if self.running: return
-            self.running = True
-        threading.Thread(target=self._loop, daemon=True).start()
-
-    def _loop(self):
-        while self.running:
-            try: self._check_all()
-            except Exception as e: logger.warning('[Heartbeat] %s', e)
-            time.sleep(HEARTBEAT_INTERVAL)
-
-    def _check_all(self):
-        with devices_lock:
-            current_devices = list(devices.keys())
-        for path in current_devices:
-            alive = self._ping(path)
-            with self.lock:
-                old = self.status.get(path, {}).get('alive')
-                self.status[path] = {'alive': alive, 'last_check': self._now(), 'last_alive': self._now() if alive else self.status.get(path, {}).get('last_alive'), 'response_time': self.status.get(path, {}).get('response_time', 0)}
-            if old is True and alive is False:
-                with self.reconnect_lock:
-                    self.reconnect_counts[path] = self.reconnect_counts.get(path, 0) + 1
-                    count = self.reconnect_counts[path]
-                if count <= HEARTBEAT_RECONNECT_ATTEMPTS:
-                    self._try_reconnect(path)
-                else:
-                    with name_lock:
-                        nm = device_names.get(path, path)
-                    socketio.emit('heartbeat_status', {'path': path, 'alive': False, 'status': 'disconnected', 'message': f'{nm} 宸叉柇寮€'})
-            elif old is False and alive is True:
-                with self.reconnect_lock:
-                    self.reconnect_counts[path] = 0
-                with name_lock:
-                    nm = device_names.get(path, path)
-                socketio.emit('heartbeat_status', {'path': path, 'alive': True, 'status': 'reconnected', 'message': f'{nm} 已恢复'})
-            else:
-                socketio.emit('heartbeat_status', {'path': path, 'alive': alive, 'status': 'alive' if alive else 'unresponsive', 'response_time': self.status.get(path, {}).get('response_time', 0)})
-        with self.lock:
-            stale = [p for p in self.status if p not in devices]
-            for p in stale: self.status.pop(p, None)
-        with self.reconnect_lock:
-            stale_rc = [p for p in self.reconnect_counts if p not in devices]
-            for p in stale_rc: self.reconnect_counts.pop(p, None)
-
-    def _ping(self, path):
-        """Check device liveness by probing socket, without sending commands."""
-        with devices_lock:
-            conn = devices.get(path)
-        if not conn or not conn.sock:
-            return False
-        try:
-            t0 = time.time()
-            import select  # already imported at top
-            # Use select to check if socket is still alive (very fast)
-            _, writable, errored = select.select([], [conn.sock], [conn.sock], 0.5)
-            if errored:
-                raise ConnectionError('Socket error')
-            if not writable:
-                raise ConnectionError('Socket not writable')
-            with self.lock:
-                self.status.setdefault(path, {})['response_time'] = round(time.time() - t0, 3)
-            return True
-        except Exception:
-            try:
-                port = int(path.split(':')[1])
-                nc = TelnetConnection('127.0.0.1', port)
-                nc.connect()
-                with devices_lock:
-                    old = devices.get(path)
-                    if old:
-                        try: old.close()
-                        except OSError: pass
-                    devices[path] = nc
-                return True
-            except Exception as e:
-                logger.debug('Ping reconnect failed for %s: %s', path, e)
-                return False
-    def _try_reconnect(self, path):
-        with devices_lock:
-            if path not in devices: return
-        nc = None
-        try:
-            port = int(path.split(':')[1])
-            nc = TelnetConnection('127.0.0.1', port)
-            nc.connect()
-            with devices_lock:
-                if path not in devices:
-                    try: nc.close()
-                    except OSError: pass
-                    return
-                old = devices.get(path)
-                if old:
-                    try: old.close()
-                    except OSError: pass
-                devices[path] = nc
-            with name_lock:
-                nm = device_names.get(path, path)
-            socketio.emit('heartbeat_status', {'path': path, 'alive': True, 'status': 'reconnected', 'message': f'{nm} 已恢复愬姛'})
-        except Exception as e:
-            logger.error('Reconnect failed for %s: %s', path, e)
-            if nc:
-                try: nc.close()
-                except OSError: pass
-
-    def get_status(self, path=None):
-        with self.lock: return self.status.get(path, {'alive': False}) if path else dict(self.status)
-
-    def _now(self): return datetime.now(timezone.utc).isoformat()
-
-
-class TelnetConnection:
-    """Telnet connection using raw socket (eNSP compatible, no IAC negotiation)."""
-    def __init__(self, host, port):
-        self.host, self.port = host, port
-        self.sock = None
-        self.lock = threading.Lock()
-
-    def connect(self):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.settimeout(10)
-        self.sock.connect((self.host, self.port))
-        time.sleep(0.5)
-        self.current_view = 'unknown'
-        # Flush initial data
-        self.sock.settimeout(0.5)
-        try:
-            while True:
-                d = self.sock.recv(65536)
-                if not d: break
-        except (socket.timeout, OSError):
-            pass
-        self.sock.settimeout(10)
-        # Send multiple enters to wake device and detect prompt
-        self.sock.send(b'\r\n')
-        time.sleep(0.3)
-        self._flush()
-        self.sock.send(b'\r\n')
-        time.sleep(0.3)
-        chunks = []
-        try:
-            self.sock.settimeout(1)
-            while True:
-                d = self.sock.recv(65536)
-                if d: chunks.append(d)
-                else: break
-        except (socket.timeout, OSError):
-            pass
-        self.sock.settimeout(10)
-        if chunks:
-            output = self._strip_escape(b''.join(chunks)).decode('gbk', errors='ignore')
-            self._detect_view(output)
-        return True
-
-    def _flush(self):
-        """Flush pending data from socket."""
-        old_timeout = self.sock.gettimeout()
-        self.sock.settimeout(0.5)
-        try:
-            while True:
-                d = self.sock.recv(65536)
-                if not d: break
-        except (socket.timeout, OSError):
-            pass
-        self.sock.settimeout(old_timeout)
-
-    def _strip_escape(self, data):
-        """Remove ANSI/VT escape codes from data."""
-        return re.sub(rb'\x1b\[[0-9;]*[A-Za-z]', b'', data)
-
-    def _detect_view(self, output):
-        """Detect current CLI view from output."""
-        last_prompt = 'unknown'
-        for line in output.split('\n'):
-            line = line.strip()
-            if '<' in line and ('>' in line or '#' in line) and not line.startswith('Error'):
-                last_prompt = 'user'
-            elif line.startswith('[') and ']' in line:
-                bracket = line[1:line.rfind(']')]
-                if '-' in bracket:
-                    last_prompt = bracket
-                else:
-                    last_prompt = 'system'
-        if last_prompt != 'unknown':
-            self.current_view = last_prompt
-        return last_prompt
-
-    def ensure_user_view(self):
-        """Ensure device is in user view."""
-        for _ in range(5):
-            view = getattr(self, 'current_view', 'unknown')
-            if view == 'user':
-                return True
-            with self.lock:
-                self._flush()
-                self.sock.send(b'quit\r\n')
-                time.sleep(0.3)
-                chunks = []
-                try:
-                    self.sock.settimeout(1)
-                    while True:
-                        d = self.sock.recv(65536)
-                        if d: chunks.append(d)
-                        else: break
-                except: pass
-                output = self._strip_escape(b''.join(chunks)).decode('gbk', errors='ignore')
-                self._detect_view(output)
-        return False
-
-    def ensure_system_view(self):
-        """Ensure device is in system view."""
-        view = getattr(self, 'current_view', 'unknown')
-        if view == 'system':
-            return True
-        self.ensure_user_view()
-        with self.lock:
-            self._flush()
-            self.sock.send(b'system-view\r\n')
-            time.sleep(0.3)
-            chunks = []
-            try:
-                self.sock.settimeout(1)
-                while True:
-                    d = self.sock.recv(65536)
-                    if d: chunks.append(d)
-                    else: break
-            except: pass
-            output = self._strip_escape(b''.join(chunks)).decode('gbk', errors='ignore')
-            self._detect_view(output)
-            return self.current_view != 'user'
-
-    def send_cmd(self, cmd):
-        MAX_RECV = 4 * 1024 * 1024
-        with self.lock:
-            if not self.sock:
-                raise ConnectionError('Socket not connected')
-            cmd_lower = cmd.strip().lower()
-            is_display = cmd_lower.startswith('display') or cmd_lower.startswith('dir')
-            is_diag = cmd_lower.startswith(('ping', 'tracert'))
-            recv_timeout = 5 if is_display else (8 if is_diag else 2)
-            # Flush pending data thoroughly (triple flush prevents command粘连)
-            self._flush()
-            time.sleep(0.15)
-            self._flush()
-            time.sleep(0.1)
-            self._flush()
-            # Send command with longer wait to prevent粘连
-            self.sock.send(f'{cmd}\r\n'.encode())
-            time.sleep(0.5 if is_display else 0.3)
-            # Read response
-            chunks = []
-            total = 0
-            deadline = time.time() + recv_timeout
-            while time.time() < deadline:
-                try:
-                    self.sock.settimeout(0.1)
-                    data = self.sock.recv(65536)
-                    if data:
-                        chunks.append(data)
-                        total += len(data)
-                        if total >= MAX_RECV:
-                            break
-                        deadline = time.time() + 0.5  # extend if still getting data
-                except socket.timeout:
-                    pass
-                except OSError:
-                    break
-            self.sock.settimeout(10)
-            output = b''.join(chunks)
-            output = self._strip_escape(output).decode('gbk', errors='ignore')
-            # Auto-handle [Y/N] prompts
-            auto_yn = 0
-            while auto_yn < 3:
-                tail = output[-200:] if len(output) > 200 else output
-                if re.search(r'\[Y/?N\]|\(Y/?N\)', tail):
-                    self.sock.send(b'y')
-                    time.sleep(0.3)
-                    self.sock.send(b'\r\n')
-                    time.sleep(0.5)
-                    follow_deadline = time.time() + recv_timeout
-                    while time.time() < follow_deadline:
-                        try:
-                            self.sock.settimeout(0.1)
-                            c = self.sock.recv(65536)
-                            if c:
-                                chunks.append(c)
-                                total += len(c)
-                                if total >= MAX_RECV:
-                                    break
-                        except socket.timeout:
-                            pass
-                        except OSError:
-                            break
-                    self.sock.settimeout(10)
-                    output = self._strip_escape(b''.join(chunks)).decode('gbk', errors='ignore')
-                    auto_yn += 1
-                else:
-                    break
-            # Auto-handle ---- More ---- pagination (send Enter to continue)
-            more_count = 0
-            while more_count < 100:  # safety limit
-                tail = output[-300:] if len(output) > 300 else output
-                # Huawei VRP: '  ---- More ----' pattern
-                if re.search(r'[-]+\s*More\s*[-]+', tail, re.IGNORECASE):
-                    self.sock.send(b'\r\n')
-                    time.sleep(0.3)
-                    more_deadline = time.time() + recv_timeout
-                    while time.time() < more_deadline:
-                        try:
-                            self.sock.settimeout(0.1)
-                            c = self.sock.recv(65536)
-                            if c:
-                                chunks.append(c)
-                                total += len(c)
-                                if total >= MAX_RECV:
-                                    break
-                                more_deadline = time.time() + 0.5
-                        except socket.timeout:
-                            pass
-                        except OSError:
-                            break
-                    self.sock.settimeout(10)
-                    output = self._strip_escape(b''.join(chunks)).decode('gbk', errors='ignore')
-                    more_count += 1
-                else:
-                    break
-            # Detect current view from output
-            self._detect_view(output)
-            return output
-
-    def handle_firewall_login(self, username='admin', password='admin@123', new_password='Admin@1234'):
-        """Handle USG6000V firewall login with mandatory password change.
-        
-        Flow: enter -> username -> old_password -> [Y/N] -> 
-              old_password -> new_password -> confirm -> prompt
-        """
-        if not self.sock:
-            return False
-        try:
-            # Step 1: Wake up device, wait for login prompt
-            initial = ''
-            for _attempt in range(3):
-                self.sock.send(b'\r\n')
-                time.sleep(2)
-                try:
-                    self.sock.settimeout(3)
-                    initial = self.sock.recv(65536).decode('gbk', errors='ignore')
-                except Exception:
-                    initial = ''
-                self.sock.settimeout(10)
-                logger.debug('FW wake attempt %d: %s', _attempt+1, repr(initial[:100]))
-                if 'Username' in initial or 'username' in initial or 'Login' in initial:
-                    break
-                if any(p in initial for p in ['<', '#', ']', '>']):
-                    logger.info('Firewall: already at prompt, skip login')
-                    return True
-            else:
-                logger.debug('Firewall login: no username prompt after 3 attempts')
-                return False
-
-            # Step 2: Send username
-            self.sock.send((username + '\r\n').encode())
-            time.sleep(2)
-            try:
-                self.sock.settimeout(5)
-                resp = self.sock.recv(65536).decode('gbk', errors='ignore')
-            except Exception:
-                resp = ''
-            self.sock.settimeout(10)
-            logger.debug('FW after username: %s', repr(resp[:200]))
-            if 'Password' not in resp and 'password' not in resp:
-                return False
-
-            # Step 3: Send OLD password (Admin@123)
-            self.sock.send((password + '\r\n').encode())
-            time.sleep(3)
-            try:
-                self.sock.settimeout(5)
-                resp = self.sock.recv(65536).decode('gbk', errors='ignore')
-            except Exception:
-                resp = ''
-            self.sock.settimeout(10)
-            logger.debug('FW after password: %s', repr(resp[:300]))
-
-            # Step 4: Handle password change [Y/N] prompt
-            if '[Y/N]' in resp or '(Y/N)' in resp or 'change' in resp.lower():
-                logger.info('FW: password change required, answering Y')
-                self.sock.send(b'y\r\n')
-                time.sleep(3)
-                try:
-                    self.sock.settimeout(5)
-                    resp = self.sock.recv(65536).decode('gbk', errors='ignore')
-                except Exception:
-                    resp = ''
-                self.sock.settimeout(10)
-                logger.debug('FW after Y: %s', repr(resp[:300]))
-
-                # Send OLD password when prompted
-                self.sock.send((password + '\r\n').encode())
-                time.sleep(2)
-                try:
-                    self.sock.settimeout(5)
-                    resp = self.sock.recv(65536).decode('gbk', errors='ignore')
-                except Exception:
-                    resp = ''
-                self.sock.settimeout(10)
-                logger.debug('FW after old pw: %s', repr(resp[:300]))
-
-                # Send NEW password
-                self.sock.send((new_password + '\r\n').encode())
-                time.sleep(2)
-                try:
-                    self.sock.settimeout(5)
-                    resp = self.sock.recv(65536).decode('gbk', errors='ignore')
-                except Exception:
-                    resp = ''
-                self.sock.settimeout(10)
-                logger.debug('FW after new pw: %s', repr(resp[:300]))
-
-                # Confirm NEW password
-                self.sock.send((new_password + '\r\n').encode())
-                time.sleep(3)
-                try:
-                    self.sock.settimeout(5)
-                    resp = self.sock.recv(65536).decode('gbk', errors='ignore')
-                except Exception:
-                    resp = ''
-                self.sock.settimeout(10)
-                logger.debug('FW after confirm: %s', repr(resp[:300]))
-
-            # Step 5: Flush and verify prompt
-            time.sleep(1)
-            self._flush()
-            self.sock.send(b'\r\n')
-            time.sleep(0.5)
-            try:
-                self.sock.settimeout(2)
-                self.sock.recv(65536)
-            except Exception:
-                pass
-            self._flush()
-            logger.info('Firewall login completed: %s:%s', self.host, self.port)
-            return True
-        except Exception as e:
-            logger.debug('Firewall login failed: %s', e)
-            return False
-
-    def close(self):
-        with self.lock:
-            if self.sock:
-                try: self.sock.close()
-                except OSError: pass
-                self.sock = None
+heartbeat = HeartbeatMonitor(kb)
+import heartbeat as _hb; _hb.socketio_ref = socketio
 
 def _extract_topo_names(data):
     """Extract port→name mapping from topology data."""
@@ -1521,18 +1060,11 @@ def _extract_topo_names(data):
                 continue
     if mapping:
         topo_names = mapping
-        # Sync to DeviceManager for MCP Server consistency
         for port_int, topo_name in mapping.items():
             dm.set_topo_name(port_int, topo_name)
-        # Update already-connected devices with topo names
-        with name_lock:
-            for port_int, topo_name in mapping.items():
-                path = f'127.0.0.1:{port_int}'
-                if path in devices:
-                    device_names[path] = topo_name
-                    dm.set_name(path, topo_name)
-
-heartbeat = HeartbeatMonitor(kb)
+            path = f'127.0.0.1:{port_int}'
+            if dm.has(path):
+                dm.set_name(path, topo_name)
 
 # ==================== Agent Runtime v3.0 集成 ====================
 try:
@@ -1714,8 +1246,7 @@ def _is_blocked_command(cmd_lower):
     return False
 
 def send_command(path, command):
-    with devices_lock:
-        conn = devices.get(path)
+    conn = dm.get(path)
     if not conn: return {'success': False, 'error': 'Device not connected'}
     cmd_lower = command.strip().lower()
     if _is_blocked_command(cmd_lower):
@@ -2271,8 +1802,7 @@ def _ensure_system_view(conn):
     return getattr(conn, 'current_view', '') != 'user'
 
 def send_command_batch(path, commands, wait=0.1, auto_view=True, auto_undo_tm=True):
-    with devices_lock:
-        conn = devices.get(path)
+    conn = dm.get(path)
     if not conn:
         return {'success': False, 'error': 'Device not connected'}
     t0 = time.time()
@@ -2317,8 +1847,7 @@ def send_command_batch(path, commands, wait=0.1, auto_view=True, auto_undo_tm=Tr
             results.append({'command': cmd, 'output': result, 'success': cmd_ok})
             if not cmd_ok:
                 errors.append('Failed: ' + cmd)
-            with name_lock:
-                dt = device_types.get(path, 'unknown')
+            dt = dm.get_type(path)
             kb.record_command(cmd, result, device_type=dt, device_path=path, success=cmd_ok)
             if not cmd_ok:
                 try:
@@ -3574,12 +3103,12 @@ def on_fetch_name(data):
     if not _ws_check_rate(request.sid): emit("device_error", {"error": "Rate limit exceeded"}); return
     path = data.get("path")
     if not _validate_path(path): emit("device_error", {"path": path, "error": "Invalid path"}); return
-    with devices_lock:
-        conn = devices.get(path)
+    conn = dm.get(path)
     if not conn: emit("device_error", {"path": path, "error": "Not connected"}); return
     name, dt = _fetch_device_name(conn)
     if name:
-        with name_lock: device_names[path] = name; device_types[path] = dt
+        dm.set_name(path, name)
+        dm.set_type(path, dt)
         emit("device_renamed", {"path": path, "name": name})
 
 

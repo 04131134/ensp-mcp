@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "description": "eNSP配置方法库 - 存储网络配置的标准流程和方法论",
+  "purpose": "记录完成各类网络配置的标准步骤，而非具体实验的参数",
+  "categories": {
+    "routing": "路由协议配置（OSPF、静态路由、RIP等）",
+    "switching": "交换配置（VLAN、STP、LACP等）",
+    "security": "安全配置（ACL、防火墙策略等）",
+    "wireless": "无线配置（WLAN、AP管理等）",
+    "services": "网络服务（DHCP、NAT、VRRP等）",
+    "management": "管理配置（Telnet、SNMP、NTP等）"
+  },
+  "method_template": {
+    "id": "唯一标识符",
+    "name": "配置方法名称",
+    "category": "所属分类",
+    "device_types": [
+      "适用设备类型"
+    ],
+    "prerequisites": [
+      "前置条件"
+    ],
+    "steps": [
+      {
+        "step": 1,
+        "name": "步骤名称",
+        "description": "步骤说明",
+        "commands": [
+          "命令1",
+          "命令2"
+        ],
+        "notes": [
+          "注意事项"
+        ]
+      }
+    ],
+    "verification": [
+      "验证命令"
+    ],
+    "common_errors": [
+      {
+        "error": "错误现象",
+        "cause": "原因",
+        "solution": "解决方法"
+      }
+    ],
+    "tips": [
+      "技巧提示"
+    ],
+    "related_methods": [
+      "相关配置方法ID"
+    ],
+    "created_at": "创建时间",
+    "updated_at": "更新时间",
+    "usage_count": 0,
+    "success_rate": 0.0
+  },
+  "methods_count": 6,
+  "last_updated": "2026-06-27T00:00:00+08:00",
+  "methods": [
+    {
+      "id": "ac_ap_wireless",
+      "name": "AC+AP无线网络配置",
+      "category": "wireless",
+      "file": "ac_ap_wireless.json",
+      "description": "配置AC控制器和FIT AP，实现WiFi无线覆盖"
+    }
+  ]
+}

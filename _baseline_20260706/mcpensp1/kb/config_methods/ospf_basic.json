@@ -1,0 +1,93 @@
+{
+  "id": "ospf_basic",
+  "name": "OSPF基础配置",
+  "category": "routing",
+  "device_types": [
+    "路由器",
+    "三层交换机"
+  ],
+  "description": "配置OSPF路由协议实现网络互通",
+  "prerequisites": [
+    "设备已配置接口IP地址",
+    "接口状态为UP"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "进入系统视图",
+      "description": "从用户视图进入系统视图，开始配置",
+      "commands": [
+        "system-view"
+      ],
+      "notes": []
+    },
+    {
+      "step": 2,
+      "name": "创建OSPF进程",
+      "description": "启动OSPF路由进程并配置Router ID",
+      "commands": [
+        "ospf [process-id]",
+        "router-id [router-id]"
+      ],
+      "notes": [
+        "process-id 默认为1，本地有效",
+        "router-id 建议使用Loopback接口IP或手动指定"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "创建区域并宣告网络",
+      "description": "配置OSPF区域并宣告直连网段",
+      "commands": [
+        "area [area-id]",
+        "network [ip-address] [wildcard-mask]"
+      ],
+      "notes": [
+        "area-id 0 为骨干区域，必须存在",
+        "wildcard-mask 是反掩码，如 0.0.0.255 对应 /24"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "退出并保存",
+      "description": "退出系统视图并保存配置",
+      "commands": [
+        "return",
+        "save"
+      ],
+      "notes": [
+        "务必保存配置，否则重启后丢失"
+      ]
+    }
+  ],
+  "verification": [
+    "display ospf peer brief",
+    "display ospf interface brief",
+    "display ip routing-table protocol ospf"
+  ],
+  "common_errors": [
+    {
+      "error": "OSPF邻居无法建立",
+      "cause": "区域ID不匹配或Hello参数不一致",
+      "solution": "检查两端 area-id、Hello/Dead间隔是否相同"
+    },
+    {
+      "error": "路由无法学习",
+      "cause": "network命令宣告的网段不正确",
+      "solution": "检查 wildcard-mask 是否正确覆盖接口网段"
+    }
+  ],
+  "tips": [
+    "使用 display ospf peer brief 快速查看邻居状态",
+    "骨干区域 Area 0 必须存在，其他区域需与 Area 0 相连",
+    "Router ID 必须在整个OSPF域内唯一"
+  ],
+  "related_methods": [
+    "static_route",
+    "rip_basic"
+  ],
+  "created_at": "2026-06-27T01:35:00+08:00",
+  "updated_at": "2026-06-26T17:48:46.101176+00:00",
+  "usage_count": 3,
+  "success_rate": 0.6666666666666666
+}

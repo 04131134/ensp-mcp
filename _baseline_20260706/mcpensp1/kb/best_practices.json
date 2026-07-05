@@ -1,0 +1,106 @@
+[
+  {
+    "id": "BP001",
+    "title": "配置前检查清单",
+    "category": "general",
+    "description": "每次配置设备前必须完成的检查",
+    "checklist": [
+      "确认设备型号和端口数量",
+      "确认端口连接关系 (哪个口连哪个设备)",
+      "确认当前视图 (用户视图<>还是系统视图[])",
+      "确认是否有登录提示需要先处理",
+      "确认设备是否已唤醒 (发送回车)"
+    ],
+    "experiment": "校园网综合设计实训"
+  },
+  {
+    "id": "BP002",
+    "title": "端口配置顺序",
+    "category": "switching",
+    "description": "华为交换机端口配置的正确顺序",
+    "rules": [
+      "修改端口类型前先用display this查看当前配置",
+      "从access改为trunk: undo port default vlan → undo port link-type → port link-type trunk",
+      "从trunk改为access: undo port trunk allow-pass vlan → undo port link-type → port link-type access",
+      "如果是Eth-Trunk成员: 必须先undo eth-trunk再修改",
+      "修改后用display port vlan验证"
+    ],
+    "experiment": "校园网综合设计实训"
+  },
+  {
+    "id": "BP003",
+    "title": "DHCP配置最佳实践",
+    "category": "services",
+    "description": "DHCP服务器配置的关键要点",
+    "rules": [
+      "一个VLAN只能有一个DHCP服务器",
+      "核心交换机用dhcp select global + ip pool",
+      "AC用dhcp select interface (更简单)",
+      "配置后用display ip pool验证",
+      "检查Vlanif接口是否up"
+    ],
+    "experiment": "校园网综合设计实训"
+  },
+  {
+    "id": "BP004",
+    "title": "AC+AP配置最佳实践",
+    "category": "wireless",
+    "description": "无线网络配置的关键要点",
+    "rules": [
+      "AP管理VLAN和用户VLAN必须分开",
+      "AC的Vlanif100用dhcp select interface",
+      "AP口必须配置trunk pvid vlan 100",
+      "capwap source interface Vlanif100 必须配置",
+      "ap auth-mode no-auth 必须在wlan视图下配置",
+      "AP注册时MAC和SN必须匹配实际设备",
+      "不要在核心交换机上配置AP管理VLAN的Vlanif"
+    ],
+    "experiment": "校园网综合设计实训"
+  },
+  {
+    "id": "BP005",
+    "title": "VRRP+MSTP配置最佳实践",
+    "category": "switching",
+    "description": "双核心热备配置的关键要点",
+    "rules": [
+      "MSTP域配置必须在所有交换机上完全一致",
+      "region-name、revision-level、instance划分必须相同",
+      "active region-configuration 后才能生效",
+      "VRRP的Master/Backup通过priority控制",
+      "建议: 一个核心做VLAN10/101的Master，另一个做VLAN20/30/40的Master",
+      "Eth-Trunk必须在两端都配置"
+    ],
+    "experiment": "校园网综合设计实训"
+  },
+  {
+    "id": "BP006",
+    "title": "命令执行最佳实践",
+    "category": "general",
+    "description": "通过API执行命令的最佳实践",
+    "rules": [
+      "逐条执行命令，不要批量注入",
+      "每条命令后检查返回值是否包含Error",
+      "遇到More提示按空格继续",
+      "遇到Username/Password先登录",
+      "遇到确认提示输入Y",
+      "长时间不操作后先发回车唤醒",
+      "display命令超时设置要更长 (5-8秒)"
+    ],
+    "experiment": "校园网综合设计实训"
+  },
+  {
+    "id": "BP007",
+    "title": "防火墙配置最佳实践",
+    "category": "security",
+    "description": "USG6000V防火墙配置要点",
+    "rules": [
+      "登录流程特殊: 用户名 → 密码 → 可能需要改密码",
+      "接口默认shutdown，需要undo shutdown",
+      "必须配置安全区域 (trust/untrust/dmz)",
+      "必须配置安全策略允许流量通过",
+      "OSPF用default-route-advertise发布默认路由",
+      "连接超时较长，需要设置更长的timeout"
+    ],
+    "experiment": "校园网综合设计实训"
+  }
+]

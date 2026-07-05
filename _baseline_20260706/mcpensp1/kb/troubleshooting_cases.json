@@ -1,0 +1,174 @@
+[
+  {
+    "id": "T001",
+    "title": "AP无法上线 - State为idle",
+    "symptoms": ["display ap all显示State=idle", "AP有IP但无法广播SSID"],
+    "root_causes": [
+      "缺少 capwap source interface Vlanif100",
+      "缺少 ap auth-mode no-auth",
+      "AP管理VLAN不通 (trunk端口未允许VLAN 100)",
+      "LSW1/LSW2上配置了Vlanif100导致DHCP冲突"
+    ],
+    "diagnosis_steps": [
+      "display ap all → 检查State和IP",
+      "display current-configuration | include capwap → 检查CAPWAP源",
+      "display current-configuration | include ap auth → 检查认证模式",
+      "检查AP端口: display port vlan → 确认trunk pvid 100",
+      "检查VLAN 100路径: 从AP到AC的每个trunk口都要允许VLAN 100"
+    ],
+    "solutions": [
+      "capwap source interface Vlanif100",
+      "ap auth-mode no-auth (在wlan视图下)",
+      "AP端口: port trunk pvid vlan 100",
+      "删除LSW1/LSW2上多余的Vlanif100"
+    ],
+    "severity": "critical",
+    "category": "wireless",
+    "experiment": "校园网综合设计实训"
+  },
+  {
+    "id": "T002",
+    "title": "PC无法获取DHCP IP地址",
+    "symptoms": ["PC设置DHCP后无法获取IP", "ipconfig显示169.254.x.x"],
+    "root_causes": [
+      "DHCP地址池未创建",
+      "Vlanif接口未配置dhcp select global",
+      "接入交换机上行口未配trunk",
+      "接入交换机端口VLAN配置错误",
+      "核心交换机Vlanif接口down"
+    ],
+    "diagnosis_steps": [
+      "display ip pool → 检查地址池是否存在",
+      "display ip interface brief → 检查Vlanif是否up",
+      "display current-configuration | include dhcp → 检查dhcp配置",
+      "检查接入交换机: display port vlan → 确认端口VLAN",
+      "检查trunk链路: 从接入到核心的每个trunk口"
+    ],
+    "solutions": [
+      "创建DHCP地址池: ip pool vlanX",
+      "Vlanif配置: dhcp select global",
+      "接入交换机上行口: port link-type trunk + allow-pass vlan",
+      "确保Vlanif接口up (需要有对应VLAN的端口up)"
+    ],
+    "severity": "critical",
+    "category": "switching",
+    "experiment": "校园网综合设计实训"
+  },
+  {
+    "id": "T003",
+    "title": "端口类型修改失败 - Please renew the default config",
+    "symptoms": ["执行port link-type trunk报错", "提示Please renew the default configurations"],
+    "root_causes": [
+      "端口已经是access类型且配置了VLAN",
+      "端口是Eth-Trunk成员",
+      "端口已有其他配置"
+    ],
+    "diagnosis_steps": [
+      "interface X → display this → 查看当前配置",
+      "检查是否是Eth-Trunk成员"
+    ],
+    "solutions": [
+      "如果是Eth-Trunk成员: undo eth-trunk → 再改类型",
+      "如果是access: undo port default vlan → undo port link-type → 新类型",
+      "如果都不行: undo port link-type → 重置后再配置"
+    ],
+    "severity": "medium",
+    "category": "switching",
+    "experiment": "校园网综合设计实训"
+  },
+  {
+    "id": "T004",
+    "title": "VRRP状态全部Initialize",
+    "symptoms": ["display vrrp brief显示所有组为Initialize"],
+    "root_causes": [
+      "Vlanif接口down",
+      "trunk链路不通",
+      "Eth-Trunk成员丢失"
+    ],
+    "diagnosis_steps": [
+      "display ip interface brief → 检查Vlanif状态",
+      "display eth-trunk 1 → 检查聚合链路",
+      "display port vlan → 检查trunk端口"
+    ],
+    "solutions": [
+      "确保trunk端口配置正确",
+      "重新添加Eth-Trunk成员: interface GE → eth-trunk 1",
+      "等待接口up后VRRP自动恢复"
+    ],
+    "severity": "high",
+    "category": "switching",
+    "experiment": "校园网综合设计实训"
+  },
+  {
+    "id": "T005",
+    "title": "OSPF邻居无法建立",
+    "symptoms": ["display ospf peer brief无邻居"],
+    "root_causes": [
+      "两端area-id不匹配",
+      "两端网络类型不匹配",
+      "接口配置了silent-interface",
+      "三层接口不通"
+    ],
+    "diagnosis_steps": [
+      "display ospf peer brief → 检查邻居状态",
+      "display ospf interface → 检查OSPF接口",
+      "检查两端area配置是否一致",
+      "检查是否有silent-interface"
+    ],
+    "solutions": [
+      "确保两端area-id相同",
+      "移除不需要的silent-interface",
+      "确保三层接口IP在同一网段"
+    ],
+    "severity": "high",
+    "category": "routing",
+    "experiment": "校园网综合设计实训"
+  },
+  {
+    "id": "T006",
+    "title": "Eth-Trunk聚合链路断开",
+    "symptoms": ["display eth-trunk显示Number Of Up Port In Trunk: 0", "Operate status: down"],
+    "root_causes": [
+      "成员端口被误删",
+      "成员端口配置被修改",
+      "物理链路断开"
+    ],
+    "diagnosis_steps": [
+      "display eth-trunk 1 → 检查成员端口",
+      "display this (在成员端口下) → 检查eth-trunk配置"
+    ],
+    "solutions": [
+      "重新添加成员: interface GE → eth-trunk 1",
+      "确保两端都配置了Eth-Trunk",
+      "等待聚合链路自动恢复"
+    ],
+    "severity": "high",
+    "category": "switching",
+    "experiment": "校园网综合设计实训"
+  },
+  {
+    "id": "T007",
+    "title": "华为设备命令执行无响应",
+    "symptoms": ["API返回空output", "success=false"],
+    "root_causes": [
+      "设备处于登录提示符 (Username/Password)",
+      "设备连接超时",
+      "设备处于特殊模式 (如ROM Monitor)",
+      "More提示未处理"
+    ],
+    "diagnosis_steps": [
+      "发送空命令检查提示符",
+      "发送return回到用户视图",
+      "检查是否有Username/Password提示"
+    ],
+    "solutions": [
+      "如果是登录提示: 先输入账号密码",
+      "如果超时: 断开重连",
+      "如果More: 按空格继续",
+      "发送多个回车唤醒设备"
+    ],
+    "severity": "medium",
+    "category": "general",
+    "experiment": "校园网综合设计实训"
+  }
+]

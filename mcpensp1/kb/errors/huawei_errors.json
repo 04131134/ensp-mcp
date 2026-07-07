@@ -1,0 +1,238 @@
+﻿{
+  "_description": "华为/H3C CLI 常见错误库 — 每种错误含原因、修复建议、是否可自动恢复",
+  "_version": "1.0",
+  "errors": [
+    {
+      "id": "E001",
+      "pattern": "Error: Unrecognized command found",
+      "cause": "命令在当前视图不可用或命令拼写错误",
+      "fix": "检查当前视图，使用正确的命令语法",
+      "auto_recoverable": false,
+      "category": "syntax"
+    },
+    {
+      "id": "E002",
+      "pattern": "Error: Incomplete command",
+      "cause": "命令参数不完整",
+      "fix": "补充必要的命令参数",
+      "auto_recoverable": false,
+      "category": "syntax"
+    },
+    {
+      "id": "E003",
+      "pattern": "Error: Wrong parameter found",
+      "cause": "命令参数类型或值不正确",
+      "fix": "检查参数类型和取值范围",
+      "auto_recoverable": false,
+      "category": "syntax"
+    },
+    {
+      "id": "E004",
+      "pattern": "Error: The VLAN already exists",
+      "cause": "VLAN ID 已存在",
+      "fix": "跳过创建，或先删除再创建",
+      "auto_recoverable": true,
+      "category": "config"
+    },
+    {
+      "id": "E005",
+      "pattern": "Error: The VLAN does not exist",
+      "cause": "VLAN ID 不存在",
+      "fix": "先创建 VLAN 再操作",
+      "auto_recoverable": true,
+      "category": "config"
+    },
+    {
+      "id": "E006",
+      "pattern": "Error: The interface already has an IP address configured",
+      "cause": "接口已配置 IP 地址",
+      "fix": "先 undo ip address 再配置",
+      "auto_recoverable": true,
+      "category": "config"
+    },
+    {
+      "id": "E007",
+      "pattern": "Error: The IP address is invalid",
+      "cause": "IP 地址格式不正确或冲突",
+      "fix": "使用正确的 IP 地址格式",
+      "auto_recoverable": false,
+      "category": "config"
+    },
+    {
+      "id": "E008",
+      "pattern": "Error: Please configure the router ID first",
+      "cause": "OSPF 未配置 router-id",
+      "fix": "先执行 router-id x.x.x.x",
+      "auto_recoverable": true,
+      "category": "ospf"
+    },
+    {
+      "id": "E009",
+      "pattern": "Error: OSPF process does not exist",
+      "cause": "OSPF 进程不存在",
+      "fix": "先创建 OSPF 进程",
+      "auto_recoverable": true,
+      "category": "ospf"
+    },
+    {
+      "id": "E010",
+      "pattern": "Error: The network segment already exists",
+      "cause": "OSPF 区域中已存在该网段",
+      "fix": "检查是否重复配置，或使用不同区域",
+      "auto_recoverable": true,
+      "category": "ospf"
+    },
+    {
+      "id": "E011",
+      "pattern": "Error: Neighbor state is not full",
+      "cause": "OSPF 邻居未建立成功",
+      "fix": "检查链路状态、IP 配置、区域 ID 一致性",
+      "auto_recoverable": true,
+      "category": "ospf"
+    },
+    {
+      "id": "E012",
+      "pattern": "Error: The ACL already exists",
+      "cause": "ACL 编号已存在",
+      "fix": "使用不同的 ACL 编号或先删除",
+      "auto_recoverable": true,
+      "category": "acl"
+    },
+    {
+      "id": "E013",
+      "pattern": "Error: The ACL does not exist",
+      "cause": "ACL 编号不存在",
+      "fix": "先创建 ACL",
+      "auto_recoverable": true,
+      "category": "acl"
+    },
+    {
+      "id": "E014",
+      "pattern": "Error: The trunk has already been configured",
+      "cause": "端口已配置为 Trunk 模式",
+      "fix": "检查当前配置，可能需要先复原再修改",
+      "auto_recoverable": true,
+      "category": "interface"
+    },
+    {
+      "id": "E015",
+      "pattern": "Error: Please change the link type to access or hybrid first",
+      "cause": "端口类型不正确",
+      "fix": "先执行 port link-type access/hybrid",
+      "auto_recoverable": true,
+      "category": "interface"
+    },
+    {
+      "id": "E016",
+      "pattern": "Error: The interface is shut down",
+      "cause": "接口被关闭",
+      "fix": "执行 undo shutdown 开启接口",
+      "auto_recoverable": true,
+      "category": "interface"
+    },
+    {
+      "id": "E017",
+      "pattern": "Error: The BGP peer does not exist",
+      "cause": "BGP 邻居未配置",
+      "fix": "先配置 peer 命令",
+      "auto_recoverable": true,
+      "category": "bgp"
+    },
+    {
+      "id": "E018",
+      "pattern": "Error: The AS number is invalid",
+      "cause": "AS 号不在合法范围",
+      "fix": "使用 1-4294967295 范围内的 AS 号",
+      "auto_recoverable": false,
+      "category": "bgp"
+    },
+    {
+      "id": "E019",
+      "pattern": "Error: The local user already exists",
+      "cause": "本地用户已存在",
+      "fix": "使用不同的用户名或先删除",
+      "auto_recoverable": true,
+      "category": "aaa"
+    },
+    {
+      "id": "E020",
+      "pattern": "Error: The password is too short",
+      "cause": "密码不符合复杂度要求",
+      "fix": "使用更长的密码",
+      "auto_recoverable": false,
+      "category": "aaa"
+    },
+    {
+      "id": "E021",
+      "pattern": "Error: Failed to enable the DHCP server",
+      "cause": "DHCP 服务无法启用",
+      "fix": "检查 IP 池配置和接口状态",
+      "auto_recoverable": true,
+      "category": "dhcp"
+    },
+    {
+      "id": "E022",
+      "pattern": "Error: The IP pool does not exist",
+      "cause": "IP 地址池不存在",
+      "fix": "先创建 ip pool",
+      "auto_recoverable": true,
+      "category": "dhcp"
+    },
+    {
+      "id": "E023",
+      "pattern": "Error: The IP address conflicts with another interface",
+      "cause": "IP 地址与另一个接口冲突",
+      "fix": "使用不冲突的 IP 地址",
+      "auto_recoverable": false,
+      "category": "config"
+    },
+    {
+      "id": "E024",
+      "pattern": "Error: The static route already exists",
+      "cause": "静态路由已存在",
+      "fix": "跳过或先删除再添加",
+      "auto_recoverable": true,
+      "category": "routing"
+    },
+    {
+      "id": "E025",
+      "pattern": "Error: The next hop is unreachable",
+      "cause": "下一跳不可达",
+      "fix": "检查路由表和物理连接",
+      "auto_recoverable": true,
+      "category": "routing"
+    },
+    {
+      "id": "E026",
+      "pattern": "Error: Connection refused",
+      "cause": "Telnet 连接被拒绝",
+      "fix": "检查 eNSP 设备是否启动、端口是否正确",
+      "auto_recoverable": false,
+      "category": "connection"
+    },
+    {
+      "id": "E027",
+      "pattern": "Error: Connection timed out",
+      "cause": "Telnet 连接超时",
+      "fix": "检查网络连通性、防火墙设置",
+      "auto_recoverable": true,
+      "category": "connection"
+    },
+    {
+      "id": "E028",
+      "pattern": "Error: Connection reset",
+      "cause": "Telnet 连接被重置",
+      "fix": "重新连接设备",
+      "auto_recoverable": true,
+      "category": "connection"
+    },
+    {
+      "id": "E030",
+      "pattern": "Error: Too many users",
+      "cause": "VTY 线路已满",
+      "fix": "等待其他用户退出或增加 VTY 线路数",
+      "auto_recoverable": true,
+      "category": "connection"
+    }
+  ]
+}

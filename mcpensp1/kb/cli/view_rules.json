@@ -1,0 +1,108 @@
+﻿{
+  "_description": "华为/H3C CLI 视图规则 — 新增视图无需修改代码",
+  "_version": "1.0",
+
+  "views": {
+    "USER": {
+      "prompts": ["<Huawei>", "<SW>", "<LSW>", "<R>", "<AR>", "<FW>", "<AC>", "<AP>"],
+      "prompt_pattern": "^<[A-Za-z0-9_-]+>$",
+      "enter_cmd": null,
+      "exit_cmd": null,
+      "allowed_commands": ["display", "dir", "ping", "tracert", "telnet", "system-view", "save", "reset", "terminal"],
+      "description": "用户视图 — 最外层视图"
+    },
+    "SYSTEM": {
+      "prompts": ["[Huawei]", "[SW]", "[LSW]", "[R]", "[AR]", "[FW]", "[AC]", "[AP]"],
+      "prompt_pattern": "^\\[[A-Za-z0-9_-]+\\]$",
+      "enter_cmd": "system-view",
+      "exit_cmd": "quit",
+      "allowed_commands": ["display", "interface", "vlan", "ospf", "bgp", "rip", "acl", "aaa",
+        "dhcp", "ip pool", "ip route", "stp", "vrrp", "sysname", "undo", "wlan", "capwap",
+        "firewall", "security-policy", "eth-trunk", "user-interface", "info-center", "return"],
+      "description": "系统视图 — system-view 后进入"
+    },
+    "INTERFACE": {
+      "prompts": ["[Huawei-GigabitEthernet", "[Huawei-Ethernet", "[Huawei-Vlanif", "[Huawei-LoopBack", "[Huawei-Null"],
+      "prompt_pattern": "^\\[[A-Za-z0-9_-]+-(GigabitEthernet|Ethernet|Vlanif|LoopBack|Null|Eth-Trunk)[0-9/]+\\]$",
+      "enter_cmd": "interface {ifname}",
+      "exit_cmd": "quit",
+      "allowed_commands": ["display", "ip address", "ip binding", "port link-type", "port default", "port trunk",
+        "undo", "shutdown", "description", "stp", "lacp", "dhcp", "arp", "igmp", "lldp", "port-security"],
+      "description": "接口视图 — interface 命令后进入"
+    },
+    "VLAN": {
+      "prompts": ["[Huawei-vlan"],
+      "prompt_pattern": "^\\[[A-Za-z0-9_-]+-vlan[0-9]+\\]$",
+      "enter_cmd": "vlan {vlan_id}",
+      "exit_cmd": "quit",
+      "allowed_commands": ["display", "description", "undo"],
+      "description": "VLAN 视图 — vlan 命令后进入"
+    },
+    "OSPF": {
+      "prompts": ["[Huawei-ospf"],
+      "prompt_pattern": "^\\[[A-Za-z0-9_-]+-ospf-[0-9]+\\]$",
+      "enter_cmd": "ospf {proc_id}",
+      "exit_cmd": "quit",
+      "allowed_commands": ["display", "area", "undo", "description", "router-id", "silent-interface", "preference"],
+      "description": "OSPF 进程视图 — ospf 命令后进入"
+    },
+    "AREA": {
+      "prompts": ["[Huawei-ospf-1-area"],
+      "prompt_pattern": "^\\[[A-Za-z0-9_-]+-ospf-[0-9]+-area-[0-9.]+\\]$",
+      "enter_cmd": "area {area_id}",
+      "exit_cmd": "quit",
+      "allowed_commands": ["display", "network", "undo", "authentication-mode"],
+      "description": "OSPF 区域视图 — area 命令后进入"
+    },
+    "ACL": {
+      "prompts": ["[Huawei-acl"],
+      "prompt_pattern": "^\\[[A-Za-z0-9_-]+-acl(-adv|-basic)?-[0-9]+\\]$",
+      "enter_cmd": "acl {acl_num}",
+      "exit_cmd": "quit",
+      "allowed_commands": ["display", "rule", "undo", "description"],
+      "description": "ACL 视图 — acl 命令后进入"
+    },
+    "AAA": {
+      "prompts": ["[Huawei-aaa]"],
+      "prompt_pattern": "^\\[[A-Za-z0-9_-]+-aaa\\]$",
+      "enter_cmd": "aaa",
+      "exit_cmd": "quit",
+      "allowed_commands": ["display", "undo", "authentication-scheme", "authorization-scheme", "accounting-scheme", "domain", "local-user"],
+      "description": "AAA 视图 — aaa 命令后进入"
+    },
+    "BGP": {
+      "prompts": ["[Huawei-bgp"],
+      "prompt_pattern": "^\\[[A-Za-z0-9_-]+-bgp(-[a-zA-Z0-9]+)?\\]$",
+      "enter_cmd": "bgp {as_num}",
+      "exit_cmd": "quit",
+      "allowed_commands": ["display", "undo", "router-id", "peer", "network", "import-route", "preference"],
+      "description": "BGP 视图 — bgp 命令后进入"
+    },
+    "RIP": {
+      "prompts": ["[Huawei-rip"],
+      "prompt_pattern": "^\\[[A-Za-z0-9_-]+-rip(-[0-9]+)?\\]$",
+      "enter_cmd": "rip {proc_id}",
+      "exit_cmd": "quit",
+      "allowed_commands": ["display", "undo", "version", "network", "summary"],
+      "description": "RIP 视图 — rip 命令后进入"
+    }
+  },
+
+  "global_commands": {
+    "display": {"allowed_in": "*", "description": "查询命令，所有视图可用"},
+    "undo": {"allowed_in": "*", "description": "撤销命令，所有视图可用"},
+    "quit": {"allowed_in": "*", "description": "退出当前视图"}
+  },
+
+  "view_transitions": [
+    {"from": "USER", "to": "SYSTEM", "cmd": "system-view"},
+    {"from": "SYSTEM", "to": "INTERFACE", "cmd": "interface {ifname}"},
+    {"from": "SYSTEM", "to": "VLAN", "cmd": "vlan {vlan_id}"},
+    {"from": "SYSTEM", "to": "OSPF", "cmd": "ospf {proc_id}"},
+    {"from": "OSPF", "to": "AREA", "cmd": "area {area_id}"},
+    {"from": "SYSTEM", "to": "ACL", "cmd": "acl {acl_num}"},
+    {"from": "SYSTEM", "to": "AAA", "cmd": "aaa"},
+    {"from": "SYSTEM", "to": "BGP", "cmd": "bgp {as_num}"},
+    {"from": "SYSTEM", "to": "RIP", "cmd": "rip {proc_id}"}
+  ]
+}

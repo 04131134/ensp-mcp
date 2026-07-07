@@ -1,0 +1,35 @@
+# eNSP-MCP Security Configuration
+# Blocked commands — these will never reach the device
+
+blocked_exact:
+  - reboot
+  - reset saved-configuration
+  - erase startup-configuration
+  - format
+  - delete
+  - reset arp
+  - reset bgp
+  - reset ospf
+  - set authentication password
+  - set user-password
+  - undo save
+  - startup saved-configuration
+  - reset interface
+  - reset statistics
+  - reset ip routing-table
+  - reset mac-address
+  - clear configuration
+  - reset arp all
+
+blocked_prefixes:
+  - reboot
+  - "reset "
+  - "erase "
+  - "format "
+  - "delete "
+  - set authentication
+  - set user-password
+  - undo save
+  - startup saved-configuration
+  - "clear "
+  - initialize

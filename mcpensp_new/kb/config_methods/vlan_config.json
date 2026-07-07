@@ -1,0 +1,79 @@
+{
+  "id": "vlan_config",
+  "name": "VLAN基础配置",
+  "category": "switching",
+  "device_types": ["二层交换机", "三层交换机"],
+  "description": "创建VLAN并配置端口归属",
+  "prerequisites": [
+    "设备已正常启动"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "进入系统视图",
+      "description": "",
+      "commands": ["system-view"],
+      "notes": []
+    },
+    {
+      "step": 2,
+      "name": "创建VLAN",
+      "description": "创建单个或批量VLAN",
+      "commands": ["vlan [vlan-id]"],
+      "notes": [
+        "可使用 vlan batch 10 20 30 批量创建"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "配置端口模式",
+      "description": "设置端口为Access或Trunk模式",
+      "commands": [
+        "interface [port]",
+        "port link-type [access|trunk]"
+      ],
+      "notes": [
+        "Access端口用于连接终端",
+        "Trunk端口用于交换机之间互联"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "将端口加入VLAN",
+      "description": "",
+      "commands": ["port default vlan [vlan-id]"],
+      "notes": [
+        "Access端口使用 port default vlan",
+        "Trunk端口使用 port trunk allow-pass vlan"
+      ]
+    },
+    {
+      "step": 5,
+      "name": "退出并保存",
+      "description": "",
+      "commands": ["return", "save"],
+      "notes": []
+    }
+  ],
+  "verification": [
+    "display vlan",
+    "display port vlan",
+    "display interface brief"
+  ],
+  "common_errors": [
+    {
+      "error": "端口无法加入VLAN",
+      "cause": "VLAN未创建或端口模式不匹配",
+      "solution": "先创建VLAN，检查端口link-type设置"
+    }
+  ],
+  "tips": [
+    "使用 display vlan brief 快速查看所有VLAN",
+    "Trunk端口默认只允许VLAN 1通过"
+  ],
+  "related_methods": ["vlanif_ip", "stp_config"],
+  "created_at": "2026-06-27T01:35:00+08:00",
+  "updated_at": "2026-06-27T01:35:00+08:00",
+  "usage_count": 0,
+  "success_rate": 0.0
+}

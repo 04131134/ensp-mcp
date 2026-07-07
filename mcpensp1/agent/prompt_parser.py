@@ -110,7 +110,8 @@ class PromptParser:
             "raw": prompt,
         }
 
-        for view_name, pattern in self._compiled.items():
+        sorted_views = sorted(self._compiled.items(), key=lambda x: -len(x[1].pattern))
+        for view_name, pattern in sorted_views:
             m = pattern.search(prompt)
             if m:
                 result["view"] = CLIView[view_name]

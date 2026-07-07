@@ -264,7 +264,9 @@ class CommandValidator:
         """模拟命令执行对状态的影响（仅用于批量验证）。"""
         cmd_lower = command.strip().lower()
 
-        if cmd_lower == "system-view":
+        if cmd_lower.startswith("interface ") and "loopback" not in cmd_lower:
+            state.push(CLIView.INTERFACE)
+        elif cmd_lower == "system-view":
             state.push(CLIView.SYSTEM)
         elif cmd_lower == "return":
             state.return_to_user()

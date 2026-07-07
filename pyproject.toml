@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "ensp-mcp"
+version = "3.1.0"
+description = "eNSP Network Agent Runtime - MCP Server"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["mcpensp1"]
+norecursedirs = [
+    "python312",
+    "_baseline_*",
+    "mcpensp_new",
+    "backup*",
+    ".git",
+    "__pycache__",
+    "campus_lab",
+    ".codex",
+]
+filterwarnings = ["ignore::DeprecationWarning"]
+

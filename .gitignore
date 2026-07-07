@@ -55,6 +55,26 @@ backup-website/
 backup_20260624/
 backup_20260626/
 
+# Baseline snapshots (for local diffing only)
+_baseline_*/
+
+# Agent runtime data (generated at runtime)
+mcpensp1/agent_data/*.json
+mcpensp1/agent_data/.kb_migrated
+
+# Debug / startup logs
+mcpensp1/server_debug.log
+mcpensp1/startup*.log
+
+# Python bytecode
+__pycache__/
+
+# Experiment engine data
+mcpensp1/experiments/
+
+# Campus lab generated files
+campus_lab/*.docx
+
 # Legacy patch scripts
 _patch*.py
 _experiment_engine_src.py
@@ -66,3 +86,9 @@ mcpensp1/kb/_backup_*.json
 # Temp diagnostic files
 *_diagnostic.py
 *.dmp
+
+# Pytest cache
+.pytest_cache/
+
+# Codex environment
+.codex/

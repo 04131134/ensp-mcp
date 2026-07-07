@@ -1,4 +1,4 @@
-import asyncio, json, os, httpx, logging
+import asyncio, json, os, logging
 
 logger = logging.getLogger(__name__)
 
@@ -7,12 +7,14 @@ from device_manager import dm
 from command_executor import cmd_executor, BLOCKED_COMMANDS, BLOCKED_PREFIXES, is_blocked_command
 from services import kb, topo_engine, config_methods
 
-from urllib.parse import quote
 ENSP_API_KEY = os.environ.get('ENSP_API_KEY', '')
 from mcp.server import Server
 from mcp.types import Tool, TextContent
 from mcp.types import Prompt, PromptMessage, PromptArgument
 from mcp.server.stdio import stdio_server
+
+# httpx is needed for the ~10 remaining HTTP-forwarding tools (agent_plan/execute/status etc.)
+import httpx
 
 MCP_SERVER_NAME = "ensp-mcp-server"
 SERVER_URL = os.environ.get('ENSP_SERVER_URL', 'http://127.0.0.1:5000')
@@ -27,10 +29,9 @@ _RETRY_DELAY = 1.0
 # ==================== Phase 3: Direct tool helpers (no HTTP) ====================
 
 async def _direct_connect(port: int) -> str:
-    """Direct connect to eNSP device without HTTP round-trip."""
+    """Connect to eNSP device directly via Telnet (async-safe)."""
     try:
         from connection import TelnetConnection
-        import time
         path = f'127.0.0.1:{port}'
         existing = dm.get(path)
         if existing:
@@ -45,18 +46,18 @@ async def _direct_connect(port: int) -> str:
                 dm.remove(path)
 
         conn = TelnetConnection('127.0.0.1', port)
-        conn.connect()
-        conn.handle_firewall_login()
+        await asyncio.to_thread(conn.connect)
+        await asyncio.to_thread(conn.handle_firewall_login)
         try:
-            conn.send_cmd('undo terminal monitor')
-            time.sleep(0.1)
+            await asyncio.to_thread(conn.send_cmd, 'undo terminal monitor')
+            await asyncio.sleep(0.1)
         except Exception:
             pass
         dm.set(path, conn)
 
         # Fetch device name
         try:
-            raw = conn.send_cmd('display version')
+            raw = await asyncio.to_thread(conn.send_cmd, 'display version')
             name = None
             dt = 'unknown'
             if raw:
@@ -70,7 +71,7 @@ async def _direct_connect(port: int) -> str:
                 elif 'juniper' in lower:
                     dt = 'juniper'
                 if dt in ('huawei', 'h3c'):
-                    nr = conn.send_cmd('display current-configuration | include sysname')
+                    nr = await asyncio.to_thread(conn.send_cmd, 'display current-configuration | include sysname')
                     if nr and 'Unrecognized' not in nr and 'Error' not in nr:
                         import re
                         m = re.search(r'^sysname\s+(\S+)', nr, re.IGNORECASE | re.MULTILINE)
@@ -135,11 +136,10 @@ async def _direct_disconnect(path: str) -> str:
 
 
 async def _direct_batch_cmd(path: str, commands: list, **opts) -> dict:
-    """Direct batch command execution."""
+    """Batch command execution (async-safe, non-blocking between commands)."""
     conn = dm.get(path)
     if not conn:
         return {'success': False, 'error': 'Device not connected'}
-    import time
     wait = opts.get('wait', 0.1)
     results = []
     cmd_count = 0
@@ -151,15 +151,15 @@ async def _direct_batch_cmd(path: str, commands: list, **opts) -> dict:
             continue
         cmd_count += 1
         try:
-            t0 = time.time()
+            t0 = asyncio.get_event_loop().time()
             output = await conn.send_cmd_async(cmd)
-            elapsed = round(time.time() - t0, 3)
+            elapsed = round(asyncio.get_event_loop().time() - t0, 3)
             _errs = ['Error:', 'Unrecognized command', 'Wrong parameter']
             ok = bool(output and not any(kw in output for kw in _errs))
             if ok:
                 success_count += 1
             results.append({'command': cmd, 'success': ok, 'output': output, 'response_time': elapsed})
-            time.sleep(wait)
+            await asyncio.sleep(wait)
         except ConnectionError:
             dm.remove(path)
             dm.remove_name(path)
@@ -584,8 +584,7 @@ async def get_prompt(name, arguments):
     raise ValueError(f"Unknown prompt: {name}")
 
 if __name__ == "__main__":
-    print("eNSP MCP Server starting...")
-    print(f"Backend target: {SERVER_URL}")
-    asyncio.run(check_backend_health())
+    print("eNSP MCP Server starting (direct mode)...")
+    asyncio.run(run_mcp_server())
 
 

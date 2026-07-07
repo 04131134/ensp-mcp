@@ -159,7 +159,7 @@ Finish
 | **操作系统** | Windows（eNSP 依赖） |
 | **Python** | 3.12+ |
 | **eNSP** | 已安装且设备运行中 |
-| **MCP 客户端** | TRAE / Claude Desktop / Cursor 等 |
+| **MCP 客户端** | TRAE / Claude Desktop / Cursor /Coedx等 |
 
 ---
 

@@ -110,10 +110,21 @@ Finish
 | **HeartbeatMonitor** | `heartbeat.py` | 设备存活检测/自动重连 |
 | **TelnetConnection** | `connection.py` | Telnet 连接、同步/异步双接口 |
 | **ConfigMethodStore** | `config_method_store.py` | 配置方法库（标准配置流程） |
-| **Memory** | `agent/memory.py` | 长期记忆系统，跨会话持久化 |
-| **KnowledgeStore** | `agent/knowledge_store.py` | Agent 专用可成长知识库 |
+| **Memory** | `agent/memory.py` | 长期记忆系统 |
+| **KnowledgeStore** | `agent/knowledge_store.py` | Agent 可成长知识库 |
 | **DAGPlanner** | `agent/planner.py` | DAG 执行计划生成 |
 | **SemanticVerifier** | `agent/verifier.py` | 语义化验证引擎 |
+| **CLIState** | `agent/cli_state.py` | CLI 视图栈 (10种视图) |
+| **PromptParser** | `agent/prompt_parser.py` | 设备 Prompt → 视图解析 |
+| **CommandValidator** | `agent/command_validator.py` | 命令执行前视图权限验证 |
+| **CommandGenerator** | `agent/command_generator.py` | Action → CLI 命令生成 |
+| **ErrorLibrary** | `agent/error_library.py` | 华为 CLI 错误库 (28种) |
+| **CapabilityManager** | `agent/capability_manager.py` | 设备能力矩阵 (6型号) |
+| **PlanReviewer** | `agent/plan_reviewer.py` | 计划安全审核 (6项检查) |
+| **Transaction** | `agent/transaction.py` | Snapshot→Execute→Commit→Rollback |
+| **ActionTypes** | `agent/action_types.py` | 内部 AST (Action/Config/Protocol) |
+| **DependencyGraph** | `agent/dependency_graph.py` | 依赖图/拓扑排序/局部恢复 |
+| **ActionRuntime** | `agent/runtime_action.py` | Action 驱动执行引擎 (14步闭环) |
 | **RecoveryEngine** | `agent/recovery.py` | 自动恢复引擎 |
 | **ReflectionEngine** | `agent/reflection.py` | 实验反思引擎 |
 | **LearningEngine** | `agent/learning.py` | 自主学习引擎 |

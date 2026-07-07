@@ -87,7 +87,18 @@ mcp_server.py ──→ services.py ──→ device_manager.py
      │
      ├──→ topology.py
      │
-     └──→ agent/
+     ├──→ agent/
+     │    ├── cli_state.py          # CLI 视图栈状态机
+     │    ├── prompt_parser.py      # Prompt 解析
+     │    ├── command_validator.py  # 命令验证
+     │    ├── command_generator.py  # 命令生成
+     │    ├── error_library.py      # 错误查询
+     │    ├── capability_manager.py # 能力矩阵
+     │    ├── plan_reviewer.py      # 计划审核
+     │    ├── transaction.py        # 事务管理
+     │    ├── action_types.py       # AST 数据结构
+     │    ├── dependency_graph.py   # 依赖图
+     │    └── runtime_action.py     # Action 驱动 Runtime
            ├── runtime.py
            │    ├── planner.py (DAGPlanner)
            │    ├── verifier.py (SemanticVerifier)
@@ -103,3 +114,6 @@ mcp_server.py ──→ services.py ──→ device_manager.py
 2. **直连模式**：工具函数直接调用 Python 模块，不经过 HTTP 转发（已从 45+ HTTP 调用降至 ~10）
 3. **DeviceManager 单例**：全局唯一的设备连接池，线程安全
 4. **Telnet prompt 驱动**：基于 prompt 检测的命令读取，支持分页和超时
+5. **CLI 状态机**：基于视图栈的 CLI 状态管理，命令执行前验证视图权限
+6. **安全执行框架**：计划审核 → 事务管理 → 错误库驱动的自动恢复
+7. **Action 驱动架构**：Planner 输出结构化 Action，CLI 由 Generator 生成

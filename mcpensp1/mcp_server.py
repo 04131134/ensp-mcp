@@ -435,14 +435,29 @@ async def call_tool(name, arguments):
         elif name == "auto_record_experience":
             text = await mcp_req("POST", "/api/kb/auto-extract", json_data={"path": arguments["path"]})
         # ---- Agent Runtime v3.0 ----
+        # 以下 6 个 agent 记忆/知识工具原调用旧 knowledge.py 的 kb（与 AgentRuntime 记忆无关），
+        # 现统一经 mcp_req 代理到真实 AgentRuntime 后端（/api/agent/*），避免“冒牌 Agent 记忆”。
         elif name == "agent_memory_query":
-            text = json.dumps(kb.search_experiences(arguments.get("query", ""), arguments.get("category"), arguments.get("limit", 20)), ensure_ascii=False)
-        elif name == "agent_memory_lessons": text = json.dumps(kb.get_experiences(), ensure_ascii=False)
-        elif name == "agent_memory_stats": text = json.dumps(kb.get_stats(), ensure_ascii=False)
+            params = {"query": arguments.get("query", ""), "limit": arguments.get("limit", 20)}
+            if arguments.get("category"):
+                params["category"] = arguments["category"]
+            text = await mcp_req("GET", "/api/agent/memory", params=params)
+        elif name == "agent_memory_lessons":
+            text = await mcp_req("GET", "/api/agent/memory/lessons")
+        elif name == "agent_memory_stats":
+            text = await mcp_req("GET", "/api/agent/memory/stats")
         elif name == "agent_knowledge_search":
-            text = json.dumps(kb.search_experiences(arguments.get("query", ""), arguments.get("category"), arguments.get("limit", 20)), ensure_ascii=False)
-        elif name == "agent_knowledge_best_practices": text = json.dumps(kb.get_best_practices(), ensure_ascii=False)
-        elif name == "agent_knowledge_troubleshooting": text = json.dumps(kb.get_troubleshooting_cases(arguments.get("query")), ensure_ascii=False)
+            params = {"query": arguments.get("query", ""), "limit": arguments.get("limit", 20)}
+            if arguments.get("category"):
+                params["category"] = arguments["category"]
+            if arguments.get("device_type"):
+                params["device_type"] = arguments["device_type"]
+            text = await mcp_req("GET", "/api/agent/knowledge/search", params=params)
+        elif name == "agent_knowledge_best_practices":
+            text = await mcp_req("GET", "/api/agent/knowledge/best-practices")
+        elif name == "agent_knowledge_troubleshooting":
+            text = await mcp_req("GET", "/api/agent/knowledge/troubleshooting",
+                                 params={"query": arguments.get("query", "")})
         elif name == "agent_plan":
             text = await mcp_req("POST", "/api/agent/plan", json_data={"goal": arguments["goal"], "experiment_type": arguments.get("experiment_type", "general")})
         elif name == "agent_execute":

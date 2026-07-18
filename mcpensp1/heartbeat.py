@@ -9,6 +9,7 @@ from connection import TelnetConnection
 from device_manager import dm
 
 HEARTBEAT_INTERVAL = int(os.environ.get('HEARTBEAT_INTERVAL', '30'))
+KEEPALIVE_INTERVAL = int(os.environ.get('KEEPALIVE_INTERVAL', '120'))
 HEARTBEAT_RECONNECT_ATTEMPTS = int(os.environ.get('HEARTBEAT_RECONNECT', '3'))
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,28 @@ class HeartbeatMonitor:
         with self.lock:
             if self.running: return
             self.running = True
-        threading.Thread(target=self._loop, daemon=True).start()
+        threading.Thread(target=self._loop, daemon=True, name='heartbeat-loop').start()
+        if KEEPALIVE_INTERVAL > 0:
+            threading.Thread(target=self._keepalive_loop, daemon=True, name='keepalive-loop').start()
+
+    def _keepalive_loop(self):
+        """Send periodic carriage return to keep devices from dropping idle connections."""
+        logger.info('Keepalive started (interval=%ds)', KEEPALIVE_INTERVAL)
+        while self.running:
+            time.sleep(KEEPALIVE_INTERVAL)
+            if not self.running:
+                break
+            current = list(dm.list_all().keys())
+            for path in current:
+                conn = dm.get(path)
+                if not conn or not conn.sock:
+                    continue
+                try:
+                    with conn.lock:
+                        conn.sock.send(b'\r\n')
+                except Exception:
+                    pass
+        logger.info('Keepalive stopped')
 
     def _loop(self):
         while self.running:
@@ -38,6 +60,7 @@ class HeartbeatMonitor:
             except Exception as e: logger.warning('[Heartbeat] %s', e)
             time.sleep(HEARTBEAT_INTERVAL)
 
+    
     def _sio_emit(self, event, data):
         if socketio_ref:
             try: socketio_ref.emit(event, data)

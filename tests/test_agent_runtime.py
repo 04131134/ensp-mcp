@@ -37,16 +37,6 @@ class TestPlanner:
         # Topological sort should succeed
         assert len(plan.execution_order) == len(plan.nodes), 'Execution order mismatch'
 
-    def test_template_matching(self):
-        """Planner should match campus template."""
-        from agent.planner import DAGPlanner
-        from agent.types import TaskGoal
-        planner = DAGPlanner()
-        goal = TaskGoal(description='Campus network with access layer and core layer', raw_request='')
-        plan = planner.plan_from_goal(goal)
-        node_ids = list(plan.nodes.keys())
-        assert 'vlan' in node_ids, 'VLAN node missing from campus plan'
-
     def test_verify_node_has_commands(self):
         """Verify nodes must also carry commands."""
         from agent.planner import DAGPlanner

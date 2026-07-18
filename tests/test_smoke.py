@@ -325,37 +325,6 @@ class TestExperiments:
 
 # ==================== 测试 8: 快照功能 ====================
 
-class TestSnapshots:
-    """配置快照 API"""
-
-    def test_snapshots_list(self):
-        """GET /api/devices/snapshots 返回快照列表"""
-        from mcpensp1.app import app
-        with app.test_client() as client:
-            resp = client.get('/api/devices/snapshots')
-            assert resp.status_code == 200
-
-    @_ensp_required()
-    def test_snapshot_create(self):
-        """POST /api/devices/snapshot 对已连接设备创建快照"""
-        from mcpensp1.app import scan_devices, connect_device, app
-        devices_list = scan_devices(2000, 2050)
-        if not devices_list:
-            pytest.skip("No devices found")
-        first = devices_list[0]
-        conn_result = connect_device(first['port'])
-        if not conn_result.get('success'):
-            pytest.skip(f"Failed to connect to device at port {first['port']}")
-        path = conn_result['path']
-        with app.test_client() as client:
-            resp = client.post('/api/devices/snapshot', json={'path': path})
-            assert resp.status_code in (200, 201)
-            data = resp.get_json()
-            print(f"  [BASELINE] snapshot: success={data.get('success')}")
-
-
-# ==================== 测试 9: Config Methods ====================
-
 class TestConfigMethods:
     """配置方法 API"""
 

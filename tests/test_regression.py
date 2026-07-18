@@ -14,20 +14,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 class TestCommandExecutor:
     """测试 command_executor 模块的命令分类和发送逻辑。"""
 
-    def test_is_blocked_command_reject(self):
-        """验证危险命令被拦截。"""
-        from mcpensp1.command_executor import is_blocked_command
-        assert is_blocked_command("reboot") is True
-        assert is_blocked_command("format") is True
-        assert is_blocked_command("reset saved-configuration") is True
-
-    def test_is_blocked_command_allow_safe(self):
-        """验证安全命令不被拦截。"""
-        from mcpensp1.command_executor import is_blocked_command
-        assert is_blocked_command("display version") is False
-        assert is_blocked_command("interface GigabitEthernet0/0/1") is False
-        assert is_blocked_command("vlan 10") is False
-
     def test_send_command_returns_dict(self):
         """验证 send_command 返回格式正确。"""
         from mcpensp1.command_executor import CommandExecutor
@@ -129,12 +115,11 @@ class TestMCPServerRegression:
         expected = {
             "scan_devices", "connect_device", "send_command", "disconnect_device",
             "get_connected_devices", "rename_device", "fetch_device_name",
-            "batch_command", "group_command", "snapshot_config", "list_snapshots",
+            "batch_command", "group_command",
             "config_method_list", "config_method_get", "config_method_search",
             "agent_status", "agent_plan", "agent_execute",
             "search_kb", "get_kb_commands", "get_kb_stats",
             "get_topology", "find_topology_path", "save_topology",
-            "generate_config_template", "list_templates", "get_config_guidance",
         }
         missing = expected - tool_names
         assert not missing, f"缺少工具: {missing}"

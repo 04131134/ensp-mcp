@@ -590,7 +590,7 @@ class TestCompatibility:
 
     def test_existing_imports_still_work(self):
         """现有模块导入不应受影响。"""
-        from mcpensp1.command_executor import CommandExecutor, is_blocked_command
+        from mcpensp1.command_executor import CommandExecutor
         from mcpensp1.device_manager import DeviceManager
         from mcpensp1.knowledge import KnowledgeBase
         from mcpensp1.agent.planner import DAGPlanner

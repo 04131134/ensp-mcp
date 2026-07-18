@@ -80,7 +80,7 @@
 ```
 eNSP-MCP/
 ├── mcpensp1/               # 主项目代码
-│   ├── mcp_server.py       # MCP 服务器（47 工具声明 / 46 已实现）
+│   ├── mcp_server.py       # MCP 服务器（47 工具）
 │   ├── app.py              # Flask Web 应用
 │   ├── device_manager.py   # 设备连接池管理
 │   ├── command_executor.py # 命令执行引擎
@@ -99,7 +99,7 @@ eNSP-MCP/
 │   │   ├── memory.py       # 长期记忆
 │   │   └── knowledge_store.py # 增长知识库
 │   └── kb/                 # 静态知识库数据
-├── tests/                  # 测试（220 passed, 3 skipped）
+├── tests/                  # 测试（222 passed, 3 skipped）
 └── docs/                   # 项目文档（本知识库）
     ├── architecture/       # 架构文档
     ├── development/        # 开发规范

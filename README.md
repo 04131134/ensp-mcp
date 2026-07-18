@@ -12,7 +12,7 @@
 AI / AI Agent
      |  MCP (stdio)
      v
-MCP Server (mcp_server.py, 47 个工具声明 / 46 已实现)
+MCP Server (mcp_server.py, 47 个工具)
      |  部分 Agent 工具经 HTTP 调用后端 Flask
      +---> DeviceManager (dm)       设备连接池管理
      +---> KnowledgeBase (kb)       配置知识库（只记配置方法）
@@ -61,7 +61,7 @@ Flask Web UI (app.py, 51 个 API 端点)
 
 ## MCP 工具清单
 
-共 **47 个工具声明**，其中 **46 个已实现**；`search_kb` 已声明但尚未接线（调用返回 `Unknown tool`，待修复）。
+共 **47 个工具**，均已实现（`search_kb` 经 `mcp_req` 代理到 Flask `/api/kb/search`）。
 
 ### 设备连接 7 个
 `scan_devices` `connect_device` `send_command` `disconnect_device` `get_connected_devices` `rename_device` `fetch_device_name`
@@ -137,7 +137,7 @@ python app.py
 eNSP-MCP/
 ├── mcpensp1/
 │   ├── app.py                  # Flask Web UI（1716 行, 51 个 API 端点）
-│   ├── mcp_server.py           # MCP Server（47 工具声明 / 46 已实现）
+│   ├── mcp_server.py           # MCP Server（47 个工具）
 │   ├── connection.py           # Telnet 连接层（缓冲 + 超时）
 │   ├── device_manager.py       # 设备连接池（保活）
 │   ├── command_executor.py     # 命令执行引擎
@@ -186,7 +186,7 @@ eNSP-MCP/
 ```bash
 cd eNSP-MCP
 python -m pytest tests/ -q
-# 220 passed, 3 skipped
+# 222 passed, 3 skipped
 ```
 
 ---

@@ -417,6 +417,7 @@ async def call_tool(name, arguments):
                 auto_view=arguments.get("auto_view", True),
                 auto_undo_tm=arguments.get("auto_undo_tm", True))
             text = json.dumps(result, ensure_ascii=False)
+        elif name == "search_kb":
             text = await mcp_req("GET", "/api/kb/search", params={"q": arguments["q"], "limit": arguments.get("limit", 20)})
         elif name == "get_command_help":
             text = await mcp_req("GET", "/api/kb/help", params={"cmd": arguments["cmd"]})

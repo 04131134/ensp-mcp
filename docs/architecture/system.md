@@ -2,7 +2,7 @@
 
 ## 项目定位
 
-eNSP-MCP 是一个面向华为 eNSP 网络仿真平台的 AI 网络自动化工具。它通过 MCP（Model Context Protocol）协议暴露 52+ 工具，使 AI Agent 能够自动化完成网络拓扑配置、验证、排错等任务。
+eNSP-MCP 是一个面向华为 eNSP 网络仿真平台的 AI 网络自动化工具。它通过 MCP（Model Context Protocol）协议暴露 48 个工具，使 AI Agent 能够自动化完成网络拓扑配置、验证、排错等任务。
 
 ## 技术栈
 
@@ -13,7 +13,7 @@ eNSP-MCP 是一个面向华为 eNSP 网络仿真平台的 AI 网络自动化工�
 | 连接层 | Telnet（asyncio + threading） |
 | AI Agent | 自研 DAGPlanner + AgentRuntime + SemanticVerifier |
 | 知识层 | JSON 知识库 + MemoryStore + KnowledgeStore |
-| 测试 | pytest（97 条测试） |
+| 测试 | pytest（224 条测试） |
 
 ## 核心架构图
 
@@ -23,11 +23,12 @@ eNSP-MCP 是一个面向华为 eNSP 网络仿真平台的 AI 网络自动化工�
 |                       ↓ MCP 协议                     |
 +----------------------------------------------------+
 |                  mcp_server.py                      |
-|          (52+ tools: scan/connect/send/batch/...)   |
+|          (48 tools: scan/connect/send/batch/...)   |
 |                       ↓                             |
 |   +-----------+  +-----------+  +----------------+  |
-|   |  Flask    |  | Agent     |  | Knowledge &    |  |
-|   |  Web API  |  | Runtime   |  | Config Methods |  |
+|   |  Flask     |  | Agent     |  | Knowledge &    |  |
+|   |  Web API   |  | Runtime   |  | Config Methods |  |
+|   |            |  |           |  | ViewRouter     |  |
 |   +-----+-----+  +-----+-----+  +-------+--------+  |
 |         |               |                |           |
 |   +-----v-----+   +-----v-----+   +------v-------+  |
@@ -115,5 +116,8 @@ mcp_server.py ──→ services.py ──→ device_manager.py
 3. **DeviceManager 单例**：全局唯一的设备连接池，线程安全
 4. **Telnet prompt 驱动**：基于 prompt 检测的命令读取，支持分页和超时
 5. **CLI 状态机**：基于视图栈的 CLI 状态管理，命令执行前验证视图权限
-6. **安全执行框架**：计划审核 → 事务管理 → 错误库驱动的自动恢复
-7. **Action 驱动架构**：Planner 输出结构化 Action，CLI 由 Generator 生成
+6. **ViewRouter 视图路由（v2.4）**：命令分类 → 视图检测 → 自动切换 → VRP 冷却保护
+7. **批量命令遇错即停（v2.4）**：不再盲发后续命令，错误时立即停止并报告
+8. **设备保活（v2.4）**：HeartbeatMonitor 定期发送回车保持连接
+9. **移除命令黑名单（v2.4）**：所有命令直通，不再拦截 reboot/reset 等
+10. **知识库简化（v2.4）**：只记配置方法和命令序列，去掉时间戳/成功率等元数据

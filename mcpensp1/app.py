@@ -398,7 +398,6 @@ class KnowledgeBase:
                 result['user_view_commands'] = {'_meta': uv.get('_meta', {}), device_model: uv.get(device_model, uv.get('common', {}))}
                 result['system_view_commands'] = {'_meta': sv.get('_meta', {}), device_model: sv.get(device_model, {})}
         result['troubleshooting'] = skb.get('troubleshooting', {})
-        result['config_order'] = skb.get('config_order', [])
         return result
 
     def suggest_commands(self, device_model, view_type=None):
@@ -484,7 +483,6 @@ class KnowledgeBase:
                 'version_preview': ver_output[:300],
                 'suggestions': suggestions,
                 'troubleshooting': self._skb_cache.get('troubleshooting', {}) if self._skb_cache else {},
-                'config_order': self._skb_cache.get('config_order', []) if self._skb_cache else []
             }
         except Exception as e:
             return {'success': False, 'error': str(e)}
@@ -890,90 +888,6 @@ class KnowledgeBase:
         except Exception as e:
             logger.error('Auto knowledge recording failed: %s', e)
 
-    def get_config_guidance(self, topic):
-        """??????????????????????????????
-        ????????????AI agent???????????"""
-        topic_lower = topic.lower()
-        guidance = {
-            'topic': topic,
-            'related_experiences': [],
-            'related_best_practices': [],
-            'related_troubleshooting': [],
-            'related_commands': [],
-            'config_tips': [],
-        }
-
-        skb = self._skb_cache or self.load_structured_kb()
-        if not skb:
-            return guidance
-
-        # ??????
-        for exp in skb.get('experiences', []):
-            exp_text = json.dumps(exp, ensure_ascii=False).lower()
-            # ???????
-            topic_words = topic_lower.split()
-            match_score = sum(1 for w in topic_words if w in exp_text)
-            if match_score > 0:
-                guidance['related_experiences'].append({
-                    'experiment': exp.get('experiment', ''),
-                    'date': exp.get('date', ''),
-                    'features': exp.get('features_implemented', []),
-                    'commands': [c.get('cmd', '') for c in exp.get('new_commands_learned', [])[:15]],
-                    'lessons': exp.get('lessons_learned', []),
-                    'relevance': match_score,
-                })
-
-        # ?????? (best_practices.command_rules is a list of rules)
-        bp_rules = skb.get('best_practices', {})
-        if isinstance(bp_rules, dict):
-            bp_list = bp_rules.get('command_rules', [])
-        else:
-            bp_list = bp_rules if isinstance(bp_rules, list) else []
-        for bp in bp_list:
-            bp_text = json.dumps(bp, ensure_ascii=False).lower()
-            topic_words = topic_lower.split()
-            if any(w in bp_text for w in topic_words):
-                guidance['related_best_practices'].append(bp)
-
-        # ?????? (troubleshooting is a dict keyed by problem name)
-        for problem_name, tc_data in skb.get('troubleshooting', {}).items():
-            tc_text = (problem_name + ' ' + json.dumps(tc_data, ensure_ascii=False)).lower()
-            topic_words = topic_lower.split()
-            if any(w in tc_text for w in topic_words):
-                entry = dict(tc_data)
-                entry['problem'] = problem_name
-                guidance['related_troubleshooting'].append(entry)
-
-        # ???KB???????????
-        gkb = self._gkb_cache or {}
-        for cmd, info in gkb.items():
-            if cmd in ('last_updated', '_meta'):
-                continue
-            if not isinstance(info, dict):
-                continue
-            cmd_text = (cmd + ' ' + json.dumps(info, ensure_ascii=False)).lower()
-            topic_words = topic_lower.split()
-            if any(w in cmd_text for w in topic_words):
-                guidance['related_commands'].append({
-                    'cmd': cmd,
-                    'desc': info.get('description', info.get('output_preview', ''))[:100],
-                    'category': info.get('category', ''),
-                    'devices': info.get('devices', []),
-                    'usage_count': info.get('usage_count', 0),
-                })
-
-        # ??????
-        intent, _ = self._detect_config_intent([topic])
-        if intent:
-            guidance['config_tips'].append(f'???????: {intent}')
-        guidance['config_tips'].append('????????????????????')
-        guidance['config_tips'].append('??????????????')
-        guidance['config_tips'].append('?????????save??')
-
-        # ??????
-        guidance['related_experiences'].sort(key=lambda x: x.get('relevance', 0), reverse=True)
-
-        return guidance
 
 
 def _build_interface_map(dev_element):
@@ -1220,37 +1134,10 @@ def connect_device(port):
         dm.remove(path)
         return {'success': False, 'error': 'Connection failed'}
 
-BLOCKED_COMMANDS = {
-    'reboot', 'reset saved-configuration', 'erase startup-configuration',
-    'format', 'delete', 'reset arp', 'reset bgp', 'reset ospf',
-    'set authentication password', 'set user-password',
-    'undo save', 'startup saved-configuration',
-    'reset interface', 'reset statistics',
-    'reset ip routing-table', 'reset mac-address',
-    'clear configuration', 'reset arp all',
-}
-
-BLOCKED_PREFIXES = (
-    'reboot', 'reset ', 'erase ', 'format ', 'delete ',
-    'set authentication', 'set user-password',
-    'undo save', 'startup saved-configuration',
-    'clear ', 'initialize',
-)
-
-def _is_blocked_command(cmd_lower):
-    if cmd_lower in BLOCKED_COMMANDS:
-        return True
-    for prefix in BLOCKED_PREFIXES:
-        if cmd_lower.startswith(prefix):
-            return True
-    return False
-
 def send_command(path, command):
     conn = dm.get(path)
     if not conn: return {'success': False, 'error': 'Device not connected'}
     cmd_lower = command.strip().lower()
-    if _is_blocked_command(cmd_lower):
-        return {'success': False, 'error': f'Blocked dangerous command: {cmd_lower}'}
     try:
         # Auto undo t m before first config command if not already done
         config_prefixes = ('system-view', 'interface ', 'vlan', 'ospf', 'vrrp', 'stp ',
@@ -1270,12 +1157,8 @@ def send_command(path, command):
                     pass
             elif cmd_lower in ('undo terminal monitor', 'undo t m'):
                 send_command._undo_done.add(_undo_key)
-        # Classify which view the command needs
-        _needs_system = cmd_lower.startswith(('interface ', 'vlan', 'ospf', 'vrrp', 'stp ',
-            'dhcp', 'ip pool', 'ip route', 'firewall', 'capwap', 'wlan', 'sysname',
-            'undo info', 'security-policy', 'aaa', 'manager-user', 'eth-trunk',
-            'ip address', 'port ', 'traffic-filter', 'rule ', 'description '))
-        _needs_user = cmd_lower.startswith(('display ', 'save', 'ping', 'tracert', 'telnet'))
+        # Use view_router for unified view classification
+        _required_view = view_router.classify(command)
 
         def _exec_and_check():
             t = time.time()
@@ -1289,26 +1172,16 @@ def send_command(path, command):
 
         result, elapsed, cmd_success = _exec_and_check()
 
-        # View auto-correction: if failed due to wrong view, correct and retry once
-        if not cmd_success and ('Unrecognized command' in (result or '') or 'Wrong parameter' in (result or '')):
-            view_before = getattr(conn, 'current_view', 'unknown')
-            corrected = False
-            if _needs_system and view_before == 'user':
-                try:
-                    conn.send_cmd('system-view')
-                    time.sleep(0.2)
-                    corrected = True
-                except Exception:
-                    pass
-            elif _needs_user and view_before != 'user':
-                try:
-                    conn.ensure_user_view()
-                    corrected = True
-                except Exception:
-                    pass
-            if corrected:
-                result, elapsed, cmd_success = _exec_and_check()
-                logger.info('View auto-corrected for %s: %s -> retry cmd_success=%s', path, view_before, cmd_success)
+        # View auto-correction via view_router (single retry)
+        if not cmd_success:
+            error_check = check_command_error(result or '')
+            if error_check['errors']:
+                view_before = view_router.detect_view(conn)
+                corrected = view_router.ensure_view(conn, path, _required_view)
+                if corrected:
+                    result, elapsed, cmd_success = _exec_and_check()
+                    logger.info('View auto-corrected for %s: %s -> retry cmd_success=%s',
+                               path, view_before, cmd_success)
 
         dt = dm.get_type(path)
         kb.record_command(command, result, device_type=dt, device_path=path, success=cmd_success)
@@ -1329,275 +1202,6 @@ def send_command(path, command):
 
 
 # ==================== CONTEXT-AWARE SUGGESTIONS ====================
-
-def suggest_next_steps(path):
-    """Analyze device command history and suggest next configuration steps.
-    
-    Returns:
-        dict with current_phase, completed_topics, next_steps, missing_commands
-    """
-    with devices_lock:
-        conn = devices.get(path)
-    if not conn:
-        return {'success': False, 'error': 'Device not connected'}
-    
-    with name_lock:
-        device_name = device_names.get(path, path)
-        device_type = device_types.get(path, 'unknown')
-    
-    # Get command history for this device from KB
-    all_cmds = []
-    gkb_path = os.path.join(app.config.get('KB_FOLDER', 'kb'), 'global_kb.json')
-    try:
-        with open(gkb_path, 'r', encoding='utf-8') as _f: gkb = json.load(_f)
-        for c in gkb.get('commands', []):
-            if path in c.get('devices_used', []):
-                all_cmds.append(c.get('command', '').strip())
-    except Exception:
-        pass
-    
-    # Also get from devices_kb
-    dkb_path = os.path.join(app.config.get('KB_FOLDER', 'kb'), 'devices_kb.json')
-    try:
-        with open(dkb_path, 'r', encoding='utf-8') as _f: dkb = json.load(_f)
-        dev_data = dkb.get('devices', {}).get(path, {})
-        for cmd_entry in dev_data.get('executed_commands', []):
-            cmd = cmd_entry.get('command', '').strip()
-            if cmd and cmd not in all_cmds:
-                all_cmds.append(cmd)
-    except Exception:
-        pass
-    
-    executed_set = set(c.lower() for c in all_cmds)
-    executed_text = ' '.join(all_cmds).lower()
-    
-    # Determine device role
-    model_key = None
-    dn = device_name.upper()
-    if 'SW1' in dn or dn.endswith('-SW1'):
-        model_key = 'SW1'
-    elif 'SW2' in dn or dn.endswith('-SW2'):
-        model_key = 'SW2'
-    elif re.match(r'LSW[34]', dn):
-        model_key = 'AGG'
-    elif re.match(r'LSW[5-8]', dn):
-        model_key = 'ACCESS'
-    elif re.match(r'LSW[9]|LSW1[0]', dn):
-        model_key = 'SERVER_SW'
-    elif 'FW' in dn:
-        model_key = 'FW'
-    elif 'AR' in dn:
-        model_key = 'AR'
-    elif 'AC' in dn:
-        model_key = 'AC'
-    
-    # Define phase checks per device role
-    phases = {
-        'SW1': [
-            ('基础', ['undo t m', 'undo info-center', 'sysname']),
-            ('VLAN', ['vlan batch']),
-            ('MSTP', ['stp mode mstp', 'region-name', 'revision-level', 'instance', 'active region']),
-            ('DHCP', ['dhcp enable', 'ip pool', 'gateway-list', 'dns-list']),
-            ('VLANIF', ['interface vlanif', 'ip address', 'vrrp vrid', 'dhcp select global']),
-            ('端口', ['port link-type', 'port trunk', 'port default']),
-            ('LACP', ['interface eth-trunk', 'mode lacp-static', 'eth-trunk']),
-            ('OSPF', ['ospf', 'router-id', 'area', 'network', 'silent-interface']),
-            ('淇濆瓨', ['save']),
-        ],
-        'SW2': [
-            ('基础', ['undo t m', 'undo info-center', 'sysname']),
-            ('VLAN', ['vlan batch']),
-            ('MSTP', ['stp mode mstp', 'region-name', 'revision-level', 'instance', 'active region']),
-            ('DHCP', ['dhcp enable', 'ip pool', 'gateway-list', 'dns-list']),
-            ('VLANIF', ['interface vlanif', 'ip address', 'vrrp vrid', 'dhcp select global']),
-            ('端口', ['port link-type', 'port trunk', 'port default']),
-            ('LACP', ['interface eth-trunk', 'mode lacp-static', 'eth-trunk']),
-            ('OSPF', ['ospf', 'router-id', 'area', 'network', 'silent-interface']),
-            ('淇濆瓨', ['save']),
-        ],
-        'AGG': [
-            ('基础', ['undo t m', 'undo info-center', 'sysname']),
-            ('VLAN', ['vlan batch']),
-            ('MSTP', ['stp mode mstp', 'region-name', 'active region']),
-            ('端口', ['port link-type', 'port trunk', 'port default']),
-            ('淇濆瓨', ['save']),
-        ],
-        'ACCESS': [
-            ('基础', ['undo t m', 'undo info-center', 'sysname']),
-            ('VLAN', ['vlan batch']),
-            ('端口', ['port link-type', 'port default']),
-            ('淇濆瓨', ['save']),
-        ],
-        'FW': [
-            ('基础', ['sysname']),
-            ('鎺ュ彛', ['interface gigabitethernet', 'ip address', 'undo shutdown', 'service-manage ping permit']),
-            ('鍖哄煙', ['firewall zone', 'set priority', 'add interface']),
-            ('瀹夊叏绛栫暐', ['security-policy', 'rule name', 'source-zone', 'destination-zone', 'action permit']),
-            ('路由', ['ospf', 'default-route-advertise', 'ip route-static']),
-            ('淇濆瓨', ['save']),
-        ],
-        'AR': [
-            ('基础', ['undo t m', 'sysname']),
-            ('鎺ュ彛', ['interface gigabitethernet', 'ip address']),
-            ('路由', ['ip route-static']),
-            ('淇濆瓨', ['save']),
-        ],
-        'AC': [
-            ('基础', ['undo t m', 'vlan batch', 'dhcp enable', 'capwap source']),
-            ('WLAN', ['wlan', 'security-profile', 'ssid-profile', 'vap-profile']),
-            ('AP娉ㄥ唽', ['ap-id', 'ap-mac', 'ap-name', 'ap-group']),
-            ('端口', ['interface gigabitethernet', 'port link-type trunk']),
-            ('淇濆瓨', ['save']),
-        ],
-    }
-    
-    role_phases = phases.get(model_key, phases.get('ACCESS', []))
-    
-    # Check each phase
-    completed_topics = []
-    next_steps = []
-    current_phase = 'unknown'
-    
-    for phase_name, keywords in role_phases:
-        matched = any(kw in executed_text for kw in keywords)
-        if matched:
-            completed_topics.append(phase_name)
-        else:
-            if not next_steps:
-                current_phase = phase_name
-                # Generate specific next commands
-                next_steps = _generate_phase_commands(model_key, phase_name, device_name, executed_text)
-            elif len(next_steps) < 5:
-                next_steps.extend(_generate_phase_commands(model_key, phase_name, device_name, executed_text))
-    
-    if not next_steps:
-        current_phase = '瀹屾垚'
-    
-    # Get model-specific commands from structured KB
-    skb = kb._skb_cache or {}
-    model_in_kb = kb._match_model(device_name) or kb._match_model(device_type)
-    available_topics = []
-    if model_in_kb:
-        sv = skb.get('system_view_commands', {}).get(model_in_kb, {})
-        for topic_name in sv.get('topics', {}).keys():
-            available_topics.append(topic_name)
-    
-    return {
-        'success': True,
-        'path': path,
-        'device_name': device_name,
-        'device_type': device_type,
-        'role': model_key or 'unknown',
-        'total_commands_executed': len(all_cmds),
-        'completed_topics': completed_topics,
-        'current_phase': current_phase,
-        'next_steps': next_steps[:10],
-        'available_kb_topics': available_topics,
-        'progress': '%d/%d' % (len(completed_topics), len(role_phases))
-    }
-
-def _generate_phase_commands(role, phase, device_name, executed_text):
-    """Generate specific commands for a device role and phase."""
-    cmds = []
-    dn = device_name.upper()
-    
-    if phase == '基础':
-        if role == 'AC':
-            cmds = ['undo terminal monitor', 'system-view', 'undo info-center enable', 'sysname ' + device_name,
-                    'vlan batch 100 to 101', 'dhcp enable',
-                    'interface Vlanif100', 'ip address 192.168.100.1 255.255.255.0', 'dhcp select interface', 'quit',
-                    'interface GigabitEthernet0/0/19', 'port link-type trunk', 'port trunk allow-pass vlan 2 to 4094', 'quit',
-                    'capwap source interface Vlanif100']
-        else:
-            cmds = ['undo terminal monitor', 'system-view', 'undo info-center enable', 'sysname ' + device_name]
-    elif phase == 'VLAN':
-        if role in ('SW1', 'SW2'):
-            cmds = ['vlan batch 10 20 30 40 100 to 101 520 to 521']
-        elif role == 'AGG':
-            cmds = ['vlan batch 10 20 30 40 100 to 101']
-        elif role == 'ACCESS':
-            # Determine VLAN based on device name (building)
-            vlan_map = {'LSW5': '10', 'LSW6': '20', 'LSW7': '30', 'LSW8': '40'}
-            vlan_id = vlan_map.get(dn[:4], '10')
-            cmds = ['vlan batch ' + vlan_id]
-    elif phase == 'MSTP':
-        if role in ('SW1', 'SW2'):
-            cmds = ['stp mode mstp', 'stp enable', 'stp region-configuration', 'region-name huawei', 'revision-level 16', 'instance 1 vlan 10 100 101', 'instance 2 vlan 20 30 40', 'active region-configuration']
-            if role == 'SW1':
-                cmds.extend(['stp instance 1 root primary', 'stp instance 2 root secondary'])
-            else:
-                cmds.extend(['stp instance 1 root secondary', 'stp instance 2 root primary'])
-        elif role == 'AGG':
-            cmds = ['stp mode mstp', 'stp enable', 'stp region-configuration', 'region-name huawei', 'revision-level 16', 'instance 1 vlan 10 100 101', 'instance 2 vlan 20 30 40', 'active region-configuration']
-    elif phase == 'DHCP':
-        cmds = ['dhcp enable']
-        for v in ['vlan10', 'vlan20', 'vlan30', 'vlan40', 'vlan101']:
-            gw_last = {'vlan10': '1', 'vlan20': '2', 'vlan30': '3', 'vlan40': '4', 'vlan101': '101'}[v]
-            cmds.extend(['ip pool ' + v, 'gateway-list 192.168.' + gw_last + '.254', 'network 192.168.' + gw_last + '.0 mask 255.255.255.0', 'dns-list 192.168.0.1', 'quit'])
-    elif phase == 'VLANIF':
-        if role == 'SW1':
-            for v, ip, vrid, pri in [('10','192.168.1.100','10','120'),('20','192.168.2.100','20','100'),('30','192.168.3.100','30','100'),('40','192.168.4.100','40','100'),('101','192.168.101.100','101','120')]:
-                cmds.extend(['interface Vlanif'+v, 'ip address '+ip+' 255.255.255.0', 'vrrp vrid '+vrid+' virtual-ip 192.168.'+ ('1' if v=='10' else v.rstrip('0') if v!='101' else '101')+'.254'])
-                if pri != '100':
-                    cmds.append('vrrp vrid '+vrid+' priority '+pri)
-                cmds.extend(['dhcp select global', 'quit'])
-        elif role == 'SW2':
-            for v, ip, vrid, pri in [('10','192.168.1.200','10','100'),('20','192.168.2.200','20','120'),('30','192.168.3.200','30','120'),('40','192.168.4.200','40','120'),('101','192.168.101.200','101','100')]:
-                cmds.extend(['interface Vlanif'+v, 'ip address '+ip+' 255.255.255.0', 'vrrp vrid '+vrid+' virtual-ip 192.168.'+ ('1' if v=='10' else v.rstrip('0') if v!='101' else '101')+'.254'])
-                if pri != '100':
-                    cmds.append('vrrp vrid '+vrid+' priority '+pri)
-                cmds.extend(['dhcp select global', 'quit'])
-    elif phase == '端口':
-        cmds = ['interface GigabitEthernet0/0/1', 'port link-type trunk', 'port trunk allow-pass vlan 2 to 4094', 'quit']
-    elif phase == 'LACP':
-        cmds = ['interface Eth-Trunk 1', 'mode lacp-static', 'port link-type trunk', 'port trunk allow-pass vlan 2 to 4094', 'quit', 'interface GigabitEthernet0/0/10', 'eth-trunk 1', 'quit', 'interface GigabitEthernet0/0/11', 'eth-trunk 1', 'quit']
-    elif phase == 'OSPF':
-        rid = '1.1.1.1' if role == 'SW1' else '2.2.2.2'
-        cmds = ['ospf 1 router-id ' + rid, 'area 0.0.0.0', 'network 192.168.0.0 0.0.255.255',
-                'silent-interface Vlanif10', 'silent-interface Vlanif20', 'silent-interface Vlanif30',
-                'silent-interface Vlanif40', 'silent-interface Vlanif100', 'silent-interface Vlanif101', 'quit']
-    elif phase == '鎺ュ彛':
-        cmds = [
-            'interface GigabitEthernet0/0/0', 'undo shutdown', 'ip address 192.168.0.1 255.255.255.0', 'quit',
-            'interface GigabitEthernet1/0/0', 'undo shutdown', 'ip address 192.168.0.254 255.255.255.0', 'service-manage ping permit', 'quit',
-            'interface GigabitEthernet1/0/1', 'undo shutdown', 'ip address 200.1.1.1 255.255.255.0', 'quit',
-            'interface GigabitEthernet1/0/2', 'undo shutdown', 'ip address 192.168.50.2 255.255.255.0', 'service-manage ping permit', 'quit',
-            'interface GigabitEthernet1/0/3', 'undo shutdown', 'ip address 192.168.51.2 255.255.255.0', 'service-manage ping permit', 'quit',
-        ]
-    elif phase == '鍖哄煙':
-        cmds = [
-            'firewall zone trust', 'set priority 85',
-            'add interface GigabitEthernet1/0/2', 'add interface GigabitEthernet1/0/3', 'quit',
-            'firewall zone untrust', 'set priority 5',
-            'add interface GigabitEthernet1/0/1', 'quit',
-            'firewall zone dmz', 'set priority 50',
-            'add interface GigabitEthernet1/0/0', 'quit',
-        ]
-    elif phase == '瀹夊叏绛栫暐':
-        cmds = [
-            'security-policy',
-            'rule name trust_to_dmz_untrust', 'source-zone trust', 'destination-zone dmz', 'destination-zone untrust', 'action permit', 'quit',
-            'rule name untrust_to_dmz', 'source-zone untrust', 'destination-zone dmz', 'action permit', 'quit',
-            'rule name deny_dmz_out', 'source-zone dmz', 'action deny', 'quit',
-            'quit',
-        ]
-    elif phase == '路由':
-        cmds = [
-            'ip route-static 0.0.0.0 0.0.0.0 200.1.1.2',
-            'ospf 1 router-id 3.3.3.3', 'default-route-advertise',
-            'area 0.0.0.0', 'network 192.168.0.0 0.0.255.255', 'quit',
-        ]
-    elif phase == 'WLAN':
-        cmds = ['wlan', 'security-profile name sec', 'security wpa-wpa2 psk pass-phrase zz1234567 aes', 'quit', 'ssid-profile name ssid', 'ssid wlan-2024', 'quit', 'vap-profile name vap', 'service-vlan vlan-id 101', 'ssid-profile ssid', 'security-profile sec', 'quit', 'ap-group name ap', 'radio 0', 'vap-profile vap wlan 1', 'quit', 'radio 1', 'vap-profile vap wlan 1', 'quit', 'quit']
-    elif phase == 'AP娉ㄥ唽':
-        cmds = [
-            'ap-id 1 ap-mac 00e0-fc3f-6920 ap-sn 210235448310076D7959', 'ap-name ap1', 'ap-group ap',
-            'ap-id 2 ap-mac 00e0-fc3f-6921 ap-sn 210235448310076D7960', 'ap-name ap2', 'ap-group ap',
-        ]
-    elif phase == '淇濆瓨':
-        cmds = ['save']
-    
-    return cmds
 
 def generate_lab_report(experiment_name=None, paths=None):
     """Generate a lab report from current experiment data.
@@ -1657,9 +1261,6 @@ def generate_lab_report(experiment_name=None, paths=None):
         total_success += success_count
         total_failed += failed_count
         
-        # Get context-aware status
-        context = suggest_next_steps(path)
-        
         device_report = {
             'name': name,
             'type': dt,
@@ -1667,10 +1268,10 @@ def generate_lab_report(experiment_name=None, paths=None):
             'commands_executed': len(dev_cmds),
             'success': success_count,
             'failed': failed_count,
-            'role': context.get('role', 'unknown'),
-            'completed_topics': context.get('completed_topics', []),
-            'current_phase': context.get('current_phase', 'unknown'),
-            'progress': context.get('progress', '0/0'),
+            'role': 'unknown',
+            'completed_topics': [],
+            'current_phase': 'unknown',
+            'progress': '0/0',
             'command_list': [{'cmd': c.get('command',''), 'success': c.get('success',True)} for c in dev_cmds[-20:]]
         }
         report['devices'].append(device_report)
@@ -1767,252 +1368,6 @@ def _format_report_markdown(report):
     return chr(10).join(md)
 
 
-SNAPSHOT_DIR = os.path.join(app.config.get('KB_FOLDER', 'kb'), 'snapshots')
-os.makedirs(SNAPSHOT_DIR, exist_ok=True)
-
-def _detect_prompt_view(conn):
-    # Use the conn.current_view which is maintained by send_cmd/_detect_view
-    view = getattr(conn, 'current_view', 'unknown')
-    if view == 'user':
-        return 'user_view', ''
-    elif view in ('system',) or (isinstance(view, str) and '-' in view and view != 'unknown'):
-        return 'system_view', view
-    return 'unknown', ''
-
-def _ensure_user_view(conn):
-    view = getattr(conn, 'current_view', 'unknown')
-    if view == 'user':
-        return True
-    # Try return first, then quit repeatedly
-    for _ in range(5):
-        out = conn.send_cmd('return')
-        if getattr(conn, 'current_view', '') == 'user':
-            return True
-        out = conn.send_cmd('quit')
-        if getattr(conn, 'current_view', '') == 'user':
-            return True
-    return False
-
-def _ensure_system_view(conn):
-    view = getattr(conn, 'current_view', 'unknown')
-    if view in ('system',) or (isinstance(view, str) and '-' in view and view != 'unknown'):
-        return True
-    _ensure_user_view(conn)
-    conn.send_cmd('system-view')
-    return getattr(conn, 'current_view', '') != 'user'
-
-def send_command_batch(path, commands, wait=0.1, auto_view=True, auto_undo_tm=True):
-    conn = dm.get(path)
-    if not conn:
-        return {'success': False, 'error': 'Device not connected'}
-    t0 = time.time()
-    results = []
-    errors = []
-    if auto_undo_tm and commands:
-        first_cmd = commands[0].strip().lower()
-        if first_cmd not in ('undo terminal monitor', 'undo t m'):
-            # Ensure user view before undo terminal monitor
-            try:
-                _ensure_user_view(conn)
-                out = conn.send_cmd('undo t m')
-                results.append({'command': 'undo t m', 'output': out, 'success': True})
-            except Exception:
-                pass
-    for cmd in commands:
-        cmd = cmd.strip()
-        if not cmd:
-            continue
-        cmd_lower = cmd.lower()
-        if _is_blocked_command(cmd_lower):
-            results.append({'command': cmd, 'output': '', 'success': False, 'error': 'Blocked'})
-            errors.append('Blocked: ' + cmd)
-            continue
-        try:
-            if auto_view:
-                if cmd_lower == 'system-view':
-                    _ensure_user_view(conn)
-                elif cmd_lower in ('return', 'quit'):
-                    pass
-                elif cmd_lower in ('undo terminal monitor', 'undo t m'):
-                    _ensure_user_view(conn)
-                elif cmd_lower.startswith(('interface ', 'vlan', 'ospf', 'vrrp', 'stp ', 'dhcp', 'ip pool', 'ip route', 'firewall', 'capwap', 'wlan', 'sysname', 'undo info', 'security-policy', 'aaa', 'manager-user')):
-                    _ensure_system_view(conn)
-                elif cmd_lower.startswith(('display ', 'save', 'ping', 'tracert', 'telnet')):
-                    _ensure_user_view(conn)
-            result = conn.send_cmd(cmd)
-            _errs = ['Error:', 'Unrecognized command', 'Wrong parameter',
-                     'Too many parameters', 'Ambiguous command', 'Incomplete command',
-                     'Please renew the default configurations']
-            cmd_ok = bool(result and not any(kw in result for kw in _errs))
-            results.append({'command': cmd, 'output': result, 'success': cmd_ok})
-            if not cmd_ok:
-                errors.append('Failed: ' + cmd)
-            dt = dm.get_type(path)
-            kb.record_command(cmd, result, device_type=dt, device_path=path, success=cmd_ok)
-            if not cmd_ok:
-                try:
-                    socketio.emit('batch_error', {'path': path, 'command': cmd, 'output': result[:200], 'error': ''})
-                except Exception:
-                    pass
-            time.sleep(wait)
-        except ConnectionError:
-            results.append({'command': cmd, 'output': '', 'success': False, 'error': 'Connection lost'})
-            try:
-                socketio.emit('batch_error', {'path': path, 'command': cmd, 'output': '', 'error': 'Connection lost'})
-            except Exception:
-                pass
-            errors.append('Connection lost at: ' + cmd)
-            break
-        except Exception as e:
-            results.append({'command': cmd, 'output': '', 'success': False, 'error': str(e)[:100]})
-            try:
-                socketio.emit('batch_error', {'path': path, 'command': cmd, 'output': '', 'error': str(e)[:100]})
-            except Exception:
-                pass
-            errors.append('Error at ' + cmd + ': ' + str(e)[:100])
-    elapsed = round(time.time() - t0, 3)
-    # Auto-extract and record structured knowledge after batch completes
-    try:
-        with name_lock:
-            dt = device_types.get(path, 'unknown')
-        kb._auto_record_knowledge(path, dt, results)
-    except Exception as _kb_err:
-        logger.warning('Auto KB recording skipped: %s', _kb_err)
-    return {
-        'success': len(errors) == 0,
-        'path': path,
-        'total': len(results),
-        'passed': sum(1 for r in results if r.get('success')),
-        'failed': len(errors),
-        'elapsed': elapsed,
-        'results': results,
-        'errors': errors
-    }
-
-def snapshot_config(path, label=None):
-    with devices_lock:
-        conn = devices.get(path)
-    if not conn:
-        return {'success': False, 'error': 'Device not connected'}
-    try:
-        _ensure_user_view(conn)
-        config = conn.send_cmd('display current-configuration')
-        if not config or len(config) < 50:
-            return {'success': False, 'error': 'Empty config output'}
-        with name_lock:
-            name = device_names.get(path, path.replace(':', '_'))
-            dt = device_types.get(path, 'unknown')
-        ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-        snap_id = name + '_' + ts
-        if label:
-            snap_id = snap_id + '_' + label
-        filename = snap_id + '.cfg'
-        filepath = os.path.join(SNAPSHOT_DIR, filename)
-        with open(filepath, 'w', encoding='utf-8') as f:
-            f.write('# Snapshot: ' + snap_id + '\n')
-            f.write('# Device: ' + name + ' (' + dt + ')\n')
-            f.write('# Path: ' + path + '\n')
-            f.write('# Time: ' + datetime.now().isoformat() + '\n')
-            f.write('# Label: ' + (label or 'auto') + '\n\n')
-            f.write(config)
-        meta_file = os.path.join(SNAPSHOT_DIR, 'snapshots.json')
-        meta = {}
-        if os.path.exists(meta_file):
-            try:
-                with open(meta_file, 'r', encoding='utf-8') as _f: meta = json.load(_f)
-            except Exception:
-                meta = {}
-        meta[snap_id] = {
-            'path': path, 'name': name, 'device_type': dt,
-            'label': label or 'auto', 'timestamp': datetime.now().isoformat(),
-            'file': filename, 'size': len(config)
-        }
-        with open(meta_file, 'w', encoding='utf-8') as f:
-            json.dump(meta, f, ensure_ascii=False, indent=2)
-        return {'success': True, 'snapshot_id': snap_id, 'file': filepath, 'size': len(config)}
-    except Exception as e:
-        return {'success': False, 'error': str(e)[:200]}
-
-def list_snapshots(path=None):
-    meta_file = os.path.join(SNAPSHOT_DIR, 'snapshots.json')
-    if not os.path.exists(meta_file):
-        return []
-    try:
-        with open(meta_file, 'r', encoding='utf-8') as _f: meta = json.load(_f)
-        results = []
-        for sid, info in meta.items():
-            if path and info.get('path') != path:
-                continue
-            results.append({'snapshot_id': sid, **info})
-        results.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
-        return results
-    except Exception:
-        return []
-
-def get_snapshot(snapshot_id):
-    meta_file = os.path.join(SNAPSHOT_DIR, 'snapshots.json')
-    if not os.path.exists(meta_file):
-        return {'success': False, 'error': 'No snapshots'}
-    try:
-        with open(meta_file, 'r', encoding='utf-8') as _f: meta = json.load(_f)
-        info = meta.get(snapshot_id)
-        if not info:
-            return {'success': False, 'error': 'Snapshot not found'}
-        filepath = os.path.join(SNAPSHOT_DIR, info['file'])
-        if not os.path.exists(filepath):
-            return {'success': False, 'error': 'Snapshot file missing'}
-        content = open(filepath, 'r', encoding='utf-8').read()
-        return {'success': True, 'snapshot_id': snapshot_id, 'meta': info, 'content': content}
-    except Exception as e:
-        return {'success': False, 'error': str(e)[:200]}
-
-def diff_configs(config1, config2):
-    lines1 = set(config1.splitlines())
-    lines2 = set(config2.splitlines())
-    added = sorted(lines2 - lines1)
-    removed = sorted(lines1 - lines2)
-    common = lines1 & lines2
-    return {
-        'added': len(added), 'removed': len(removed), 'unchanged': len(common),
-        'added_lines': added[:100], 'removed_lines': removed[:100],
-        'total1': len(lines1), 'total2': len(lines2)
-    }
-
-def diff_snapshots(snap_id1, snap_id2):
-    s1 = get_snapshot(snap_id1)
-    s2 = get_snapshot(snap_id2)
-    if not s1.get('success'):
-        return {'success': False, 'error': 'Snapshot 1 not found'}
-    if not s2.get('success'):
-        return {'success': False, 'error': 'Snapshot 2 not found'}
-    c1 = s1['content'].split('\n\n', 1)[-1] if '\n\n' in s1['content'] else s1['content']
-    c2 = s2['content'].split('\n\n', 1)[-1] if '\n\n' in s2['content'] else s2['content']
-    diff = diff_configs(c1, c2)
-    diff['success'] = True
-    diff['snapshot1'] = snap_id1
-    diff['snapshot2'] = snap_id2
-    return diff
-
-def rollback_config(path, snapshot_id):
-    pre_snap = snapshot_config(path, label='pre-rollback')
-    snap = get_snapshot(snapshot_id)
-    if not snap.get('success'):
-        return {'success': False, 'error': 'Snapshot not found: ' + snapshot_id}
-    content = snap['content']
-    if '\n\n' in content:
-        content = content.split('\n\n', 1)[-1]
-    commands = []
-    for line in content.splitlines():
-        line = line.strip()
-        if line and not line.startswith('#'):
-            commands.append(line)
-    if not commands:
-        return {'success': False, 'error': 'Empty snapshot config'}
-    result = send_command_batch(path, commands, wait=0.05, auto_view=True, auto_undo_tm=True)
-    result['pre_rollback_snapshot'] = pre_snap.get('snapshot_id')
-    result['rolled_back_to'] = snapshot_id
-    return result
-
 def search_kb(query, limit=20):
     query_lower = query.lower()
     results = []
@@ -2073,27 +1428,115 @@ def get_command_help(cmd_name):
                             found.append({'section': section, 'model': model, 'topic': topic_name, **cmd})
     return found
 
-def generate_config_template(template_type, params=None):
-    params = params or {}
-    TEMPLATES = {
-        'vlan': {'description': 'VLAN', 'commands': ['system-view', 'undo info-center enable', 'vlan batch %(vlans)s', 'interface %(interface)s', 'port link-type %(link_type)s', 'port default vlan %(vlan_id)s', 'return', 'save']},
-        'vrrp': {'description': 'VRRP', 'commands': ['system-view', 'undo info-center enable', 'interface Vlanif%(vlan_id)s', 'ip address %(ip)s %(mask)s', 'vrrp vrid %(vrid)s virtual-ip %(vip)s', 'vrrp vrid %(vrid)s priority %(priority)s', 'dhcp select global', 'return', 'save']},
-        'mstp': {'description': 'MSTP', 'commands': ['system-view', 'undo info-center enable', 'stp mode mstp', 'stp enable', 'stp region-configuration', 'region-name %(region_name)s', 'revision-level %(revision)s', 'instance 1 vlan %(vlan_group1)s', 'instance 2 vlan %(vlan_group2)s', 'active region-configuration', 'quit', 'stp instance %(instance)s root %(role)s', 'return', 'save']},
-        'dhcp': {'description': 'DHCP', 'commands': ['system-view', 'undo info-center enable', 'dhcp enable', 'ip pool %(pool_name)s', 'gateway-list %(gateway)s', 'network %(network)s mask %(mask)s', 'dns-list %(dns)s', 'quit', 'return', 'save']},
-        'ospf': {'description': 'OSPF', 'commands': ['system-view', 'undo info-center enable', 'ospf 1 router-id %(router_id)s', 'area 0.0.0.0', 'network %(network)s %(wildcard)s', 'return', 'save']},
-        'lacp': {'description': 'LACP', 'commands': ['system-view', 'undo info-center enable', 'interface Eth-Trunk %(trunk_id)s', 'mode lacp-static', 'port link-type trunk', 'port trunk allow-pass vlan 2 to 4094', 'quit', 'interface %(interface1)s', 'eth-trunk %(trunk_id)s', 'quit', 'interface %(interface2)s', 'eth-trunk %(trunk_id)s', 'quit', 'return', 'save']},
-        'wlan': {'description': 'WLAN', 'commands': ['system-view', 'undo info-center enable', 'vlan batch 100 to 101', 'dhcp enable', 'interface Vlanif100', 'ip address %(ac_ip)s %(mask)s', 'dhcp select interface', 'quit', 'capwap source interface Vlanif100', 'wlan', 'security-profile name sec', 'security wpa-wpa2 psk pass-phrase %(password)s aes', 'quit', 'ssid-profile name ssid', 'ssid %(ssid_name)s', 'quit', 'vap-profile name vap', 'service-vlan vlan-id 101', 'ssid-profile ssid', 'security-profile sec', 'quit', 'ap-group name ap', 'radio 0', 'vap-profile vap wlan 1', 'quit', 'radio 1', 'vap-profile vap wlan 1', 'quit', 'quit', 'return', 'save']},
-    }
-    template = TEMPLATES.get(template_type)
-    if not template:
-        return {'success': False, 'error': 'Unknown template. Available: ' + ', '.join(TEMPLATES.keys())}
-    commands = []
-    for cmd in template['commands']:
+def send_command_batch(path, commands, wait=0.1, auto_view=True, auto_undo_tm=True):
+    """Batch command execution with error-aware stopping and view routing.
+
+    v2.4: Uses view_router for smart view switching and stops on first error.
+    """
+    conn = dm.get(path)
+    if not conn:
+        return {'success': False, 'error': 'Device not connected'}
+
+    # Auto undo terminal monitor
+    if auto_undo_tm:
         try:
-            commands.append(cmd % params)
-        except (KeyError, ValueError):
-            commands.append(cmd)
-    return {'success': True, 'template': template_type, 'description': template['description'], 'commands': commands}
+            conn.send_cmd('undo terminal monitor')
+            time.sleep(0.1)
+        except Exception:
+            pass
+
+    results = []
+    total = 0
+    success_count = 0
+    stopped_due_to_error = False
+
+    for cmd in commands:
+        if not cmd or not cmd.strip():
+            continue
+        cmd_stripped = cmd.strip()
+        total += 1
+
+        # Pre-command: route to correct view via view_router
+        if auto_view:
+            view_router.before_command(conn, path, cmd_stripped)
+
+        # Execute
+        t0 = time.time()
+        try:
+            output = conn.send_cmd(cmd_stripped)
+            elapsed = round(time.time() - t0, 3)
+        except ConnectionError:
+            dm.remove(path)
+            dm.remove_name(path)
+            results.append({'command': cmd_stripped, 'success': False,
+                            'output': 'Connection lost', 'response_time': 0})
+            results.append({'command': '?', 'success': False,
+                            'output': '=== BATCH STOPPED: Connection lost ===',
+                            'response_time': 0})
+            return {
+                'success': False,
+                'error': 'Connection lost',
+                'path': path,
+                'results': results,
+                'total': total,
+                'success_count': success_count,
+                'stopped_due_to_error': True,
+            }
+        except Exception as e:
+            results.append({'command': cmd_stripped, 'success': False,
+                            'output': str(e)[:200], 'response_time': 0,
+                            'cmd_success': False})
+            results.append({'command': '?', 'success': False,
+                            'output': f'=== BATCH STOPPED: Exception ({str(e)[:80]}) ===',
+                            'response_time': 0})
+            stopped_due_to_error = True
+            break
+
+        # Check for errors
+        error_check = check_command_error(output)
+
+        # Track view state
+        cmd_lower = cmd_stripped.lower()
+        if cmd_lower == 'system-view':
+            view_router.update_view(path, 'system')
+        elif cmd_lower in ('quit', 'return'):
+            view_router.update_view(path, 'user')
+
+        if error_check['success']:
+            success_count += 1
+            results.append({'command': cmd_stripped, 'success': True,
+                            'output': output, 'response_time': elapsed,
+                            'cmd_success': True})
+        else:
+            results.append({'command': cmd_stripped, 'success': False,
+                            'output': output, 'response_time': elapsed,
+                            'cmd_success': False,
+                            'errors': error_check['errors']})
+            # Stop on first error ? don't blindly continue
+            results.append({'command': '?', 'success': False,
+                            'output': f'=== BATCH STOPPED: command error ({", ".join(error_check["errors"])}) ===',
+                            'response_time': 0})
+            stopped_due_to_error = True
+            break
+
+        # Record to KB
+        dt = dm.get_type(path)
+        kb.record_command(cmd_stripped, output, device_type=dt, device_path=path,
+                          success=error_check['success'])
+
+        time.sleep(wait)
+
+    if not results:
+        return {'success': False, 'error': 'No commands executed'}
+
+    return {
+        'success': not stopped_due_to_error,
+        'path': path,
+        'results': results,
+        'total': total,
+        'success_count': success_count,
+        'stopped_due_to_error': stopped_due_to_error,
+    }
 
 def send_command_to_group(paths, command):
     results = []
@@ -2263,9 +1706,7 @@ def api_kb_device_detail(p): return jsonify(kb.get_device_history(p))
 @require_auth
 def api_kb_capabilities():
     result = kb.get_device_capabilities(request.args.get("path"))
-    # Enrich with structured KB tips and config_order
     skb = kb._skb_cache or {}
-    result['_config_order'] = skb.get('config_order', [])
     result['_troubleshooting'] = skb.get('troubleshooting', {})
     return jsonify(result)
 
@@ -2281,7 +1722,6 @@ def api_kb_stats():
         'user_view_models': [k for k in uv.keys() if k != '_meta'],
         'system_view_models': [k for k in sv.keys() if k != '_meta'],
         'troubleshooting_count': len(skb.get('troubleshooting', {})),
-        'config_steps': len(skb.get('config_order', [])),
         'experiment_count': len(skb.get('experiences', [])),
         'best_practice_count': len(skb.get('best_practices', {}).get('command_rules', []))
     }
@@ -2327,13 +1767,6 @@ def api_kb_troubleshooting():
     if symptom:
         return jsonify(skb.get('troubleshooting', {}).get(symptom, {}))
     return jsonify(skb.get('troubleshooting', {}))
-
-@app.route('/api/kb/config-order')
-@require_auth
-def api_kb_config_order():
-    """Get the recommended configuration order."""
-    skb = kb._skb_cache or {}
-    return jsonify(skb.get('config_order', []))
 
 @app.route('/api/kb/experience', methods=['POST'])
 @require_auth
@@ -2454,32 +1887,6 @@ def api_kb_help():
     if not cmd: return jsonify({'success': False, 'error': 'Missing cmd'}), 400
     return jsonify(get_command_help(cmd))
 
-@app.route('/api/kb/config-guidance')
-@require_auth
-def api_kb_config_guidance():
-    """??????????????????????????????????"""
-    topic = request.args.get('topic', '')
-    if not topic:
-        return jsonify({'success': False, 'error': 'Missing topic parameter'}), 400
-    guidance = kb.get_config_guidance(topic)
-    guidance['success'] = True
-    return jsonify(guidance)
-
-@app.route('/api/kb/template', methods=['POST'])
-@require_auth
-def api_template():
-    data = request.get_json(silent=True)
-    if not data: return jsonify({'success': False, 'error': 'No data'}), 400
-    template_type = data.get('type')
-    params = data.get('params', {})
-    if not template_type: return jsonify({'success': False, 'error': 'Missing type'}), 400
-    return jsonify(generate_config_template(template_type, params))
-
-@app.route('/api/kb/templates')
-@require_auth
-def api_list_templates():
-    return jsonify({'templates': ['vlan', 'vrrp', 'mstp', 'dhcp', 'ospf', 'lacp', 'wlan']})
-
 @app.route('/api/devices/group-command', methods=['POST'])
 @require_auth
 @rate_limit
@@ -2495,16 +1902,6 @@ def api_group_command():
 
 
 
-
-@app.route('/api/devices/suggest-next', methods=['POST'])
-@require_auth
-def api_suggest_next():
-    """Get context-aware next steps for a device."""
-    data = request.get_json(silent=True)
-    if not data: return jsonify({'success': False, 'error': 'No data'}), 400
-    path = data.get('path')
-    if not _validate_path(path): return jsonify({'success': False, 'error': 'Invalid path'}), 400
-    return jsonify(suggest_next_steps(path))
 
 @app.route('/api/kb/lab-report', methods=['POST'])
 @require_auth
@@ -2759,55 +2156,6 @@ def api_config_method_update(method_id):
         return jsonify(result)
     return jsonify(result), 400
 
-@app.route('/api/config-summary', methods=['POST'])
-@require_auth
-def api_config_summary():
-    """配置总结并记录到知识库"""
-    data = request.json
-    if not data:
-        return jsonify({"success": False, "error": "data required"}), 400
-    
-    goal = data.get('goal', '')
-    commands = data.get('commands', [])
-    success = data.get('success', False)
-    verification_results = data.get('verification_results', [])
-    lessons = data.get('lessons', [])
-    
-    # 生成总结
-    summary = {
-        'goal': goal,
-        'success': success,
-        'commands_count': len(commands),
-        'commands': commands,
-        'verification_results': verification_results,
-        'lessons': lessons,
-    }
-    
-    # 记录到知识库
-    if commands:
-        experience = {
-            'experiment': goal,
-            'commands': commands,
-            'success': success,
-            'lessons': lessons,
-        }
-        kb.record_experience(experience)
-    
-    # 更新配置方法库的使用统计
-    # 尝试匹配已有的配置方法
-    methods = config_methods.search_methods(goal[:20])
-    if methods:
-        method_id = methods[0].get('id')
-        if method_id:
-            config_methods.record_usage(method_id, success=success)
-            summary['matched_method'] = method_id
-    
-    return jsonify({
-        "success": True,
-        "summary": summary,
-        "message": f"配置总结已记录，成功命令 {len(commands)} 条"
-    })
-
 
 
 
@@ -2837,37 +2185,7 @@ def api_device_verify():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@app.route('/api/devices/snapshot', methods=['POST'])
-@require_auth
-def api_snapshot():
-    """创建配置快照"""
-    data = request.json
-    if not data or 'path' not in data:
-        return jsonify({'success': False, 'error': '缺少 path 参数'}), 400
-    path = data['path']
-    label = data.get('label')
-    conn = devices.get(path)
-    if not conn:
-        return jsonify({'success': False, 'error': '设备未连接: ' + path}), 400
-    try:
-        result = snapshot_config(path, label=label)
-        if result.get('success'):
-            return jsonify(result)
-        return jsonify(result), 400
-    except Exception as e:
-        logger.exception('[Snapshot] 创建快照失败')
-        return jsonify({'success': False, 'error': str(e)}), 500
 
-
-@app.route('/api/devices/snapshots', methods=['GET'])
-@require_auth
-def api_list_snapshots():
-    """获取快照列表"""
-    path = request.args.get('path')
-    try:
-        snapshots = list_snapshots(path=path)
-        return jsonify(snapshots)
-    except Exception as e:
         logger.exception('[Snapshots] 获取快照列表失败')
         return jsonify([])
 

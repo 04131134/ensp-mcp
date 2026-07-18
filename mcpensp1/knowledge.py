@@ -350,90 +350,42 @@ class KnowledgeBase:
             return {'success': False, 'error': str(e)}
 
     def record_experience(self, experience_data):
-        """Record an experience/lesson learned after an experiment.
-        
-        Args:
-            experience_data: dict with keys:
-                - experiment: str (experiment name)
-                - date: str (YYYY-MM-DD)
-                - topology: str (topology description)
-                - features_implemented: list[str]
-                - new_commands_learned: list[dict with cmd, device, desc]
-                - lessons_learned: list[str]
-                - troubleshooting_cases: list[dict]
-        Returns:
-            dict with success status
+        """Record config method knowledge (simplified v2.4).
+        Stores: experiment (topic), device_type, commands, lessons.
         """
         try:
             skb = self._skb_cache or self.load_structured_kb()
             if not skb:
-                return {'success': False, 'error': 'Structured KB not available'}
+                return {"success": False, "error": "Structured KB not available"}
             
-            experiences = skb.setdefault('experiences', [])
+            experiences = skb.setdefault("experiences", [])
+            exp_name = experience_data.get("experiment", "")
             
-            # Check if experiment already exists, update it
-            exp_name = experience_data.get('experiment', '')
-            existing = next((i for i, e in enumerate(experiences) if e.get('experiment') == exp_name), None)
-            
+            existing = next((i for i, e in enumerate(experiences) if e.get("experiment") == exp_name), None)
             if existing is not None:
-                # Merge: append new commands, lessons, troubleshooting
                 old = experiences[existing]
-                old_cmds = {c.get('cmd') for c in old.get('new_commands_learned', [])}
-                for cmd in experience_data.get('new_commands_learned', []):
-                    if cmd.get('cmd') not in old_cmds:
-                        old['new_commands_learned'].append(cmd)
-                old_lessons = set(old.get('lessons_learned', []))
-                for lesson in experience_data.get('lessons_learned', []):
-                    if lesson not in old_lessons:
-                        old['lessons_learned'].append(lesson)
-                old_cases = {c.get('problem') for c in old.get('troubleshooting_cases', [])}
-                for case in experience_data.get('troubleshooting_cases', []):
-                    if case.get('problem') not in old_cases:
-                        old['troubleshooting_cases'].append(case)
-                old['date'] = experience_data.get('date', old.get('date', ''))
-                experiences[existing] = old
+                old_cmds = set(old.get("commands", []))
+                for cmd in experience_data.get("commands", []):
+                    if cmd not in old_cmds:
+                        old["commands"].append(cmd)
             else:
-                experiences.append(experience_data)
+                experiences.append({
+                    "experiment": exp_name,
+                    "device_type": experience_data.get("device_type", ""),
+                    "commands": experience_data.get("commands", []),
+                    "lessons": experience_data.get("lessons", []),
+                })
             
-            # Update meta
-            meta = skb.setdefault('meta', {})
-            meta['experiment_count'] = len(experiences)
-            meta['total_experiments_recorded'] = [e.get('experiment', '') for e in experiences]
-            meta['last_updated'] = datetime.now().strftime('%Y-%m-%d')
-            skb['meta'] = meta
+            meta = skb.setdefault("meta", {})
+            meta["experiment_count"] = len(experiences)
+            meta["last_updated"] = __import__("datetime").datetime.now().strftime("%Y-%m-%d")
+            skb["meta"] = meta
             
-            # Also add new commands to the structured command sections
-            for cmd_entry in experience_data.get('new_commands_learned', []):
-                device = cmd_entry.get('device', '')
-                cmd = cmd_entry.get('cmd', '')
-                desc = cmd_entry.get('desc', '')
-                if not device or not cmd:
-                    continue
-                model_key = self._match_model(device)
-                if model_key:
-                    sv = skb.setdefault('system_view_commands', {})
-                    model_section = sv.setdefault(model_key, {'description': f'{model_key} commands', 'topics': {}})
-                    topics = model_section.setdefault('topics', {})
-                    exp_topic = topics.setdefault('经验积累', {'commands': [], 'tips': []})
-                    existing_cmds = {c.get('cmd') for c in exp_topic.get('commands', [])}
-                    if cmd not in existing_cmds:
-                        exp_topic['commands'].append({'cmd': cmd, 'desc': desc, 'source': exp_name})
-            
-            # Save to disk
-            with open(self.structured_path, 'w', encoding='utf-8') as f:
-                json.dump(skb, f, ensure_ascii=False, indent=2)
-            self._skb_cache = skb
-            
-            return {
-                'success': True,
-                'experiment': exp_name,
-                'total_experiences': len(experiences),
-                'message': f'Experience recorded. Total experiences: {len(experiences)}'
-            }
+            with open(self.structured_path, "w", encoding="utf-8") as f:
+                __import__("json").dump(skb, f, ensure_ascii=False, indent=2)
+            return {"success": True, "experiment": exp_name}
         except Exception as e:
-            logger.error('Failed to record experience: %s', e)
-            return {'success': False, 'error': str(e)}
-
+            return {"success": False, "error": str(e)}
     def record_best_practice(self, practice_data):
         """Add a new best practice to the knowledge base.
         
@@ -609,181 +561,27 @@ class KnowledgeBase:
         return best[0], best[1]
 
     def _auto_record_knowledge(self, device_path, device_type, command_results):
-        """???????????????????????
-        ?????????????????????????????????"""
+        """Simplified: record config methods only (v2.4)."""
         try:
-            meaningful = []
-            for r in command_results:
-                cmd = r.get('command', '').strip()
-                if not cmd:
-                    continue
-                if cmd.lower() in self._TRIVIAL_COMMANDS:
-                    continue
-                meaningful.append(r)
-
+            cmds = [r.get("command", "").strip() for r in command_results if r.get("command", "").strip()]
+            meaningful = [c for c in cmds if c and c.lower() not in {
+                "undo terminal monitor", "undo t m", "undo info-center enable",
+                "system-view", "return", "quit", "save", "y", ""}]
             if len(meaningful) < 3:
                 return
-
-            all_cmds = [r['command'] for r in meaningful]
-            intent, score = self._detect_config_intent(all_cmds)
+            
+            intent, _ = self._detect_config_intent(meaningful)
             if not intent:
                 return
-
-            success_count = sum(1 for r in meaningful if r.get('success', False))
-            success_rate = success_count / len(meaningful)
-            if success_rate <= 0.5:
-                return
-
-            from datetime import datetime as _dt
-            today = _dt.now().strftime('%Y%m%d')
-            exp_name = f'????-{intent}-{device_type}-{today}'
-
-            # ??????????
-            success_cmds = [r for r in meaningful if r.get('success', False)]
-            failed_cmds = [r for r in meaningful if not r.get('success', False)]
-
-            # ?????????????????????????
-            CMD_SEMANTICS = {
-                'system-view': '??????',
-                'interface': '??????',
-                'vlan batch': '????VLAN',
-                'vlan ': '??/??VLAN',
-                'port link-type': '??????',
-                'port default vlan': '??????VLAN',
-                'port trunk allow': '??Trunk??VLAN',
-                'port trunk pvid': '??Trunk PVID',
-                'capwap': '??CAPWAP??',
-                'wlan': '??WLAN??',
-                'security-profile': '??????',
-                'ssid-profile': '??SSID??',
-                'vap-profile': '??VAP??',
-                'ap-id': '??AP(?ID)',
-                'ap-mac': '??AP(?MAC)',
-                'ap-name': '??AP??',
-                'ap-group': '??AP?',
-                'radio ': '????',
-                'service-vlan': '????VLAN',
-                'dhcp enable': '??DHCP',
-                'dhcp select': '??DHCP??',
-                'ip pool': '?????',
-                'gateway-list': '????',
-                'dns-list': '??DNS',
-                'ospf': '??OSPF??',
-                'router-id': '????ID',
-                'area ': '??OSPF??',
-                'network ': '????',
-                'vrrp vrid': '??VRRP',
-                'stp mode': '??STP??',
-                'stp enable': '??STP',
-                'stp region': '??STP?',
-                'region-name': '????',
-                'revision-level': '?????',
-                'instance ': '??????',
-                'active region': '???',
-                'eth-trunk': '??????',
-                'mode lacp': '??LACP??',
-                'ip route-static': '??????',
-                'sysname': '??????',
-                'save': '????',
-                'display': '??/????',
-                'ping': '?????',
-                'authentication-profile': '??????',
-                'mac-authen': '??MAC??',
-                'dot1x': '??802.1X??',
-                'aaa': '??AAA??',
-                'manager-user': '???????',
-                'firewall zone': '??????',
-                'security-policy': '??????',
-                'rule ': '??????',
-                'ntp-service': '??NTP??',
-                'snmp-agent': '??SNMP',
-                'user-interface': '??????',
-                'authentication-mode': '??????',
-                'idle-timeout': '??????',
-                'undo ': '????',
-                'shutdown': '????',
-                'undo shutdown': '????',
-            }
-
-            new_commands = []
-            for idx, r in enumerate(success_cmds, 1):
-                cmd = r.get('command', '').strip()
-                cmd_lower = cmd.lower()
-                desc = f'??{idx}'
-                for keyword, sem in CMD_SEMANTICS.items():
-                    if keyword in cmd_lower:
-                        desc = sem
-                        break
-                new_commands.append({
-                    'cmd': cmd,
-                    'device': device_type,
-                    'desc': desc,
-                    'step': idx,
-                })
-
-            # ??????
-            troubleshooting = []
-            for r in failed_cmds:
-                output = r.get('output', '') or ''
-                error_line = ''
-                for line in output.splitlines():
-                    if 'Error' in line or 'Unrecognized' in line or 'Wrong' in line:
-                        error_line = line.strip()
-                        break
-                troubleshooting.append({
-                    'problem': r['command'] + ' ????',
-                    'root_cause': error_line or '????',
-                    'solution': '???????????????????????',
-                    'diagnosis_cmd': 'display current-configuration | include ' + r['command'].split()[0]
-                })
-
-            # ??????????
-            lessons = []
-            lessons.append(f'{intent}?????{len(meaningful)}??????{success_count}?????{int(success_rate*100)}%')
-            if success_rate == 1.0:
-                lessons.append(f'{intent}?????{device_type}???????')
-            else:
-                lessons.append(f'{intent}?{len(failed_cmds)}??????????????????')
-
-            # ??????????????
-            cmd_sequence = [r['command'] for r in success_cmds]
-            if any('system-view' in c.lower() for c in cmd_sequence):
-                lessons.append('????????? -> ???? -> ??? -> ??')
-            if device_type and 'ap' in device_type.lower():
-                lessons.append('?AP???AC???AP?????????VLAN/IP???')
-            if any('capwap' in c.lower() for c in cmd_sequence):
-                lessons.append('CAPWAP?????AP????AP?????????????')
-            if any('dhcp' in c.lower() for c in cmd_sequence):
-                lessons.append('DHCP???????VLAN???????????????IP')
-
-            # ?????????
-            with name_lock:
-                device_name = names.get(device_path, device_path)
-
-            exp_data = {
-                'experiment': exp_name,
-                'date': _dt.now().strftime('%Y-%m-%d'),
-                'topology': f'??: {device_name} ({device_type})',
-                'features_implemented': [intent],
-                'new_commands_learned': new_commands,
-                'lessons_learned': lessons,
-                'troubleshooting_cases': troubleshooting,
-                'device_path': device_path,
-                'device_name': device_name,
-                'device_type': device_type,
-                'command_count': len(meaningful),
-                'success_rate': round(success_rate, 2),
-            }
-
-            result = self.record_experience(exp_data)
-            if result.get('success'):
-                logger.info('Auto-recorded knowledge: %s (%d cmds, %s)', exp_name, len(meaningful), device_name)
-            else:
-                logger.warning('Auto-record knowledge failed: %s', result.get('error', ''))
-
+            
+            self.record_experience({
+                "experiment": intent,
+                "device_type": device_type or "unknown",
+                "commands": meaningful[:30],
+                "lessons": [],
+            })
         except Exception as e:
-            logger.error('Auto knowledge recording failed: %s', e)
-
+            __import__("logging").getLogger(__name__).error("Auto knowledge failed: %s", e)
     def get_config_guidance(self, topic):
         """??????????????????????????????
         ????????????AI agent???????????"""

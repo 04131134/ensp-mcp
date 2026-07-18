@@ -364,44 +364,6 @@ function execVerify(body) {
     }).catch(function (e) { log('验证请求失败: ' + e, 'error'); });
 }
 
-/* ==================== 建议下一步 ==================== */
-function doSuggestNext() {
-  if (!state.curDev) { log('请先选择设备', 'error'); return; }
-  log('分析设备进度: ' + (state.names[state.curDev] || state.curDev));
-  fetch('/api/devices/suggest-next', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: state.curDev }) })
-    .then(function (r) { return r.json(); }).then(function (data) {
-      if (!data.success) { log('分析失败: ' + data.error, 'error'); return; }
-      if (!state.termData[state.curDev]) state.termData[state.curDev] = [];
-      state.termData[state.curDev].push({ type: 'system', text: '[建议] 设备: ' + data.device_name + ' (' + data.role + ') 进度: ' + data.progress + ' 阶段: ' + data.current_phase });
-      if (data.completed_topics && data.completed_topics.length) state.termData[state.curDev].push({ type: 'output', text: '  已完成: ' + data.completed_topics.join(', ') });
-      if (data.next_steps && data.next_steps.length) {
-        state.termData[state.curDev].push({ type: 'output', text: '  下一步:' });
-        data.next_steps.forEach(function (s, i) { state.termData[state.curDev].push({ type: 'output', text: '    ' + (i + 1) + '. ' + s }); });
-      }
-      if (state.termData[state.curDev].length > 500) state.termData[state.curDev] = state.termData[state.curDev].slice(-500);
-      renderTerminal(state.curDev); log('进度分析完成', 'success');
-    }).catch(function (e) { log('分析失败: ' + e, 'error'); });
-}
-
-/* ==================== 快照管理 ==================== */
-function doSnapshot() {
-  if (!state.curDev) { log('请先选择设备', 'error'); return; }
-  showModalPrompt('快照标签（可选）:', '', function (label) {
-    log('保存快照: ' + (state.names[state.curDev] || state.curDev));
-    fetch('/api/devices/snapshot', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: state.curDev, label: label || null }) })
-      .then(function (r) { return r.json(); }).then(function (data) {
-        if (data.success) { log('快照已保存: ' + data.snapshot_id + ' (' + data.size + ' bytes)', 'success'); } else { log('快照失败: ' + data.error, 'error'); }
-      }).catch(function (e) { log('快照失败: ' + e, 'error'); });
-  });
-}
-function doListSnapshots() {
-  if (!state.curDev) { log('请先选择设备', 'error'); return; }
-  fetch('/api/devices/snapshots?path=' + encodeURIComponent(state.curDev)).then(function (r) { return r.json(); }).then(function (data) {
-    if (!data.length) { log('暂无快照'); return; }
-    log('快照列表 (' + data.length + ' 个):'); data.forEach(function (s) { log('  ' + s.snapshot_id + ' | ' + (s.label || '无标签') + ' | ' + s.timestamp); });
-  }).catch(function (e) { log('查询失败: ' + e, 'error'); });
-}
-
 /* ==================== 实验管理 ==================== */
 function showCreateExp() {
   document.getElementById('createExpModal').style.display = 'flex';
@@ -524,10 +486,10 @@ function switchKbTab(tab, el) {
   document.querySelectorAll('.kb-tab').forEach(function (t) { t.classList.remove('active'); });
   document.querySelectorAll('.kb-section').forEach(function (s) { s.classList.remove('active'); });
   if (el) el.classList.add('active');
-  var m = { structured:'kbStructured', bestpractice:'kbBestpractice', experience:'kbExperience', troubleshoot:'kbTroubleshoot', configorder:'kbConfigorder', runtime:'kbRuntime', search:'kbSearch', templates:'kbTemplates', report:'kbReport' };
+  var m = { structured:'kbStructured', bestpractice:'kbBestpractice', experience:'kbExperience', troubleshoot:'kbTroubleshoot', runtime:'kbRuntime', search:'kbSearch', report:'kbReport' };
   var s = document.getElementById(m[tab]); if (s) s.classList.add('active');
   if (tab === 'bestpractice') loadKbBestPractice(); if (tab === 'experience') loadKbExperience();
-  if (tab === 'troubleshoot') loadKbTroubleshoot(); if (tab === 'configorder') loadKbConfigOrder();
+  if (tab === 'troubleshoot') loadKbTroubleshoot();
   if (tab === 'runtime') loadKbRuntime();
 }
 function switchKbView(view, el) {
@@ -694,17 +656,7 @@ function loadKbTroubleshoot() {
     el.innerHTML = html;
   }).catch(function () {});
 }
-function loadKbConfigOrder() {
-  fetch('/api/kb/config-order').then(function (r) { return r.json(); }).then(function (data) {
-    var el = document.getElementById('kbCoContent'); if (!el) return;
-    var order = data.order || data.config_order || data || [];
-    if (!order.length) { el.innerHTML = '<div style="color:var(--overlay)">暂无配置顺序</div>'; return; }
-    var html = '<div class="cmd-card"><div class="cmd-title">📋 推荐配置顺序</div><div class="cmd-output">';
-    if (Array.isArray(order)) { order.forEach(function (item, i) { html += (i + 1) + '. ' + esc(typeof item === 'string' ? item : JSON.stringify(item)) + '\n'; }); }
-    else { html += esc(JSON.stringify(order, null, 2)); }
-    html += '</div></div>'; el.innerHTML = html;
-  }).catch(function () {});
-}
+
 function loadKbRuntime() {
   var cat = document.getElementById('kbCatF').value;
   fetch('/api/kb/commands' + (cat ? '?category=' + cat : '')).then(function (r) { return r.json(); }).then(function (data) {
@@ -727,22 +679,10 @@ function doKbSearch() {
     el.innerHTML = html;
   }).catch(function (e) { log('搜索失败: ' + e, 'error'); });
 }
-function loadKbTemplate() {
-  var type = document.getElementById('kbTplType').value;
-  fetch('/api/kb/template?type=' + type).then(function (r) { return r.json(); }).then(function (data) {
-    var el = document.getElementById('kbTemplateContent'); if (!el) return;
-    if (data.commands || data.template) {
-      var cmds = data.commands || data.template || [];
-      var html = '<div class="cmd-card"><div class="cmd-title">📄 ' + esc(type.toUpperCase()) + ' 配置模板</div><div class="cmd-output">';
-      if (Array.isArray(cmds)) { cmds.forEach(function (c) { html += esc(typeof c === 'string' ? c : JSON.stringify(c)) + '\n'; }); }
-      else { html += esc(JSON.stringify(cmds, null, 2)); }
-      html += '</div></div>'; el.innerHTML = html;
-    } else { el.innerHTML = '<div style="color:var(--overlay)">暂无模板</div>'; }
-  }).catch(function (e) { log('模板加载失败: ' + e, 'error'); });
-}
+
 function genLabReport() {
   var name = (document.getElementById('kbReportName') || {}).value || 'eNSP Lab Report';
-  fetch('/api/kb/lab-report?name=' + encodeURIComponent(name)).then(function (r) { return r.json(); }).then(function (data) {
+  fetch('/api/kb/lab-report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name }) }).then(function (r) { return r.json(); }).then(function (data) {
     var el = document.getElementById('kbReportContent'); if (!el) return;
     var html = '<div class="cmd-card"><div class="cmd-title">📊 ' + esc(name) + '</div>';
     if (data.markdown) html += '<div class="cmd-output" style="max-height:500px;white-space:pre-wrap">' + esc(data.markdown) + '</div>';

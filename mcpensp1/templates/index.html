@@ -262,12 +262,6 @@ input,textarea,select{font-family:inherit}
       <div class="device-toolbar" id="deviceToolbar">
         <label>快捷操作:</label>
         <button class="btn btn-sm btn-teal" onclick="doBatchCmd()" title="批量执行多条命令">📦 批量命令</button>
-        <button class="btn btn-sm btn-mauve" onclick="doSuggestNext()" title="分析进度并推荐下一步">💡 建议下一步</button>
-        <div class="sep"></div>
-        <label>快照:</label>
-        <button class="btn btn-sm btn-ghost" onclick="doSnapshot()" title="保存当前配置快照">📸 保存</button>
-        <button class="btn btn-sm btn-ghost" onclick="doListSnapshots()" title="列出所有快照">📋 列表</button>
-        <div class="sep"></div>
         <label>验证:</label>
         <button class="btn btn-sm btn-teal" onclick="doVerify('all')" title="全面验证设备配置">✅ 全面验证</button>
         <button class="btn btn-sm btn-ghost" onclick="doVerify('vlan')">VLAN</button>
@@ -309,10 +303,8 @@ input,textarea,select{font-family:inherit}
           <div class="kb-tab" onclick="switchKbTab('bestpractice', this)">操作规范</div>
           <div class="kb-tab" onclick="switchKbTab('experience', this)">实验经验</div>
           <div class="kb-tab" onclick="switchKbTab('troubleshoot', this)">排障知识</div>
-          <div class="kb-tab" onclick="switchKbTab('configorder', this)">配置顺序</div>
           <div class="kb-tab" onclick="switchKbTab('runtime', this)">运行时记录</div>
           <div class="kb-tab" onclick="switchKbTab('search', this)">搜索</div>
-          <div class="kb-tab" onclick="switchKbTab('templates', this)">配置模板</div>
           <div class="kb-tab" onclick="switchKbTab('report', this)">实验报告</div>
         </div>
       </div>
@@ -329,28 +321,12 @@ input,textarea,select{font-family:inherit}
         <div class="kb-section" id="kbBestpractice"><div id="kbBpContent"></div></div>
         <div class="kb-section" id="kbExperience"><div id="kbExpContent"></div></div>
         <div class="kb-section" id="kbTroubleshoot"><div id="kbTsContent"></div></div>
-        <div class="kb-section" id="kbConfigorder"><div id="kbCoContent"></div></div>
         <div class="kb-section" id="kbSearch">
           <div style="display:flex;gap:8px;margin-bottom:10px">
             <input type="text" id="kbSearchInput" class="inp" placeholder="搜索命令、排障经验..." style="flex:1">
             <button class="btn btn-scan btn-sm" onclick="doKbSearch()">🔍 搜索</button>
           </div>
           <div id="kbSearchContent"></div>
-        </div>
-        <div class="kb-section" id="kbTemplates">
-          <div style="display:flex;gap:8px;margin-bottom:10px">
-            <select id="kbTplType" class="inp" style="width:140px">
-              <option value="vlan">VLAN</option>
-              <option value="vrrp">VRRP</option>
-              <option value="mstp">MSTP</option>
-              <option value="dhcp">DHCP</option>
-              <option value="ospf">OSPF</option>
-              <option value="lacp">LACP</option>
-              <option value="wlan">WLAN</option>
-            </select>
-            <button class="btn btn-scan btn-sm" onclick="loadKbTemplate()">生成模板</button>
-          </div>
-          <div id="kbTemplateContent"></div>
         </div>
         <div class="kb-section" id="kbReport">
           <div style="display:flex;gap:8px;margin-bottom:10px">
@@ -443,16 +419,6 @@ input,textarea,select{font-family:inherit}
   </div>
 </div>
 
-<!-- ====== 快照详情模态框 ====== -->
-<div id="snapshotModal" class="modal" style="display:none">
-  <div class="mc" style="min-width:600px;max-width:800px">
-    <div class="mt">配置快照</div>
-    <div id="snapshotContent" style="max-height:400px;overflow-y:auto;font-family:Consolas,monospace;font-size:11px;line-height:1.5;white-space:pre-wrap;background:var(--bg-crust);padding:10px;border-radius:var(--radius);margin-bottom:12px"></div>
-    <div class="mb">
-      <button class="mbtn cancel" onclick="closeSnapshotModal()">关闭</button>
-    </div>
-  </div>
-</div>
 
 <script src="/static/socket.io.min.js"></script>
 <script src="/static/app.js"></script>

@@ -377,7 +377,14 @@ async def call_tool(name, arguments):
         elif name == "rename_device": dm.set_name(arguments["path"], arguments["name"]); text = json.dumps({"success": True, "path": arguments["path"], "name": arguments["name"]})
         elif name == "fetch_device_name": text = await _direct_fetch_name(arguments["path"])
         elif name == "get_command_catalog":
-            text = json.dumps(list(COMMAND_CATALOG.values()), ensure_ascii=False)
+            params = {}
+            if arguments.get("category"):
+                params["category"] = arguments["category"]
+            if arguments.get("device_type"):
+                params["device_type"] = arguments["device_type"]
+            if arguments.get("risk"):
+                params["risk"] = arguments["risk"]
+            text = await mcp_req("GET", "/api/kb/catalog", params=params)
         elif name == "get_device_capabilities":
             text = json.dumps(kb.get_device_capabilities(arguments.get("path")), ensure_ascii=False)
         elif name == "get_device_history":

@@ -163,6 +163,12 @@ COMMAND_CATALOG = {
 
 }
 
+# 将本模块维护的命令目录注入 knowledge 模块，供 kb.get_command_catalog() 使用。
+# knowledge.py 的 COMMAND_CATALOG 初始为空（注释标明 'Will be set by app.py'），
+# 此前缺失注入导致 /api/kb/catalog 始终返回空列表；现补回预期接线。
+import knowledge as _knowledge_mod
+_knowledge_mod.COMMAND_CATALOG = COMMAND_CATALOG
+
 def _build_interface_map(dev_element):
     """Build a mapping from interface index to real interface name (e.g. GE0/0/1).
     Huawei devices typically start port numbering from 1, not 0."""

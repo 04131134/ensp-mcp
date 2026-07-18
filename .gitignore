@@ -92,3 +92,6 @@ mcpensp1/kb/_backup_*.json
 
 # Codex environment
 .codex/
+
+# WorkBuddy workspace memory (local only)
+.workbuddy/

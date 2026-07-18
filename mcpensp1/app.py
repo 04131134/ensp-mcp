@@ -666,13 +666,18 @@ def search_kb(query, limit=20):
                         if score > 0:
                             results.append({'type': 'command', 'section': section, 'model': model, 'topic': topic_name, 'score': score, **cmd})
     for name, ts in skb.get('troubleshooting', {}).items():
+        # troubleshooting 条目可能是 dict（含 symptom/cause/fix）或 list/str
+        if isinstance(ts, dict):
+            blob = ' '.join(str(ts.get(k, '')) for k in ('symptom', 'cause', 'fix', 'description'))
+        elif isinstance(ts, (list, tuple)):
+            blob = ' '.join(str(x) for x in ts)
+        else:
+            blob = str(ts)
         score = 0
         if query_lower in name.lower(): score += 3
-        if query_lower in ts.get('symptom', '').lower(): score += 2
-        if query_lower in ts.get('cause', '').lower(): score += 2
-        if query_lower in ts.get('fix', '').lower(): score += 1
+        if query_lower in blob.lower(): score += 2
         if score > 0:
-            results.append({'type': 'troubleshooting', 'name': name, 'score': score, **ts})
+            results.append({'type': 'troubleshooting', 'name': name, 'score': score, 'content': ts})
     for exp in skb.get('experiences', []):
         score = 0
         if query_lower in exp.get('experiment', '').lower(): score += 3

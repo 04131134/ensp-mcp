@@ -186,7 +186,7 @@ eNSP-MCP/
 ```bash
 cd eNSP-MCP
 python -m pytest tests/ -q
-# 222 passed, 3 skipped
+# 223 passed, 3 skipped
 ```
 
 ---

@@ -12,6 +12,7 @@
 审核失败禁止执行，返回详细的审核报告。
 """
 from __future__ import annotations
+import logging
 from typing import Dict, Any, List, Optional, Tuple
 from .cli_state import CLIState, CLIView
 from .command_validator import CommandValidator
@@ -25,7 +26,7 @@ class PlanReviewer:
         report = reviewer.review(plan, device_model="S5700")
         if not report["approved"]:
             for issue in report["issues"]:
-                print(issue["severity"], issue["message"])
+                logging.getLogger(__name__).debug("%s %s", issue["severity"], issue["message"])
     """
 
     # 危险命令关键词（即使不是 blocked_command，也应警告）
@@ -167,11 +168,8 @@ class PlanReviewer:
     # ── 内部检查方法 ──────────────────────────────────────
 
     def _check_dangerous(self, command: str) -> Tuple[Optional[str], str]:
-        """检查危险命令。"""
+        """检查危险命令（基于危险关键词告警；命令拦截功能已在 v2.4 移除）。"""
         cmd_lower = command.strip().lower()
-        from mcpensp1.command_executor import is_blocked_command
-        if is_blocked_command(cmd_lower):
-            return "critical", f"危险命令被拦截: {command}"
         for kw in self.DANGEROUS_KEYWORDS:
             if kw in cmd_lower:
                 return "warning", f"包含危险关键词 '{kw}': {command}"

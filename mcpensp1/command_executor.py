@@ -12,38 +12,10 @@ from device_manager import dm
 
 logger = logging.getLogger(__name__)
 
-# ---- Blocked Commands ----
-
-BLOCKED_COMMANDS = {
-    'reboot', 'reset saved-configuration', 'erase startup-configuration',
-    'format', 'delete', 'reset arp', 'reset bgp', 'reset ospf',
-    'set authentication password', 'set user-password',
-    'undo save', 'startup saved-configuration',
-    'reset interface', 'reset statistics',
-    'reset ip routing-table', 'reset mac-address',
-    'clear configuration', 'reset arp all',
-}
-
-BLOCKED_PREFIXES = (
-    'reboot', 'reset ', 'erase ', 'format ', 'delete ',
-    'set authentication', 'set user-password',
-    'undo save', 'startup saved-configuration',
-    'clear ', 'initialize',
-)
 
 # ---- Command Catalog ----
 
 COMMAND_CATALOG: Dict[str, Dict[str, Any]] = {}
-
-
-def is_blocked_command(cmd_lower: str) -> bool:
-    """Check if a command is in the blocked list."""
-    if cmd_lower in BLOCKED_COMMANDS:
-        return True
-    for prefix in BLOCKED_PREFIXES:
-        if cmd_lower.startswith(prefix):
-            return True
-    return False
 
 
 class CommandExecutor:
@@ -60,8 +32,6 @@ class CommandExecutor:
             return {'success': False, 'error': 'Device not connected'}
 
         cmd_lower = command.strip().lower()
-        if is_blocked_command(cmd_lower):
-            return {'success': False, 'error': f'Blocked dangerous command: {cmd_lower}'}
 
         try:
             # Auto undo terminal monitor before first config command
@@ -122,9 +92,6 @@ class CommandExecutor:
 
         for cmd in commands:
             cmd_lower = cmd.strip().lower()
-            if is_blocked_command(cmd_lower):
-                results.append({'command': cmd, 'success': False, 'output': 'Blocked'})
-                continue
 
             cmd_count += 1
             try:

@@ -4,6 +4,7 @@
 Planner 必须先查询 Capability，禁止生成设备不支持的配置。
 """
 from __future__ import annotations
+import logging
 from typing import Dict, Any, Optional, List, Set
 
 
@@ -109,7 +110,7 @@ class CapabilityManager:
         cm = CapabilityManager()
         result = cm.check("S5700", "ospf")
         if not result["supported"]:
-            print(result["reason"])
+            logging.getLogger(__name__).debug("%s", result["reason"])
     """
 
     def __init__(self):
@@ -204,14 +205,9 @@ class CapabilityManager:
             result["warnings"].append(f"未知设备型号: {model}")
             return result
 
-        from mcpensp1.command_executor import is_blocked_command
+        # 命令拦截功能已在 v2.4 移除，这里只做能力校验，不拦截命令
         for cmd in commands:
-            cmd_lower = cmd.strip().lower()
-            if is_blocked_command(cmd_lower):
-                result["blocked"].append({"command": cmd, "reason": "危险命令被拦截"})
-                result["all_supported"] = False
-            else:
-                result["supported"].append(cmd)
+            result["supported"].append(cmd)
 
         return result
 

@@ -13,7 +13,7 @@
 | `validate_batch(state, commands)` | 批量验证（追踪状态变化） |
 
 ## 验证类型
-- 危险命令检测（is_blocked_command）
+- 危险命令关键词告警（`PlanReviewer._check_dangerous`，命令拦截已在 v2.4 移除）
 - 视图权限检查（基于 view_rules.json）
 - system-view/quit/return 特殊处理
 - 全局命令白名单（display/undo）

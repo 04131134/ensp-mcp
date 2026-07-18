@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """安全执行框架单元测试 — ErrorLibrary / CapabilityManager / PlanReviewer / Transaction"""
 from __future__ import annotations
 import sys
@@ -141,12 +141,6 @@ class TestCapabilityManager:
         models = cm.suggest_model_for_protocol("wlan")
         assert "AC6605" in models
 
-    def test_check_commands_blocks_dangerous(self, cm):
-        """检查命令时应拦截危险命令。"""
-        result = cm.check_commands("S5700", ["reboot", "display version"])
-        assert result["all_supported"] is False
-        assert len(result["blocked"]) == 1
-
     def test_check_commands_all_safe(self, cm):
         """安全命令应全部通过。"""
         result = cm.check_commands("S5700", ["display version", "vlan 10"])
@@ -181,17 +175,6 @@ class TestPlanReviewer:
         report = reviewer.review(plan, "S5700")
         assert report["approved"] is True
         assert report["score"] == 1.0
-
-    def test_block_dangerous_command(self, reviewer):
-        """危险命令应被审核拦截。"""
-        plan = {
-            "nodes": [
-                {"id": "1", "commands": ["reboot"]},
-            ]
-        }
-        report = reviewer.review(plan, "S5700")
-        assert report["approved"] is False
-        assert any(i["type"] == "dangerous_command" for i in report["issues"])
 
     def test_warn_dangerous_keyword(self, reviewer):
         """包含危险关键词应有警告。"""

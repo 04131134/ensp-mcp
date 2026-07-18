@@ -24,7 +24,7 @@
 - **prompt 驱动读取**：基于提示符 `<NAME>`/`[NAME]` 检测命令输出结束
 - **命令分类**：display(15s) / diagnostic(30s) / config(5s) / interactive(60s)
 - **翻页处理**：自动检测 `---- More ----` 并发送空格
-- **危险命令拦截**：`is_blocked_command()` 过滤 `reboot`/`format` 等
+- **危险命令处理**：命令拦截功能已在 v2.4 移除，`CommandExecutor` 不再拦截命令；危险命令告警由 `PlanReviewer._check_dangerous()` 基于关键词负责
 - **视图切换**：`auto_view=True` 时自动进入/退出系统视图
 - **undo t m**：`auto_undo_tm=True` 时自动管理 `undo terminal monitor`
 
@@ -34,7 +34,6 @@
 - `knowledge.KnowledgeBase` — 自动记录（可选）
 
 ## 禁止事项
-- ❌ 不允许绕开危险命令检测
 - ❌ 不允许在未连接设备时发送命令
 - ❌ 不允许修改命令分类规则而不更新对应测试
 
@@ -44,6 +43,5 @@ mcp_server (send_command/batch_command/group_command)
     → services.py
     → CommandExecutor
         ├── DeviceManager.get(path) → TelnetConnection
-        ├── is_blocked_command() → 安全检查
         └── TelnetConnection.send_cmd() / send_cmd_batch()
 ```

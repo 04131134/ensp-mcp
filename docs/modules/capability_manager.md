@@ -18,7 +18,7 @@ S5700 / S3700 / AR2220 / USG6000V / AC6605 / AP4050DN
 | `suggest_model_for_protocol(protocol)` | 推荐支持协议的设备型号 |
 
 ## 依赖
-- `command_executor.is_blocked_command` — 危险命令检查
+- `PlanReviewer._check_dangerous` — 危险命令关键词告警（命令拦截已在 v2.4 移除，本模块仅做能力校验）
 
 ## 禁止事项
 - 不允许在未知型号上静默执行（明确返回 error）

@@ -61,6 +61,6 @@ CommandExecutor 将命令分为 4 类，每类有不同的超时和读取策略�
 
 ## 安全机制
 
-- 危险命令拦截（`is_blocked_command`）：`reboot`、`format`、`reset saved-configuration` 等被拦截
+- 危险命令拦截：命令拦截功能已在 v2.4 移除，改为由 `PlanReviewer` 基于关键词告警（仅警告、不阻断执行）
 - `undo t m` 自动管理：配置模式下自动执行 `undo terminal monitor`
 - 视图退出保护：命令执行后自动返回用户视图

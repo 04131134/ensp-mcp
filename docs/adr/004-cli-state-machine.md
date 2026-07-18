@@ -17,7 +17,7 @@
 2. **命令四分类**：display(15s) / diagnostic(30s) / config(5s) / interactive(60s)
 3. **翻页处理**：检测 `---- More ----` 自动空格翻页
 4. **视图切换**：`auto_view=True` 时自动 `system-view` / `return`
-5. **安全拦截**：`is_blocked_command()` 过滤危险命令
+5. **安全审核**：命令拦截功能已在 v2.4 移除，改为 `PlanReviewer` 基于关键词的危险命令告警
 
 ## 理由
 - **可靠性**：prompt 驱动读取比固定超时更可靠

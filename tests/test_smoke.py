@@ -316,11 +316,11 @@ class TestExperiments:
             assert resp.status_code == 200
 
     def test_dependency_graph(self):
-        """GET /api/experiments/dependency-graph 返回图数据"""
+        """GET /api/experiments/dependency-graph 返回 501（尚未实现，诚实告知）"""
         from mcpensp1.app import app
         with app.test_client() as client:
             resp = client.get('/api/experiments/dependency-graph')
-            assert resp.status_code == 200
+            assert resp.status_code == 501
 
 
 # ==================== 测试 8: 快照功能 ====================

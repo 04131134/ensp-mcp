@@ -1493,30 +1493,23 @@ def api_create_experiment():
     goal = data.get('goal', '')
     try:
         runtime = get_agent_runtime()
-        if runtime:
-            exp_data = {
-                'name': name,
-                'goal': goal,
-                'devices': {},
-                'links': [],
-                'status': 'created',
-                'created_at': datetime.now(timezone.utc).isoformat(),
-                'phase_history': []
-            }
-            exp_id = hashlib.md5((name + str(time.time())).encode()).hexdigest()[:12]
-            if hasattr(runtime, 'experiments'):
-                runtime.experiments[exp_id] = exp_data
-            return jsonify({'success': True, 'experiment_id': exp_id, 'experiment': exp_data})
-        if 'experiments' not in globals():
-            globals()['experiments'] = {}
-        experiments = globals()['experiments']
-        exp_id = hashlib.md5((name + str(time.time())).encode()).hexdigest()[:12]
         exp_data = {
-            'name': name, 'goal': goal, 'devices': {}, 'links': [],
-            'status': 'created', 'created_at': datetime.now(timezone.utc).isoformat(),
+            'name': name,
+            'goal': goal,
+            'devices': {},
+            'links': [],
+            'status': 'created',
+            'created_at': datetime.now(timezone.utc).isoformat(),
             'phase_history': []
         }
+        exp_id = hashlib.md5((name + str(time.time())).encode()).hexdigest()[:12]
+        # 始终持久化到模块级全局 experiments。
+        # 原逻辑仅在 runtime 为 None 时存全局、正常模式下走不存在的 runtime.experiments，
+        # 导致创建的实验被静默丢弃；现统一存全局，使 list/get/plan 路由可一致访问。
+        experiments = globals().setdefault('experiments', {})
         experiments[exp_id] = exp_data
+        if runtime and hasattr(runtime, 'experiments'):
+            runtime.experiments[exp_id] = exp_data
         return jsonify({'success': True, 'experiment_id': exp_id, 'experiment': exp_data})
     except Exception as e:
         logger.exception('[Experiment] 创建实验失败')
@@ -1559,31 +1552,24 @@ def api_get_experiment(exp_id):
 @app.route('/api/experiments/<exp_id>/plan', methods=['POST'])
 @require_auth
 def api_experiment_plan(exp_id):
-    """生成并执行实验计划"""
+    """生成实验计划（委托 AgentRuntime.get_plan 生成 DAG 计划，不立即执行）"""
     try:
+        experiments = globals().get('experiments', {})
+        exp = experiments.get(exp_id)
+        if not exp:
+            return jsonify({'success': False, 'error': '实验未找到: ' + exp_id}), 404
+        goal = exp.get('goal')
+        if not goal:
+            return jsonify({'success': False, 'error': 'experiment has no goal'}), 400
         runtime = get_agent_runtime()
         if not runtime:
             return jsonify({'success': False, 'error': 'Agent Runtime 未初始化'}), 500
-        if not hasattr(runtime, 'experiments') or exp_id not in runtime.experiments:
-            return jsonify({'success': False, 'error': '实验未找到'}), 404
-        exp = runtime.experiments[exp_id]
-        if hasattr(runtime, 'execute_plan'):
-            result = runtime.execute_plan(exp)
-            return jsonify({'success': True, 'result': result})
-        phases = []
-        for path, dev in exp.get('devices', {}).items():
-            phases.append({
-                'name': f"配置 {dev.get('name', path)}",
-                'device_path': path,
-                'status': 'pending'
-            })
-        if 'phase_history' not in exp:
-            exp['phase_history'] = []
-        exp['phase_history'].extend(phases)
+        plan = runtime.get_plan(goal=goal, experiment_type=exp.get('experiment_type', 'general'))
+        exp['plan'] = plan
         exp['status'] = 'planned'
-        return jsonify({'success': True, 'phases': phases, 'experiment': exp})
+        return jsonify({'success': True, 'plan': plan, 'experiment': exp})
     except Exception as e:
-        logger.exception('[Experiment] 执行计划失败')
+        logger.exception('[Experiment] 生成计划失败')
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
@@ -1608,28 +1594,12 @@ def api_experiment_verify(exp_id):
 @app.route('/api/experiments/dependency-graph', methods=['GET'])
 @require_auth
 def api_experiment_dependency_graph():
-    """获取实验阶段依赖图"""
-    try:
-        runtime = get_agent_runtime()
-        if runtime and hasattr(runtime, 'experiments'):
-            graph = {'nodes': [], 'edges': []}
-            for exp_id, exp in runtime.experiments.items():
-                graph['nodes'].append({
-                    'id': exp_id,
-                    'name': exp.get('name', exp_id),
-                    'status': exp.get('status', 'unknown')
-                })
-                phases = exp.get('phase_history', [])
-                for i in range(1, len(phases)):
-                    graph['edges'].append({
-                        'source': f"{exp_id}_phase_{i-1}",
-                        'target': f"{exp_id}_phase_{i}"
-                    })
-            return jsonify(graph)
-        return jsonify({'nodes': [], 'edges': []})
-    except Exception as e:
-        logger.exception('[Experiment] 获取依赖图失败')
-        return jsonify({'nodes': [], 'edges': []})
+    """获取实验阶段依赖图（尚未实现）"""
+    return jsonify({
+        'success': False,
+        'implemented': False,
+        'error': 'dependency graph not implemented',
+    }), 501
 
 
 def _ws_check_auth():

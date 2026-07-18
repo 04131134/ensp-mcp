@@ -54,3 +54,4 @@ app.py        → 通过 from services import kb 复用同一实例（不再重�
 ## 另见
 - `docs/modules/knowledge_store.md` —— Agent 知识库
 - `docs/modules/config_method_store.md` —— 配置方法库
+- `docs/modules/web_api.md` —— Flask Web API（HTTP 路由 + SocketIO 事件）

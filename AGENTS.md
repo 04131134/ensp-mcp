@@ -45,7 +45,7 @@
 
 - 新增/修改接口 → 更新 `docs/modules/` 对应文档。
 - 架构决策变更 → 新增 `docs/adr/` 条目。
-- 新增最佳实践 → 更新 `docs/best_practices/`。
+- 新增最佳实践 → 在 `docs/modules/` 对应模块文档中补充。
 
 ---
 
@@ -104,8 +104,5 @@ eNSP-MCP/
     ├── architecture/       # 架构文档
     ├── development/        # 开发规范
     ├── modules/            # 模块文档
-    ├── api/                # API 文档
-    ├── best_practices/     # 最佳实践
-    ├── troubleshooting/    # 排错指南
     └── adr/                # 架构决策记录
 ```

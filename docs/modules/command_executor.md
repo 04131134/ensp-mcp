@@ -15,9 +15,9 @@
 
 | 方法 | 返回值 |
 |------|--------|
-| `send_command(path, command)` | `{"status": "ok"/"error", "output": str, ...}` |
-| `batch_command(path, commands, wait, auto_view, auto_undo_tm)` | `{"status": "ok", "results": [...]}` |
-| `send_command_to_group(paths, command)` | `{"status": "ok"/"partial", "results": {...}}` |
+| `send_command(path, command)` | `{"success": true/false, "path": str, "output": str, "response_time": float, "cmd_success": bool, "error"?: str}` |
+| `batch_command(path, commands, wait, auto_view, auto_undo_tm)` | `{"success": true/false, "path": str, "results": [{"command": str, "success": bool, "output": str, "response_time": float}], "total": int, "success_count": int}` |
+| `send_command_to_group(paths, command)` | `{"success": true, "results": [{"path": str, "success": bool, "output": str, ...}]}` |
 
 ## 核心特性
 
@@ -43,5 +43,5 @@ mcp_server (send_command/batch_command/group_command)
     → services.py
     → CommandExecutor
         ├── DeviceManager.get(path) → TelnetConnection
-        └── TelnetConnection.send_cmd() / send_cmd_batch()
+        └── TelnetConnection.send_cmd()（批量发送为循环调用）
 ```

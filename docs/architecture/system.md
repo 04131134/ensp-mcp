@@ -2,7 +2,7 @@
 
 ## 项目定位
 
-eNSP-MCP 是一个面向华为 eNSP 网络仿真平台的 AI 网络自动化工具。它通过 MCP（Model Context Protocol）协议暴露 48 个工具，使 AI Agent 能够自动化完成网络拓扑配置、验证、排错等任务。
+eNSP-MCP 是一个面向华为 eNSP 网络仿真平台的 AI 网络自动化工具。它通过 MCP（Model Context Protocol）协议暴露 47 个工具，使 AI Agent 能够自动化完成网络拓扑配置、验证、排错等任务。
 
 ## 技术栈
 

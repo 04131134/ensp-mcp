@@ -22,4 +22,4 @@
 - 所有对外接口必须通过 MCP Tool 暴露
 - Flask Web API 仅用于前端 Dashboard，不作为 AI 接口
 - 新增功能优先实现为 MCP Tool，其次考虑 Web API
-- 48 个 MCP 工具形成完整的网络自动化能力矩阵
+- 47 个 MCP 工具形成完整的网络自动化能力矩阵

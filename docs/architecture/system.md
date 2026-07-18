@@ -23,7 +23,7 @@ eNSP-MCP 是一个面向华为 eNSP 网络仿真平台的 AI 网络自动化工�
 |                       ↓ MCP 协议                     |
 +----------------------------------------------------+
 |                  mcp_server.py                      |
-|          (48 tools: scan/connect/send/batch/...)   |
+|          (47 tools: scan/connect/send/batch/...)   |
 |                       ↓                             |
 |   +-----------+  +-----------+  +----------------+  |
 |   |  Flask     |  | Agent     |  | Knowledge &    |  |
@@ -108,6 +108,8 @@ mcp_server.py ──→ services.py ──→ device_manager.py
            ├── knowledge_store.py (KnowledgeStore)
            └── learning.py
 ```
+
+> ⚠️ **未接入运行链路的候选模块**：上图 `agent/` 下的 `capability_manager.py`、`plan_reviewer.py`、`transaction.py`、`runtime_action.py` 及其依赖的 `action_types / cli_state / prompt_parser / command_generator / command_validator / dependency_graph / error_library` 共 11 个模块代码已实现，但 `AgentRuntime`（`agent/runtime.py`）在初始化与 `execute_task` 中**并未实例化或调用它们**，全仓仅测试引用。因此“Planner 先查能力矩阵”“计划必须审核”“事务回滚”“Action 驱动引擎与 AgentRuntime 共存”等能力**当前均未生效**。这些属于设计意图 / 候选增强，非已上线功能。详见各模块文档头部的状态提示。
 
 ## 关键设计决策
 

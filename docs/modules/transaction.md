@@ -1,5 +1,8 @@
 # Transaction（事务管理器）
 
+> ⚠️ **状态：未接入运行链路（实验性 / 候选能力）**
+> 本模块代码已实现，但 `AgentRuntime` **从未实例化或使用 `TransactionManager`**，全仓仅测试引用。因此文档中的“事务性执行 / 回滚（Snapshot → Execute → Verify → Commit → Rollback）”**当前并未生效**——执行失败不会自动回滚。本文档描述的是设计意图，非已上线功能。如需启用，须在 `runtime.py` 的 `execute_task` 中包裹事务（属于架构增强，非缺陷修复）。
+
 ## 位置
 `mcpensp1/agent/transaction.py`
 

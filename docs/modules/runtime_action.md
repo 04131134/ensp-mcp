@@ -1,5 +1,8 @@
 # ActionDrivenRuntime（Action 驱动执行引擎）
 
+> ⚠️ **状态：未启用（实验性 / 候选引擎）**
+> 本模块代码已实现，但 `bootstrap.py` / `runtime.py` / `app.py` / `mcp_server.py` **均未 import 或启用 `ActionDrivenRuntime`**，全仓仅测试引用。因此文档中“与旧 AgentRuntime 共存，渐进迁移”**当前并未发生**——系统实际只运行 `AgentRuntime`。连同其依赖的 `action_types / cli_state / prompt_parser / command_generator / command_validator / dependency_graph / error_library` 共 9 个模块，目前均为“已编写但未接线”的摆设代码。本文档描述的是设计意图，非已上线功能。
+
 ## 位置
 `mcpensp1/agent/runtime_action.py`
 

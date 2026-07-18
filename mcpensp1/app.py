@@ -1461,9 +1461,15 @@ def api_device_verify():
         return jsonify({'success': False, 'error': '设备未连接: ' + path}), 400
     try:
         from agent.verifier import SemanticVerifier
-        verifier = SemanticVerifier(devices, state, kb)
-        result = verifier.verify(path, check_type=check_type, target_ip=target_ip)
-        return jsonify({'success': True, 'checks': result.get('checks', [])})
+        verifier = SemanticVerifier(send_command)
+        if check_type == 'all':
+            results = verifier.verify_all(path, target_ip=target_ip)
+        elif check_type == 'connectivity' and target_ip:
+            results = [verifier.verify_connectivity(path, target_ip)]
+        else:
+            meth = getattr(verifier, f'verify_{check_type}', None)
+            results = [meth(path)] if meth else verifier.verify_all(path, target_ip=target_ip)
+        return jsonify({'success': True, 'checks': [r.to_dict() for r in results]})
     except Exception as e:
         logger.exception('[DeviceVerify] 验证失败')
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -1590,16 +1596,10 @@ def api_experiment_verify(exp_id):
     if not path:
         return jsonify({'success': False, 'error': '缺少 path 参数'}), 400
     try:
-        runtime = get_agent_runtime()
-        if not runtime:
-            return jsonify({'success': False, 'error': 'Agent Runtime 未初始化'}), 500
-        if hasattr(runtime, 'verify_device'):
-            result = runtime.verify_device(path)
-            return jsonify({'success': True, 'result': result})
         from agent.verifier import SemanticVerifier
-        verifier = SemanticVerifier(devices, state, kb)
-        result = verifier.verify(path)
-        return jsonify({'success': True, 'checks': result.get('checks', [])})
+        verifier = SemanticVerifier(send_command)
+        results = verifier.verify_all(path)
+        return jsonify({'success': True, 'checks': [r.to_dict() for r in results]})
     except Exception as e:
         logger.exception('[Experiment] 验证设备失败')
         return jsonify({'success': False, 'error': str(e)}), 500

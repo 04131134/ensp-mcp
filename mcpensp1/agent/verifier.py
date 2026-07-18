@@ -31,14 +31,14 @@ class SemanticVerifier:
     def verify_all(self, device_path: str, target_ip: Optional[str] = None) -> List[VerificationResult]:
         """执行全面验证"""
         results = []
-        results.extend(self.verify_interfaces(device_path))
-        results.extend(self.verify_vlans(device_path))
-        results.extend(self.verify_routing(device_path))
-        results.extend(self.verify_ospf(device_path))
-        results.extend(self.verify_stp(device_path))
-        results.extend(self.verify_acl(device_path))
+        results.append(self.verify_interfaces(device_path))
+        results.append(self.verify_vlans(device_path))
+        results.append(self.verify_routing(device_path))
+        results.append(self.verify_ospf(device_path))
+        results.append(self.verify_stp(device_path))
+        results.append(self.verify_acl(device_path))
         if target_ip:
-            results.extend(self.verify_connectivity(device_path, target_ip))
+            results.append(self.verify_connectivity(device_path, target_ip))
         return results
 
     def verify_interfaces(self, device_path: str) -> VerificationResult:

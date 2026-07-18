@@ -5,6 +5,7 @@ Recovery 优先查询 Error Library，不要让 AI 猜错误原因。
 """
 from __future__ import annotations
 import json
+import logging
 import os
 import re
 from typing import Dict, Any, Optional, List
@@ -17,7 +18,7 @@ class ErrorLibrary:
         lib = ErrorLibrary()
         result = lib.lookup("Error: The VLAN already exists")
         if result["auto_recoverable"]:
-            print(result["fix"])
+            logging.getLogger(__name__).debug("%s", result["fix"])
     """
 
     def __init__(self, errors_path: Optional[str] = None):

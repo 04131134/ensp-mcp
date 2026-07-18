@@ -8,6 +8,7 @@
 - 局部重跑（不因一个节点失败而重跑整个实验）
 """
 from __future__ import annotations
+import logging
 from typing import List, Dict, Any, Optional, Set, Tuple, Callable
 from collections import deque
 from .action_types import ActionNode, ActionPlan
@@ -21,7 +22,7 @@ class DependencyGraph:
         order = dg.topological_sort()  # → ["a1", "a2", "a3"]
         dg.monitor_action(action_id, status="success")
         if dg.has_cycle():
-            print("检测到循环依赖!")
+            logging.getLogger(__name__).debug("检测到循环依赖!")
     """
 
     def __init__(self):

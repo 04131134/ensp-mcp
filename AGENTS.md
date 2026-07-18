@@ -80,13 +80,14 @@
 ```
 eNSP-MCP/
 ├── mcpensp1/               # 主项目代码
-│   ├── mcp_server.py       # MCP 服务器（52+ 工具入口）
+│   ├── mcp_server.py       # MCP 服务器（48 工具入口）
 │   ├── app.py              # Flask Web 应用
 │   ├── device_manager.py   # 设备连接池管理
 │   ├── command_executor.py # 命令执行引擎
 │   ├── connection.py       # Telnet 连接层
-│   ├── heartbeat.py        # 心跳监控
-│   ├── knowledge.py        # 知识库核心
+│   ├── heartbeat.py        # 心跳监控 + 设备保活
+│   ├── view_router.py      # 命令视图感知路由 + VRP冷却保护
+│   ├── knowledge.py        # 知识库核心（简化版：只记配置方法）
 │   ├── topology.py         # 拓扑引擎
 │   ├── services.py         # 服务层
 │   ├── agent/              # AI Agent 子系统
@@ -98,7 +99,7 @@ eNSP-MCP/
 │   │   ├── memory.py       # 长期记忆
 │   │   └── knowledge_store.py # 增长知识库
 │   └── kb/                 # 静态知识库数据
-├── tests/                  # 测试（97 passed, 4 skipped）
+├── tests/                  # 测试（220 passed, 3 skipped）
 └── docs/                   # 项目文档（本知识库）
     ├── architecture/       # 架构文档
     ├── development/        # 开发规范

@@ -13,9 +13,6 @@ from typing import Any, Dict, Optional
 import json
 import hashlib
 from .types import KnowledgeRecord
-import json
-import hashlib
-from .types import KnowledgeRecord
 
 def _migrate_legacy_kb(knowledge_store, kb_folder):
     """Migrate data from legacy knowledge.py JSON files into KnowledgeStore."""

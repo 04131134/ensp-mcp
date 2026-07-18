@@ -5,6 +5,7 @@
 """
 from __future__ import annotations
 import json
+import logging
 import os
 from typing import Dict, Any, Optional, List, Tuple
 from .cli_state import CLIState, CLIView
@@ -17,7 +18,7 @@ class CommandValidator:
         validator = CommandValidator()
         result = validator.validate(state, "interface GigabitEthernet0/0/1")
         if not result["allowed"]:
-            print(result["suggestion"])  # → "需要先执行: system-view"
+            logging.getLogger(__name__).debug("%s", result["suggestion"])  # → "需要先执行: system-view"
     """
 
     def __init__(self, rules_path: Optional[str] = None):

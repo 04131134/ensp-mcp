@@ -1,120 +1,121 @@
-# eNSP-MCP ? eNSP ???? AI ???? v2.4
+# eNSP-MCP 基于 eNSP 模拟器的 AI 网络实验平台 v2.4
 
-> **???** v2.4 | **?????** 2026-07-15 | **???** `codex/fix-command-reliability`
+> **版本** v2.4 | **更新日期** 2026-07-15 | **分支** `codex/fix-command-reliability`
 
-? AI?Codex/Claude/Cursor????? Telnet ???? eNSP ??????? 20+ ??????????
+让 AI（Codex/Claude/Cursor 等）通过 Telnet 驱动本地 eNSP 模拟器，完成 20+ 种网络实验的自动化配置。
 
 ---
 
-## ????
+## 架构总览
 
 ```
-?? / AI Agent
+AI / AI Agent
      |  MCP (stdio)
      v
-MCP Server (mcp_server.py, 48 ???)
-     |  ?????? HTTP ???
-     +---> DeviceManager (dm)      ? ?????
-     +---> KnowledgeBase (kb)      ? ???????????????
-     +---> TopologyEngine          ? ????
-     +---> ConfigMethodStore       ? ?????
-     +---> ViewRouter (v2.4 ??)   ? ????????
-     +---> TelnetConnection (async) ? Telnet ???
+MCP Server (mcp_server.py, 47 个工具声明 / 46 已实现)
+     |  部分 Agent 工具经 HTTP 调用后端 Flask
+     +---> DeviceManager (dm)       设备连接池管理
+     +---> KnowledgeBase (kb)       配置知识库（只记配置方法）
+     +---> TopologyEngine           拓扑引擎
+     +---> ConfigMethodStore        配置方法库
+     +---> ViewRouter (v2.4 新增)   命令视图感知路由 + VRP 冷却保护
+     +---> TelnetConnection          Telnet 连接层
      |
-     4 ? Agent Runtime ???? HTTP ? Flask ??
+     4 个 Agent Runtime 模块经 HTTP 调 Flask
      v
-Flask Web UI (app.py, 51 ? API ??)
+Flask Web UI (app.py, 51 个 API 端点)
      +---> Agent Runtime v3.0 (planner/runtime/verifier/reflection/learning)
 ```
 
-**v2.4 ??????? v3.1??**
-- ?? `view_router.py`????????? + VRP ????
-- ??????????????????? `reboot`/`reset` ?
-- ???????????????????
-- ???????????????+???????????/???????
-- ?????? 120 ????? `\r\n` ????
-- ?? 14 ???????????????????????????
+**v2.4 相对 v3.1 的主要变更**
+- 新增 `view_router.py`：命令视图感知路由 + VRP 冷却保护
+- 设备操作收敛，移除 `reboot`/`reset` 等高危占位
+- 知识库精简为「只记配置方法」，移除模板/快照/配置向导类工具
+- 心跳监控新增设备保活（keepalive）
+- 命令发送统一 `120` 字符 `\r\n` 缓冲
+- 修复 14 处文档与代码中的乱码描述
 
 ---
 
-## ????
+## 核心模块
 
-| ?? | ?? | ?? |
+| 模块 | 文件 | 职责 |
 |------|------|------|
-| **DeviceManager** | `device_manager.py` | ????/??/??/???????? |
-| **CommandExecutor** | `command_executor.py` | ??/?????? |
-| **ViewRouter** | `view_router.py` | ???????? + VRP ?????v2.4 ??? |
-| **KnowledgeBase** | `knowledge.py` | ??? CRUD???????v2.4 ?????????? |
-| **KnowledgeStore** | `knowledge_store.py` | ???????????? |
-| **Services** | `services.py` | kb/topo_engine/config_methods ???? |
-| **TopologyEngine** | `topology.py` | ?????/????/?????? |
-| **HeartbeatMonitor** | `heartbeat.py` | ?????? + ???? + ?????v2.4 ?? keepalive? |
-| **TelnetConnection** | `connection.py` | Telnet ?????+????? + ???????? |
-| **ConfigMethodStore** | `config_method_store.py` | ????????????? |
-| **Memory** | `agent/memory.py` | ?????? |
-| **DAGPlanner** | `agent/planner.py` | DAG ?????? |
-| **SemanticVerifier** | `agent/verifier.py` | ??????? |
-| **AgentRuntime** | `agent/runtime.py` | ?????????? |
+| **DeviceManager** | `device_manager.py` | 设备连接池 / 连接 / 断开 / 保活 |
+| **CommandExecutor** | `command_executor.py` | 命令发送 / 结果解析 |
+| **ViewRouter** | `view_router.py` | 命令视图感知路由 + VRP 冷却保护（v2.4 新增） |
+| **KnowledgeBase** | `knowledge.py` | 配置方法 CRUD + 经验积累（v2.4 精简：只记配置方法） |
+| **Services** | `services.py` | kb / topo_engine / config_methods 服务聚合 |
+| **TopologyEngine** | `topology.py` | 拓扑发现 / 路径 / 设备关系 |
+| **HeartbeatMonitor** | `heartbeat.py` | 心跳监控 + 设备保活（v2.4 新增 keepalive） |
+| **TelnetConnection** | `connection.py` | Telnet 连接层 + 缓冲 + 超时控制 |
+| **ConfigMethodStore** | `config_method_store.py` | 配置方法 JSON 存储 |
+| **Memory** | `agent/memory.py` | 长期记忆 |
+| **DAGPlanner** | `agent/planner.py` | DAG 任务规划 |
+| **SemanticVerifier** | `agent/verifier.py` | 语义验证器 |
+| **AgentRuntime** | `agent/runtime.py` | 闭环执行引擎 |
+
+> 注：`mcpensp1/knowledge_store.py`（旧别名垫片）已在清理中删除；增长知识库现为 `agent/knowledge_store.py`（独立的 Agent 学习库，不与 `KnowledgeBase` 合并）。
 
 ---
 
-## MCP ????
+## MCP 工具清单
 
-? **48 ?** MCP ???
+共 **47 个工具声明**，其中 **46 个已实现**；`search_kb` 已声明但尚未接线（调用返回 `Unknown tool`，待修复）。
 
-### ?????7 ??
+### 设备连接 7 个
 `scan_devices` `connect_device` `send_command` `disconnect_device` `get_connected_devices` `rename_device` `fetch_device_name`
 
-### ?????2 ??
-`batch_command` `group_command` ? ??????????? view_router ????
+### 批量命令 2 个
+`batch_command` `group_command` —— 批量命令经 view_router 路由
 
-### ????14 ??
-`get_command_catalog` `get_kb_commands` `get_kb_stats` `suggest_commands` `scan_device_commands` `get_best_practices` `get_experiences` `record_experience` `search_kb` `get_command_help` `generate_lab_report` `auto_record_experience` `reload_kb` `get_device_capabilities` `get_device_history` `get_structured_kb` `get_troubleshooting_kb` `detect_device_view`
+### 知识库 18 个
+`get_command_catalog` `get_device_capabilities` `get_device_history` `get_kb_commands` `get_kb_stats` `get_structured_kb` `suggest_commands` `scan_device_commands` `get_best_practices` `get_experiences` `record_experience` `detect_device_view` `get_troubleshooting_kb` `reload_kb` `generate_lab_report` `auto_record_experience` `search_kb` `get_command_help`
 
-### ???4 ??
+### 拓扑 4 个
 `get_topology` `save_topology` `find_topology_path` `get_topology_device`
 
-### ?????6 ??
+### 配置方法 6 个
 `config_method_list` `config_method_get` `config_method_search` `config_method_add` `config_method_steps` `config_method_update`
 
-### Agent ????10 ??
+### Agent 工具 10 个
 `agent_memory_query` `agent_memory_lessons` `agent_memory_stats` `agent_knowledge_search` `agent_knowledge_best_practices` `agent_knowledge_troubleshooting` `agent_plan` `agent_execute` `agent_status` `agent_daily_review`
 
-### v2.4 ???????14 ????
-~~????~~?`generate_config_template` `list_templates`?~~???????~~?`snapshot_config` `list_snapshots` `get_snapshot` `diff_snapshots` `rollback_config`?~~???????~~?`get_config_guidance` `suggest_next_steps` `get_config_order` `config_summary` `config_record_experience`?~~?????~~?????
+### v2.4 已移除工具 12 个
+~~配置模板类~~ `generate_config_template` `list_templates` ~~~~ ~~配置快照类~~ `snapshot_config` `list_snapshots` `get_snapshot` `diff_snapshots` `rollback_config` ~~~~ ~~配置向导类~~ `get_config_guidance` `suggest_next_steps` `get_config_order` `config_summary` `config_record_experience` ~~~~
 
 ---
 
-## ????
+## 环境要求
 
-| ?? | ?? |
+| 项 | 要求 |
 |------|------|
-| **????** | Windows?eNSP ??? |
+| **系统** | Windows + eNSP 模拟器 |
 | **Python** | 3.12+ |
-| **eNSP** | ????????? |
+| **eNSP** | 已安装并能启动设备 |
 
 ---
 
-## ????
+## 快速开始
 
-### 1. ?? MCP Server????????
+### 1. 启动 MCP Server（stdio）
 
 ```bash
 cd mcpensp1
 python mcp_server.py
 ```
 
-MCP Server ?????????? Flask ???
+MCP Server 通过 stdio 与 AI 客户端通信，不单独启动 Flask。
 
-### 2. ?????? Flask Web ????
+### 2. 启动 Flask Web 界面
 
 ```bash
 python app.py
 ```
 
-????? `http://127.0.0.1:5000` ???????
+默认访问 `http://127.0.0.1:5000`。
 
-### 3. ?? MCP ???
+### 3. 接入 MCP 客户端
 
 ```json
 {
@@ -130,60 +131,62 @@ python app.py
 
 ---
 
-## ????
+## 项目结构
 
 ```
 eNSP-MCP/
-??? mcpensp1/
-?   ??? app.py                  # Flask Web UI (~2400?, 51?API??)
-?   ??? mcp_server.py           # MCP Server (48???)
-?   ??? connection.py           # Telnet?? (??+?????)
-?   ??? device_manager.py       # ?????? (????)
-?   ??? command_executor.py     # ?????
-?   ??? view_router.py          # ???????? + VRP?? (v2.4??)
-?   ??? knowledge.py            # ??? (v2.4??: ??????)
-?   ??? knowledge_store.py      # ???????
-?   ??? services.py             # kb/topo/config????
-?   ??? topology.py             # ????
-?   ??? heartbeat.py            # ???? + ???? (v2.4??keepalive)
-?   ??? config_method_store.py  # ?????
-?   ??? experiment_engine.py    # ????
-?   ??? requirements.txt
-?   ??? mcp.json
-?   ??? protocols/              # ???? (VLAN/OSPF/BGP/ACL)
-?   ??? prompts/v3/system.md    # Agent System Prompt
-?   ??? agent/                  # AI Agent ???
-?   ?   ??? planner.py          # DAG ????
-?   ?   ??? runtime.py          # ??????
-?   ?   ??? verifier.py         # ?????
-?   ?   ??? reflection.py       # ????
-?   ?   ??? learning.py         # ????
-?   ?   ??? memory.py           # ????
-?   ?   ??? knowledge_store.py  # ?????
-?   ??? kb/                     # ???????
-?   ?   ??? config_methods/     # ????JSON (VLAN/OSPF/DHCP/static_route?)
-?   ??? static/                 # Web????
-?   ??? templates/              # Web??
-??? tests/                      # ?? (224 passed, 3 skipped)
-?   ??? test_smoke.py           # ????
-?   ??? test_regression.py      # ????
-?   ??? test_agent_runtime.py   # Agent?????
-?   ??? test_safety_framework.py # ??????
-??? docs/                       # ????
-    ??? architecture/           # ????
-    ??? development/            # ????
-    ??? modules/                # ????
-    ??? adr/                    # ??????
+├── mcpensp1/
+│   ├── app.py                  # Flask Web UI（1716 行, 51 个 API 端点）
+│   ├── mcp_server.py           # MCP Server（47 工具声明 / 46 已实现）
+│   ├── connection.py           # Telnet 连接层（缓冲 + 超时）
+│   ├── device_manager.py       # 设备连接池（保活）
+│   ├── command_executor.py     # 命令执行引擎
+│   ├── view_router.py          # 命令视图感知路由 + VRP 冷却（v2.4 新增）
+│   ├── knowledge.py            # 配置知识库（v2.4 精简：只记配置方法）
+│   ├── services.py             # kb/topo/config 服务聚合
+│   ├── topology.py             # 拓扑引擎
+│   ├── heartbeat.py            # 心跳监控 + 保活（v2.4 新增 keepalive）
+│   ├── config_method_store.py  # 配置方法库
+│   ├── experiment_engine.py    # 实验引擎
+│   ├── requirements.txt
+│   ├── mcp.json
+│   ├── protocols/              # 协议模板（VLAN/OSPF/BGP/ACL）
+│   ├── prompts/v3/system.md    # Agent System Prompt
+│   ├── agent/                  # AI Agent 子系统
+│   │   ├── planner.py          # DAG 任务规划
+│   │   ├── runtime.py          # 闭环执行引擎
+│   │   ├── verifier.py         # 语义验证器
+│   │   ├── reflection.py       # 反思引擎
+│   │   ├── learning.py         # 学习引擎
+│   │   ├── memory.py           # 长期记忆
+│   │   └── knowledge_store.py  # 增长知识库
+│   ├── kb/                     # 静态知识库数据
+│   │   └── config_methods/     # 配置方法 JSON（VLAN/OSPF/DHCP/static_route）
+│   ├── static/                 # Web 静态资源
+│   └── templates/              # Web 模板
+├── tests/                      # 测试（220 passed, 3 skipped）
+│   ├── test_smoke.py           # 冒烟（需真实 eNSP 设备，skip）
+│   ├── test_regression.py      # 回归
+│   ├── test_agent_runtime.py   # Agent 运行时
+│   └── test_safety_framework.py # 安全框架
+└── docs/                       # 项目文档
+    ├── architecture/           # 架构文档
+    ├── development/            # 开发规范
+    ├── modules/                # 模块文档
+    ├── api/                    # API 文档
+    ├── best_practices/         # 最佳实践
+    ├── troubleshooting/        # 排错指南
+    └── adr/                    # 架构决策记录
 ```
 
 ---
 
-## ??
+## 测试
 
 ```bash
 cd eNSP-MCP
 python -m pytest tests/ -q
-# 224 passed, 3 skipped
+# 220 passed, 3 skipped
 ```
 
 ---

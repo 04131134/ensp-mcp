@@ -14,7 +14,6 @@ pythonpath = ["mcpensp1"]
 norecursedirs = [
     "python312",
     "_baseline_*",
-    "mcpensp_new",
     "backup*",
     ".git",
     "__pycache__",

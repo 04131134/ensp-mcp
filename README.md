@@ -1,6 +1,6 @@
-# eNSP-MCP 基于 eNSP 模拟器的 AI 网络实验平台 v2.4
+# eNSP-MCP 基于 eNSP 模拟器的 AI 网络实验平台 v3.0
 
-> **版本** v2.4 | **更新日期** 2026-07-15 | **分支** `codex/fix-command-reliability`
+> **版本** v3.0 | **更新日期** 2026-07-19 | **分支** `codex/version-3.0`
 
 让 AI（Codex/Claude/Cursor 等）通过 Telnet 驱动本地 eNSP 模拟器，完成 20+ 种网络实验的自动化配置。
 
@@ -18,22 +18,24 @@ MCP Server (mcp_server.py, 47 个工具)
      +---> KnowledgeBase (kb)       配置知识库（只记配置方法）
      +---> TopologyEngine           拓扑引擎
      +---> ConfigMethodStore        配置方法库
-     +---> ViewRouter (v2.4 新增)   命令视图感知路由 + VRP 冷却保护
+     +---> ViewRouter (v3.0)   命令视图感知路由 + VRP 冷却保护
      +---> TelnetConnection          Telnet 连接层
      |
      4 个 Agent Runtime 模块经 HTTP 调 Flask
      v
-Flask Web UI (app.py, 51 个 API 端点)
+Flask Web UI (app.py, 74 个 HTTP 端点 = 51 Flask + 23 Agent 运行时注册, 另 8 个 SocketIO 事件)
      +---> Agent Runtime v3.0 (planner/runtime/verifier/reflection/learning)
 ```
 
-**v2.4 相对 v3.1 的主要变更**
-- 新增 `view_router.py`：命令视图感知路由 + VRP 冷却保护
-- 设备操作收敛，移除 `reboot`/`reset` 等高危占位
-- 知识库精简为「只记配置方法」，移除模板/快照/配置向导类工具
-- 心跳监控新增设备保活（keepalive）
+**v3.0 版本说明**
+v3.0 为「版本与文档统一」版本：**不新增功能**，仅把此前分散在代码（Agent Runtime 已标 `v3.0`）、`pyproject.toml`（旧 `3.1.0`）与旧 README（旧 `v2.4`）中的版本号统一收敛为 **3.0**，并补全全部 **47 个** MCP 工具的使用说明（见 [`docs/api/mcp_tools_reference.md`](docs/api/mcp_tools_reference.md)）。已实现的稳定能力包括：
+
+- `view_router.py`：命令视图感知路由 + VRP 冷却保护
+- 设备操作已收敛，移除 `reboot`/`reset` 等高危占位
+- 知识库精简为「只记配置方法」，模板/快照/配置向导类工具已移除
+- 心跳监控含设备保活（keepalive）
 - 命令发送统一 `120` 字符 `\r\n` 缓冲
-- 修复 14 处文档与代码中的乱码描述
+- 47 个 MCP 工具全部可用，含 Agent Runtime 闭环实验（`agent_execute` 推荐）
 
 ---
 
@@ -43,11 +45,11 @@ Flask Web UI (app.py, 51 个 API 端点)
 |------|------|------|
 | **DeviceManager** | `device_manager.py` | 设备连接池 / 连接 / 断开 / 保活 |
 | **CommandExecutor** | `command_executor.py` | 命令发送 / 结果解析 |
-| **ViewRouter** | `view_router.py` | 命令视图感知路由 + VRP 冷却保护（v2.4 新增） |
-| **KnowledgeBase** | `knowledge.py` | 配置方法 CRUD + 经验积累（v2.4 精简：只记配置方法） |
+| **ViewRouter** | `view_router.py` | 命令视图感知路由 + VRP 冷却保护（v3.0） |
+| **KnowledgeBase** | `knowledge.py` | 配置方法 CRUD + 经验积累（v3.0：只记配置方法） |
 | **Services** | `services.py` | kb / topo_engine / config_methods 服务聚合 |
 | **TopologyEngine** | `topology.py` | 拓扑发现 / 路径 / 设备关系 |
-| **HeartbeatMonitor** | `heartbeat.py` | 心跳监控 + 设备保活（v2.4 新增 keepalive） |
+| **HeartbeatMonitor** | `heartbeat.py` | 心跳监控 + 设备保活（v3.0 keepalive） |
 | **TelnetConnection** | `connection.py` | Telnet 连接层 + 缓冲 + 超时控制 |
 | **ConfigMethodStore** | `config_method_store.py` | 配置方法 JSON 存储 |
 | **Memory** | `agent/memory.py` | 长期记忆 |
@@ -62,6 +64,8 @@ Flask Web UI (app.py, 51 个 API 端点)
 ## MCP 工具清单
 
 共 **47 个工具**，均已实现（`search_kb` 经 `mcp_req` 代理到 Flask `/api/kb/search`）。
+
+> 📘 **完整工具使用说明（参数 / 示例 / 依赖）见 [`docs/api/mcp_tools_reference.md`](docs/api/mcp_tools_reference.md)**，这是调用本工具时的主要参考。
 
 ### 设备连接 7 个
 `scan_devices` `connect_device` `send_command` `disconnect_device` `get_connected_devices` `rename_device` `fetch_device_name`
@@ -81,7 +85,7 @@ Flask Web UI (app.py, 51 个 API 端点)
 ### Agent 工具 10 个
 `agent_memory_query` `agent_memory_lessons` `agent_memory_stats` `agent_knowledge_search` `agent_knowledge_best_practices` `agent_knowledge_troubleshooting` `agent_plan` `agent_execute` `agent_status` `agent_daily_review`
 
-### v2.4 已移除工具 12 个
+### 已移除工具（历史） 12 个
 ~~配置模板类~~ `generate_config_template` `list_templates` ~~~~ ~~配置快照类~~ `snapshot_config` `list_snapshots` `get_snapshot` `diff_snapshots` `rollback_config` ~~~~ ~~配置向导类~~ `get_config_guidance` `suggest_next_steps` `get_config_order` `config_summary` `config_record_experience` ~~~~
 
 ---
@@ -136,16 +140,16 @@ python app.py
 ```
 eNSP-MCP/
 ├── mcpensp1/
-│   ├── app.py                  # Flask Web UI（1716 行, 51 个 API 端点）
+│   ├── app.py                  # Flask Web UI（1716 行, 74 HTTP 端点 + 8 SocketIO 事件）
 │   ├── mcp_server.py           # MCP Server（47 个工具）
 │   ├── connection.py           # Telnet 连接层（缓冲 + 超时）
 │   ├── device_manager.py       # 设备连接池（保活）
 │   ├── command_executor.py     # 命令执行引擎
-│   ├── view_router.py          # 命令视图感知路由 + VRP 冷却（v2.4 新增）
-│   ├── knowledge.py            # 配置知识库（v2.4 精简：只记配置方法）
+│   ├── view_router.py          # 命令视图感知路由 + VRP 冷却（v3.0）
+│   ├── knowledge.py            # 配置知识库（v3.0：只记配置方法）
 │   ├── services.py             # kb/topo/config 服务聚合
 │   ├── topology.py             # 拓扑引擎
-│   ├── heartbeat.py            # 心跳监控 + 保活（v2.4 新增 keepalive）
+│   ├── heartbeat.py            # 心跳监控 + 保活（v3.0 keepalive）
 │   ├── config_method_store.py  # 配置方法库
 │   ├── experiment_engine.py    # 实验引擎
 │   ├── requirements.txt
@@ -164,7 +168,7 @@ eNSP-MCP/
 │   │   └── config_methods/     # 配置方法 JSON（VLAN/OSPF/DHCP/static_route）
 │   ├── static/                 # Web 静态资源
 │   └── templates/              # Web 模板
-├── tests/                      # 测试（220 passed, 3 skipped）
+├── tests/                      # 测试（236 passed, 3 skipped）
 │   ├── test_smoke.py           # 冒烟（需真实 eNSP 设备，skip）
 │   ├── test_regression.py      # 回归
 │   ├── test_agent_runtime.py   # Agent 运行时
@@ -186,7 +190,7 @@ eNSP-MCP/
 ```bash
 cd eNSP-MCP
 python -m pytest tests/ -q
-# 223 passed, 3 skipped
+# 236 passed, 3 skipped
 ```
 
 ---

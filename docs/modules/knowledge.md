@@ -1,4 +1,4 @@
-# 知识层 (KnowledgeBase) 模块文档 v2.4
+# 知识层 (KnowledgeBase) 模块文档 v3.0
 
 ## 概述
 `KnowledgeBase` 定义在 `mcpensp1/knowledge.py`，是命令 / 经验 / 最佳实践 / 排错案例的**结构化知识库**。

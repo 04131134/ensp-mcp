@@ -102,5 +102,76 @@
       "连接超时较长，需要设置更长的timeout"
     ],
     "experiment": "校园网综合设计实训"
+  },
+  {
+    "id": "BP008",
+    "title": "防火墙 service-manage 机制",
+    "category": "security",
+    "description": "USG防火墙独有的接口级管理权限控制（路由器/交换机没有）",
+    "rules": [
+      "防火墙接口默认拒绝所有管理流量，即使IP能Ping通也登不上",
+      "必须在接口视图显式开启：service-manage https permit / ssh permit / ping permit",
+      "实验环境应急可 service-manage all permit（仅实验用）",
+      "查看接口管理权限：display service-manage interface GigabitEthernet 0/0/0",
+      "管理接口必须加入 trust 区域，到防火墙自身流量目标区域是 local"
+    ],
+    "experiment": "华为eNSP操作命令大全"
+  },
+  {
+    "id": "BP009",
+    "title": "VRP5 与 VRP8 配置生效差异",
+    "category": "general",
+    "description": "eNSP 中 AR/S 交换机运行 VRP5，CE 系列运行 VRP8",
+    "rules": [
+      "VRP5：命令实时生效，无需提交；undo 直接撤销",
+      "VRP8：配置后需 commit 才生效；undo 后也需 commit",
+      "查看配置：VRP5 display current-configuration；VRP8 另有 display configuration candidate",
+      "VRP8 支持配置回滚：rollback configuration to file backup.cfg（CE设备）"
+    ],
+    "experiment": "华为eNSP操作命令大全"
+  },
+  {
+    "id": "BP010",
+    "title": "配置通用铁律",
+    "category": "general",
+    "description": "任何设备配置前必须牢记的通用规则",
+    "rules": [
+      "配置前先 save 备份当前配置",
+      "确认当前视图（用户视图 <> 还是系统视图 []），命令必须在对应视图执行",
+      "接口编号格式=类型 槽位号/子卡号/端口号，如 GigabitEthernet 0/0/1",
+      "OSPF network 与 ACL source 使用反掩码（0.0.0.255）",
+      "Trunk 端口默认只放行 VLAN 1，需手动 port trunk allow-pass vlan 添加",
+      "防火墙默认区域间全部拒绝，必须配安全策略放通",
+      "配置完成后务必 save，避免重启丢配置"
+    ],
+    "experiment": "华为eNSP操作命令大全"
+  },
+  {
+    "id": "BP011",
+    "title": "设备空闲超时配置",
+    "category": "general",
+    "description": "实验环境防止长时间不操作被踢下线",
+    "rules": [
+      "Console口：user-interface console 0 → idle-timeout 0 0（永不超时）",
+      "VTY远程：user-interface vty 0 4 → idle-timeout 0 0",
+      "防火墙Web：web-manager timeout 1440（最大值，单位分钟，不能设0）",
+      "交换机Web：web idle-timeout 30",
+      "各设备默认超时均为5分钟（防火墙Web默认10分钟）"
+    ],
+    "experiment": "华为eNSP操作命令大全"
+  },
+  {
+    "id": "BP012",
+    "title": "命令缩写规则",
+    "category": "general",
+    "description": "华为VRP命令不区分大小写，支持缩写",
+    "rules": [
+      "缩写必须唯一，如 d c 会提示命令模糊",
+      "常用缩写：system-view→sys，display→dis，interface→int，GigabitEthernet→g",
+      "VLAN缩写：port link-type access→p l a，port default vlan→p d v，port trunk allow-pass vlan→p t a v",
+      "OSPF缩写：area 0→a 0，network→net，ospf 1 router-id 1.1.1.1→ospf 1 r 1.1.1.1",
+      "Tab 自动补全，? 查看可用参数"
+    ],
+    "experiment": "华为eNSP操作命令大全"
   }
 ]

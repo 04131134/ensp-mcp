@@ -1,0 +1,89 @@
+{
+  "id": "bgp_config",
+  "name": "BGP路由配置",
+  "category": "routing",
+  "device_types": [
+    "路由器"
+  ],
+  "description": "配置 BGP 边界网关协议（IBGP/EBGP）",
+  "prerequisites": [
+    "已进入系统视图 system-view（防火墙还需先配接口IP并加入安全区域）"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "进入系统视图",
+      "commands": [
+        "system-view"
+      ],
+      "notes": []
+    },
+    {
+      "step": 2,
+      "name": "启用BGP",
+      "commands": [
+        "bgp 100",
+        "router-id 1.1.1.1"
+      ],
+      "notes": [
+        "100 为本地 AS 号"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "IBGP对等体",
+      "commands": [
+        "peer 10.1.2.2 as-number 100",
+        "peer 10.1.2.2 connect-interface LoopBack 0"
+      ],
+      "notes": [
+        "IBGP 通常用 LoopBack 建邻居"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "EBGP对等体",
+      "commands": [
+        "peer 202.103.0.2 as-number 200"
+      ],
+      "notes": [
+        "EBGP 默认 TTL=1，多跳需 ebgp-max-hop"
+      ]
+    },
+    {
+      "step": 5,
+      "name": "IPv4单播地址族",
+      "commands": [
+        "ipv4-family unicast",
+        "undo synchronization",
+        "network 192.168.1.0 255.255.255.0",
+        "peer 10.1.2.2 next-hop-local"
+      ],
+      "notes": [
+        "IBGP 需 next-hop-local 才下发可达下一跳"
+      ]
+    }
+  ],
+  "verification": [
+    "display bgp peer",
+    "display bgp routing-table"
+  ],
+  "common_errors": [
+    {
+      "error": "IBGP 邻居起但路由不可达",
+      "cause": "未配 next-hop-local",
+      "solution": "ipv4-family 下 peer x.x.x.x next-hop-local"
+    }
+  ],
+  "tips": [
+    "IBGP 用 LoopBack 建邻居需 next-hop-local",
+    "EBGP 默认 TTL=1"
+  ],
+  "related_methods": [
+    "ospf_basic"
+  ],
+  "created_at": "2026-07-20T17:34:00",
+  "updated_at": "2026-07-20T17:34:00",
+  "usage_count": 0,
+  "success_rate": 0.0
+}

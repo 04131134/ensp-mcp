@@ -1,0 +1,109 @@
+{
+  "id": "interface_basic",
+  "name": "接口基础配置",
+  "category": "management",
+  "device_types": [
+    "路由器",
+    "交换机",
+    "防火墙"
+  ],
+  "description": "配置接口IP地址、开启/关闭、描述、速率与双工模式",
+  "prerequisites": [
+    "已进入系统视图 system-view（防火墙还需先配接口IP并加入安全区域）"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "进入系统视图",
+      "commands": [
+        "system-view"
+      ],
+      "notes": [
+        "缩写 sys"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "进入接口视图",
+      "commands": [
+        "interface GigabitEthernet 0/0/1"
+      ],
+      "notes": [
+        "缩写 int g0/0/1；编号格式=类型 槽位/子卡/端口"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "配置IP地址",
+      "commands": [
+        "ip address 192.168.1.1 24"
+      ],
+      "notes": [
+        "可用掩码长度 24 或完整掩码 255.255.255.0"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "开启接口",
+      "commands": [
+        "undo shutdown"
+      ],
+      "notes": [
+        "防火墙接口默认 shutdown，必须显式开启；undo shutdown 即开启"
+      ]
+    },
+    {
+      "step": 5,
+      "name": "关闭接口",
+      "commands": [
+        "shutdown"
+      ],
+      "notes": []
+    },
+    {
+      "step": 6,
+      "name": "接口描述",
+      "commands": [
+        "description To_Router_G0/0/0"
+      ],
+      "notes": [
+        "建议含对端/用途标识"
+      ]
+    },
+    {
+      "step": 7,
+      "name": "速率与双工",
+      "commands": [
+        "negotiation auto",
+        "speed 100",
+        "duplex full"
+      ],
+      "notes": [
+        "强制速率/双工前先 undo negotiation auto；强制可能导致链路震荡"
+      ]
+    }
+  ],
+  "verification": [
+    "display interface brief",
+    "display ip interface brief"
+  ],
+  "common_errors": [
+    {
+      "error": "接口物理/协议状态 down",
+      "cause": "未 undo shutdown（防火墙默认 shutdown）或链路未连",
+      "solution": "接口下执行 undo shutdown，检查对端链路"
+    }
+  ],
+  "tips": [
+    "华为接口编号=类型 槽位号/子卡号/端口号，如 GigabitEthernet 0/0/1",
+    "配置实时生效（VRP5），save 只是写入启动配置文件"
+  ],
+  "related_methods": [
+    "remote_mgmt_telnet_ssh",
+    "vlan_config"
+  ],
+  "created_at": "2026-07-20T17:34:00",
+  "updated_at": "2026-07-20T17:34:00",
+  "usage_count": 0,
+  "success_rate": 0.0
+}

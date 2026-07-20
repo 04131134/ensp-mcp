@@ -1,0 +1,53 @@
+{
+  "id": "rip_config",
+  "name": "RIP路由配置",
+  "category": "routing",
+  "device_types": [
+    "路由器",
+    "三层交换机"
+  ],
+  "description": "配置 RIP 动态路由协议（v2）",
+  "prerequisites": [
+    "已进入系统视图 system-view（防火墙还需先配接口IP并加入安全区域）"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "进入系统视图",
+      "commands": [
+        "system-view"
+      ],
+      "notes": []
+    },
+    {
+      "step": 2,
+      "name": "启用RIP",
+      "commands": [
+        "rip 1",
+        "version 2",
+        "undo summary",
+        "network 192.168.1.0"
+      ],
+      "notes": [
+        "version 2 关闭自动汇总；network 用主类网段"
+      ]
+    }
+  ],
+  "verification": [
+    "display rip 1 neighbor",
+    "display ip routing-table protocol rip"
+  ],
+  "common_errors": [],
+  "tips": [
+    "RIP 用跳数度量，最大15跳",
+    "network 命令使用主类网段，不是反掩码"
+  ],
+  "related_methods": [
+    "ospf_basic",
+    "static_route"
+  ],
+  "created_at": "2026-07-20T17:34:00",
+  "updated_at": "2026-07-20T17:34:00",
+  "usage_count": 0,
+  "success_rate": 0.0
+}

@@ -2,7 +2,10 @@
   {
     "id": "T001",
     "title": "AP无法上线 - State为idle",
-    "symptoms": ["display ap all显示State=idle", "AP有IP但无法广播SSID"],
+    "symptoms": [
+      "display ap all显示State=idle",
+      "AP有IP但无法广播SSID"
+    ],
     "root_causes": [
       "缺少 capwap source interface Vlanif100",
       "缺少 ap auth-mode no-auth",
@@ -29,7 +32,10 @@
   {
     "id": "T002",
     "title": "PC无法获取DHCP IP地址",
-    "symptoms": ["PC设置DHCP后无法获取IP", "ipconfig显示169.254.x.x"],
+    "symptoms": [
+      "PC设置DHCP后无法获取IP",
+      "ipconfig显示169.254.x.x"
+    ],
     "root_causes": [
       "DHCP地址池未创建",
       "Vlanif接口未配置dhcp select global",
@@ -57,7 +63,10 @@
   {
     "id": "T003",
     "title": "端口类型修改失败 - Please renew the default config",
-    "symptoms": ["执行port link-type trunk报错", "提示Please renew the default configurations"],
+    "symptoms": [
+      "执行port link-type trunk报错",
+      "提示Please renew the default configurations"
+    ],
     "root_causes": [
       "端口已经是access类型且配置了VLAN",
       "端口是Eth-Trunk成员",
@@ -79,7 +88,9 @@
   {
     "id": "T004",
     "title": "VRRP状态全部Initialize",
-    "symptoms": ["display vrrp brief显示所有组为Initialize"],
+    "symptoms": [
+      "display vrrp brief显示所有组为Initialize"
+    ],
     "root_causes": [
       "Vlanif接口down",
       "trunk链路不通",
@@ -102,7 +113,9 @@
   {
     "id": "T005",
     "title": "OSPF邻居无法建立",
-    "symptoms": ["display ospf peer brief无邻居"],
+    "symptoms": [
+      "display ospf peer brief无邻居"
+    ],
     "root_causes": [
       "两端area-id不匹配",
       "两端网络类型不匹配",
@@ -127,7 +140,10 @@
   {
     "id": "T006",
     "title": "Eth-Trunk聚合链路断开",
-    "symptoms": ["display eth-trunk显示Number Of Up Port In Trunk: 0", "Operate status: down"],
+    "symptoms": [
+      "display eth-trunk显示Number Of Up Port In Trunk: 0",
+      "Operate status: down"
+    ],
     "root_causes": [
       "成员端口被误删",
       "成员端口配置被修改",
@@ -149,7 +165,10 @@
   {
     "id": "T007",
     "title": "华为设备命令执行无响应",
-    "symptoms": ["API返回空output", "success=false"],
+    "symptoms": [
+      "API返回空output",
+      "success=false"
+    ],
     "root_causes": [
       "设备处于登录提示符 (Username/Password)",
       "设备连接超时",
@@ -170,5 +189,152 @@
     "severity": "medium",
     "category": "general",
     "experiment": "校园网综合设计实训"
+  },
+  {
+    "id": "T008",
+    "title": "防火墙Web/SSH登不上",
+    "symptoms": [
+      "浏览器无法打开 https://IP:8443",
+      "SSH连接被拒",
+      "提示证书风险后无法登录"
+    ],
+    "root_causes": [
+      "接口未开启 service-manage https/ssh permit",
+      "管理接口未加入 trust 区域",
+      "Web服务未启用(web-manager enable)",
+      "镜像默认密码不同(空/Admin@123/admin@123)导致改密失败"
+    ],
+    "diagnosis_steps": [
+      "ping 192.168.0.1 测试连通性",
+      "display ip interface GigabitEthernet 0/0/0 检查IP",
+      "display service-manage interface GigabitEthernet 0/0/0 检查管理权限",
+      "display firewall zone trust 检查区域",
+      "display web-manager 检查Web服务"
+    ],
+    "solutions": [
+      "接口下 service-manage https permit / ssh permit / ping permit",
+      "firewall zone trust → add interface GigabitEthernet 0/0/0",
+      "web-manager enable + web-manager security enable port 8443",
+      "逐个尝试默认密码(空/Admin@123/admin@123)，都不行则重置设备",
+      "应急：service-manage all permit"
+    ],
+    "severity": "high",
+    "category": "security",
+    "experiment": "华为eNSP操作命令大全"
+  },
+  {
+    "id": "T009",
+    "title": "VLAN不通",
+    "symptoms": [
+      "同VLAN终端无法互通",
+      "跨VLAN无法通信",
+      "display vlan 看不到端口"
+    ],
+    "root_causes": [
+      "接口VLAN配置错误",
+      "Trunk未放行对应VLAN",
+      "VLAN未创建",
+      "VLANIF接口down"
+    ],
+    "diagnosis_steps": [
+      "display port vlan 检查接口VLAN类型与PVID",
+      "display port trunk g0/0/24 检查Trunk放行VLAN",
+      "display vlan 10 检查VLAN是否创建",
+      "display ip interface Vlanif 10 检查三层接口状态"
+    ],
+    "solutions": [
+      "确认 access 口 port default vlan 正确",
+      "Trunk 口 port trunk allow-pass vlan 添加所需VLAN",
+      "创建VLAN/VLANIF并配置IP，确保有端口up使VLANIF up"
+    ],
+    "severity": "high",
+    "category": "switching",
+    "experiment": "华为eNSP操作命令大全"
+  },
+  {
+    "id": "T010",
+    "title": "OSPF邻居无法建立",
+    "symptoms": [
+      "display ospf peer brief 无邻居",
+      "路由表无OSPF路由"
+    ],
+    "root_causes": [
+      "两端 area-id 不匹配",
+      "网络类型不匹配",
+      "接口 silent-interface",
+      "三层接口不通"
+    ],
+    "diagnosis_steps": [
+      "ping 对端IP 检查直连",
+      "display ospf interface 检查OSPF是否在该接口启用",
+      "display ospf brief 检查区域号",
+      "检查 Hello 时间/网络类型是否匹配"
+    ],
+    "solutions": [
+      "确保两端 area-id 一致",
+      "移除不必要的 silent-interface",
+      "确保三层接口IP同网段且 up"
+    ],
+    "severity": "high",
+    "category": "routing",
+    "experiment": "华为eNSP操作命令大全"
+  },
+  {
+    "id": "T011",
+    "title": "防火墙区域间不通",
+    "symptoms": [
+      "内网无法访问外网",
+      "DMZ服务器外网不可达",
+      "策略配了仍不通"
+    ],
+    "root_causes": [
+      "未配置安全策略(默认拒绝)",
+      "安全策略源/目的区域或地址写错",
+      "NAT后未放通安全策略"
+    ],
+    "diagnosis_steps": [
+      "display firewall zone 检查接口区域",
+      "display security-policy rule all 检查策略",
+      "display session all 检查是否有会话建立"
+    ],
+    "solutions": [
+      "按源/目的区域配置 action permit 的安全策略",
+      "确认 source/destination-address 与 zone 正确",
+      "NAT 场景同步放通对应安全策略",
+      "排障可临时全开策略(用完立即关闭)"
+    ],
+    "severity": "high",
+    "category": "security",
+    "experiment": "华为eNSP操作命令大全"
+  },
+  {
+    "id": "T012",
+    "title": "eNSP设备启动失败(错误40/41)",
+    "symptoms": [
+      "设备一直显示 ####",
+      "设备启动后无法连接",
+      "设备图标灰色不可拖拽"
+    ],
+    "root_causes": [
+      "VirtualBox版本与eNSP不匹配(推荐5.2.44)",
+      "Hyper-V/VBS冲突",
+      "虚拟网卡异常",
+      "设备镜像文件缺失"
+    ],
+    "diagnosis_steps": [
+      "检查 VirtualBox 版本与 eNSP 兼容",
+      "关闭 Hyper-V 与 VBS",
+      "检查 VirtualBox Host-Only 网卡设置",
+      "确认设备镜像路径正确"
+    ],
+    "solutions": [
+      "卸载重装匹配版本 VirtualBox",
+      "关闭 Hyper-V、VMware 等虚拟化冲突",
+      "重置虚拟网卡",
+      "重新安装 eNSP 或检查镜像路径"
+    ],
+    "severity": "critical",
+    "category": "general",
+    "experiment": "华为eNSP操作命令大全"
   }
 ]

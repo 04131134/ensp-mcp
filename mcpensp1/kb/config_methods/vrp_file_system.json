@@ -1,0 +1,89 @@
+{
+  "id": "vrp_file_system",
+  "name": "VRP文件系统与配置管理",
+  "category": "management",
+  "device_types": [
+    "路由器",
+    "交换机",
+    "防火墙"
+  ],
+  "description": "查看/保存/备份配置、文件系统管理与配置回滚",
+  "prerequisites": [
+    "已进入系统视图 system-view（防火墙还需先配接口IP并加入安全区域）"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "查看存储与配置",
+      "commands": [
+        "dir",
+        "display current-configuration",
+        "display saved-configuration",
+        "display flash"
+      ],
+      "notes": [
+        "current=运行配置，saved=启动配置"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "保存配置",
+      "commands": [
+        "save"
+      ],
+      "notes": [
+        "将运行配置写入启动配置文件；VRP5实时生效，save只是落盘"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "备份配置",
+      "commands": [
+        "copy vrpcfg.zip backup.zip"
+      ],
+      "notes": []
+    },
+    {
+      "step": 4,
+      "name": "对比/中文提示",
+      "commands": [
+        "compare configuration",
+        "language-mode Chinese"
+      ],
+      "notes": []
+    },
+    {
+      "step": 5,
+      "name": "VRP8回滚(CE设备)",
+      "commands": [
+        "rollback configuration to file backup.cfg"
+      ],
+      "notes": [
+        "VRP8 需 commit 生效，undo 后也需 commit"
+      ]
+    }
+  ],
+  "verification": [
+    "display saved-configuration",
+    "display flash"
+  ],
+  "common_errors": [
+    {
+      "error": "重启后配置丢失",
+      "cause": "未执行 save",
+      "solution": "重大修改后务必 save"
+    }
+  ],
+  "tips": [
+    "VRP5配置实时生效，VRP8配置后需 commit",
+    "undo 几乎可撤销任意配置",
+    "配置前先 save 备份"
+  ],
+  "related_methods": [
+    "interface_basic"
+  ],
+  "created_at": "2026-07-20T17:34:00",
+  "updated_at": "2026-07-20T17:34:00",
+  "usage_count": 0,
+  "success_rate": 0.0
+}

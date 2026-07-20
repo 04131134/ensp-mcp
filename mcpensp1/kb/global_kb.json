@@ -1,38 +1,8 @@
 {
   "version": "3.0",
   "description": "全局命令知识库 - 按视图>功能分类，去除运行时信息",
-  "last_updated": "2026-06-26T20:51:24.138010+00:00",
+  "last_updated": "2026-07-20T10:20:16.840296+00:00",
   "commands": [
-    {
-      "key": "e76ad7ee6b88179a",
-      "command": "sysname SW7",
-      "description": "network command",
-      "device_type": "huawei",
-      "category": "config",
-      "risk": "low",
-      "output_preview": "sysname SW7\r\n[SW7]",
-      "success": true,
-      "last_used": "2026-06-26T17:52:43.621566+00:00",
-      "use_count": 5,
-      "devices_used": [
-        "127.0.0.1:2004"
-      ]
-    },
-    {
-      "key": "2ba395f6987f9978",
-      "command": "sysname SW8",
-      "description": "network command",
-      "device_type": "huawei",
-      "category": "config",
-      "risk": "low",
-      "output_preview": "sysname SW8\r\n[SW8]",
-      "success": true,
-      "last_used": "2026-06-26T17:53:22.796364+00:00",
-      "use_count": 4,
-      "devices_used": [
-        "127.0.0.1:2006"
-      ]
-    },
     {
       "key": "e967d0a9fe87cf59",
       "command": "sysname SW10",
@@ -1825,24 +1795,26 @@
       "device_type": "huawei",
       "category": "display",
       "risk": "safe",
-      "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S5700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S5700-28C-HI Routing Switch uptime is 0 week, 0 day, 3 hours, 51 minutes\r\n[SW1]",
+      "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.160 (AP3030DN FIT V200R007C10SPC300)\r\nCopyright (C) 2011-2018 HUAWEI TECH CO., LTD\r\nHuawei AP3030DN Router uptime is 0 week, 0 day, 2 hours, 1 minute\r\n\r\nMPU 0(Master) : uptime is 0 week, 0 day, 2 hours, 1 minute\r\nNOR FLASH Memory Size: 32      M bytes\r\nMPU version information : \r\n1. PCB      Version  : VER.A\r\n2. MAB      Version  : 0\r\n3. Board    Type     : AP3030DN\r\n4. BootROM  Version  : 0\r\n\r\n<Huawei>\r\n<Hu",
       "success": true,
-      "last_used": "2026-06-26T20:47:40.251935+00:00",
-      "use_count": 32,
+      "last_used": "2026-07-20T10:20:16.840296+00:00",
+      "use_count": 79,
       "devices_used": [
-        "127.0.0.1:2013",
-        "127.0.0.1:2008",
-        "127.0.0.1:2000",
-        "127.0.0.1:2015",
-        "127.0.0.1:2006",
-        "127.0.0.1:2011",
-        "127.0.0.1:2003",
-        "127.0.0.1:2007",
-        "127.0.0.1:2014",
-        "127.0.0.1:2004",
-        "127.0.0.1:2002",
         "127.0.0.1:2016",
-        "127.0.0.1:2010"
+        "127.0.0.1:2014",
+        "127.0.0.1:2015",
+        "127.0.0.1:2009",
+        "127.0.0.1:2010",
+        "127.0.0.1:2006",
+        "127.0.0.1:2013",
+        "127.0.0.1:2003",
+        "127.0.0.1:2002",
+        "127.0.0.1:2007",
+        "127.0.0.1:2011",
+        "127.0.0.1:2008",
+        "127.0.0.1:2004",
+        "127.0.0.1:2000",
+        "127.0.0.1:2001"
       ]
     },
     {
@@ -4586,8 +4558,8 @@
       "risk": "safe",
       "output_preview": "display version\r\nPassword:",
       "success": true,
-      "last_used": "2026-06-26T20:40:33.263293+00:00",
-      "use_count": 4,
+      "last_used": "2026-07-20T09:10:39.107138+00:00",
+      "use_count": 5,
       "devices_used": [
         "127.0.0.1:2009"
       ]
@@ -4715,6 +4687,50 @@
       "devices_used": [
         "127.0.0.1:2008",
         "127.0.0.1:2015"
+      ]
+    },
+    {
+      "key": "39952297f8c5b43b",
+      "command": "display current-configuration | include sysname",
+      "description": "提取设备主机名",
+      "device_type": "huawei",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "display current-configuration | include sysname\r\nsysname lsw2\r\n<lsw2>",
+      "success": true,
+      "last_used": "2026-07-20T09:32:58.842666+00:00",
+      "use_count": 36,
+      "devices_used": [
+        "127.0.0.1:2008",
+        "127.0.0.1:2000",
+        "127.0.0.1:2016",
+        "127.0.0.1:2001",
+        "127.0.0.1:2014",
+        "127.0.0.1:2002",
+        "127.0.0.1:2004",
+        "127.0.0.1:2011",
+        "127.0.0.1:2009",
+        "127.0.0.1:2015",
+        "127.0.0.1:2006",
+        "127.0.0.1:2013",
+        "127.0.0.1:2003",
+        "127.0.0.1:2010",
+        "127.0.0.1:2007"
+      ]
+    },
+    {
+      "key": "a9c586a5d423bbea",
+      "command": "display current-configuration | include sysname",
+      "description": "提取设备主机名",
+      "device_type": "unknown",
+      "category": "display",
+      "risk": "safe",
+      "output_preview": "\r\n\r\n\r\n\r\n\r\n\r\r\nUser interface con0 is available\r\n\r\n\r\n\r\nPlease Press ENTER.\r\n",
+      "success": true,
+      "last_used": "2026-07-20T09:11:09.552753+00:00",
+      "use_count": 1,
+      "devices_used": [
+        "127.0.0.1:2009"
       ]
     }
   ],

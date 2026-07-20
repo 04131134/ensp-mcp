@@ -1,0 +1,90 @@
+{
+  "id": "eth_trunk_lacp",
+  "name": "链路聚合(Eth-Trunk/LACP)",
+  "category": "switching",
+  "device_types": [
+    "交换机"
+  ],
+  "description": "将多个物理接口捆绑为 Eth-Trunk，提升带宽与可靠性",
+  "prerequisites": [
+    "已进入系统视图 system-view（防火墙还需先配接口IP并加入安全区域）"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "进入系统视图",
+      "commands": [
+        "system-view"
+      ],
+      "notes": []
+    },
+    {
+      "step": 2,
+      "name": "创建聚合口",
+      "commands": [
+        "interface Eth-Trunk 1"
+      ],
+      "notes": []
+    },
+    {
+      "step": 3,
+      "name": "配置模式",
+      "commands": [
+        "mode lacp-static"
+      ],
+      "notes": [
+        "或 mode manual load-balance（手工模式）"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "加入成员口",
+      "commands": [
+        "interface GigabitEthernet 0/0/1",
+        "eth-trunk 1",
+        "interface GigabitEthernet 0/0/2",
+        "eth-trunk 1"
+      ],
+      "notes": [
+        "成员口需先清空原有配置"
+      ]
+    },
+    {
+      "step": 5,
+      "name": "放行VLAN",
+      "commands": [
+        "interface Eth-Trunk 1",
+        "port link-type trunk",
+        "port trunk allow-pass vlan all"
+      ],
+      "notes": []
+    }
+  ],
+  "verification": [
+    "display eth-trunk 1"
+  ],
+  "common_errors": [
+    {
+      "error": "成员口无法加入",
+      "cause": "端口已有其他配置（如 VLAN/Trunk）",
+      "solution": "先清空端口配置再 eth-trunk 1"
+    },
+    {
+      "error": "聚合链路 down",
+      "cause": "两端模式/成员不一致",
+      "solution": "确保两端都配 Eth-Trunk 且模式一致"
+    }
+  ],
+  "tips": [
+    "两端设备都要配置 Eth-Trunk",
+    "LACP 设备优先级越小越优先（默认32768）"
+  ],
+  "related_methods": [
+    "stp_config",
+    "vlan_config"
+  ],
+  "created_at": "2026-07-20T17:34:00",
+  "updated_at": "2026-07-20T17:34:00",
+  "usage_count": 0,
+  "success_rate": 0.0
+}

@@ -1,0 +1,105 @@
+{
+  "id": "firewall_web_login",
+  "name": "USG6000V登录与Web管理",
+  "category": "security",
+  "device_types": [
+    "防火墙(USG6000V)"
+  ],
+  "description": "完成 USG6000V 首次登录、接口管理权限开启与 Web/SSH 管理配置",
+  "prerequisites": [
+    "已进入系统视图 system-view（防火墙还需先配接口IP并加入安全区域）"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "首次登录改密",
+      "commands": [
+        "Username: admin",
+        "Password: Admin@123",
+        "Please enter new password: Huawei@123"
+      ],
+      "notes": [
+        "默认空或 Admin@123(首字母大写)；密码需大小写+数字+特殊字符≥8位"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "管理接口IP与权限",
+      "commands": [
+        "system-view",
+        "interface GigabitEthernet 0/0/0",
+        "ip address 192.168.0.1 24",
+        "service-manage enable",
+        "service-manage https permit",
+        "service-manage ping permit",
+        "service-manage ssh permit"
+      ],
+      "notes": [
+        "service-manage 是防火墙独有机制，默认拒绝所有管理流量"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "加入trust区域",
+      "commands": [
+        "firewall zone trust",
+        "add interface GigabitEthernet 0/0/0"
+      ],
+      "notes": []
+    },
+    {
+      "step": 4,
+      "name": "开启Web管理",
+      "commands": [
+        "web-manager enable",
+        "web-manager security enable port 8443"
+      ],
+      "notes": [
+        "默认 HTTPS 8443，非443/80"
+      ]
+    },
+    {
+      "step": 5,
+      "name": "SSH用户",
+      "commands": [
+        "rsa local-key-pair create",
+        "aaa",
+        "manager-user admin",
+        "password cipher Huawei@123",
+        "service-type ssh web",
+        "level 15"
+      ],
+      "notes": []
+    }
+  ],
+  "verification": [
+    "display service-manage interface GigabitEthernet 0/0/0",
+    "display web-manager",
+    "display firewall zone trust"
+  ],
+  "common_errors": [
+    {
+      "error": "Web 登不上",
+      "cause": "未 service-manage https permit 或未加 trust",
+      "solution": "接口下开启 https permit 并加入 trust；应急可 service-manage all permit"
+    },
+    {
+      "error": "改密失败(密码无效)",
+      "cause": "镜像默认密码不同(空/Admin@123/admin@123)",
+      "solution": "逐个尝试默认密码，都不行则重置设备"
+    }
+  ],
+  "tips": [
+    "service-manage 是防火墙独有机制，路由器/交换机没有",
+    "Web 默认 8443 HTTPS，首次证书风险可继续",
+    "本地网卡设同网段IP(如192.168.0.2/24)再访问 https://192.168.0.1:8443"
+  ],
+  "related_methods": [
+    "firewall_security_policy",
+    "remote_mgmt_telnet_ssh"
+  ],
+  "created_at": "2026-07-20T17:34:00",
+  "updated_at": "2026-07-20T17:34:00",
+  "usage_count": 0,
+  "success_rate": 0.0
+}

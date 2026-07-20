@@ -2,7 +2,7 @@
   "devices": {
     "127.0.0.1:2006": {
       "device_type": "huawei",
-      "display_name": "SW8",
+      "display_name": "127.0.0.1:2006",
       "executed_commands": [
         {
           "command": "ip address 192.168.100.254 255.255.255.0",
@@ -532,10 +532,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display current-configuration | include sysname\r\nsysname lsw10\r\n<lsw10>",
+          "output_preview": "display current-configuration | include sysname\r\nsysname lsw8\r\n<lsw8>",
           "timestamp": "2026-06-17T06:28:44.327475+00:00",
-          "use_count": 4,
-          "last_used": "2026-06-26T12:01:21.634991+00:00"
+          "use_count": 6,
+          "last_used": "2026-07-20T09:31:06.740593+00:00"
         },
         {
           "command": "display lldp neighbor brief",
@@ -564,10 +564,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S3700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S3700-26C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 4 minutes\r\n<lsw10>",
+          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S3700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S3700-26C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 12 minutes\r\n<lsw8>",
           "timestamp": "2026-06-17T06:41:57.695950+00:00",
-          "use_count": 13,
-          "last_used": "2026-06-26T12:05:35.105127+00:00"
+          "use_count": 15,
+          "last_used": "2026-07-20T09:31:05.242450+00:00"
         },
         {
           "command": "display interface brief",
@@ -1194,16 +1194,6 @@
           "use_count": 1
         },
         {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T14:25:24.230839+00:00",
-          "use_count": 1
-        },
-        {
           "command": "display this",
           "description": "",
           "category": "display",
@@ -1211,16 +1201,6 @@
           "success": false,
           "output_preview": "",
           "timestamp": "2026-06-26T14:25:28.735559+00:00",
-          "use_count": 1
-        },
-        {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T14:27:18.698169+00:00",
           "use_count": 1
         },
         {
@@ -1412,34 +1392,14 @@
           "output_preview": "",
           "timestamp": "2026-06-26T19:28:00.375578+00:00",
           "use_count": 1
-        },
-        {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T20:13:57.772565+00:00",
-          "use_count": 1
-        },
-        {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T20:31:39.066351+00:00",
-          "use_count": 1
         }
       ],
       "first_seen": "2026-06-10T05:16:22.668140+00:00",
-      "last_seen": "2026-06-26T20:31:39.066348+00:00"
+      "last_seen": "2026-07-20T09:31:06.740573+00:00"
     },
     "127.0.0.1:2000": {
       "device_type": "huawei",
-      "display_name": "AP3",
+      "display_name": "127.0.0.1:2000",
       "executed_commands": [
         {
           "command": "sysname AC1",
@@ -2344,10 +2304,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.160 (AP3030DN FIT V200R007C10SPC300)\r\nCopyright (C) 2011-2018 HUAWEI TECH CO., LTD\r\nHuawei AP3030DN Router uptime is 0 week, 0 day, 1 hour, 55 minutes\r\n\r\nMPU 0(Master) : uptime is 0 week, 0 day, 1 hour, 55 minut",
+          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.160 (AP3030DN FIT V200R007C10SPC300)\r\nCopyright (C) 2011-2018 HUAWEI TECH CO., LTD\r\nHuawei AP3030DN Router uptime is 0 week, 0 day, 2 hours, 1 minute\r\n\r\nMPU 0(Master) : uptime is 0 week, 0 day, 2 hours, 1 minute",
           "timestamp": "2026-06-26T11:15:26.589987+00:00",
-          "use_count": 11,
-          "last_used": "2026-06-26T18:51:41.945812+00:00"
+          "use_count": 20,
+          "last_used": "2026-07-20T10:20:16.840296+00:00"
         },
         {
           "command": "ospf 1 router-id 1.1.1.1",
@@ -2395,10 +2355,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display current-configuration | include sysname\r\n sysname ar1\r\n<ar1>\r\n<ar1>",
+          "output_preview": "display current-configuration | include sysname\r\n<Huawei>\r\n<Huawei>",
           "timestamp": "2026-06-26T12:01:03.999831+00:00",
-          "use_count": 4,
-          "last_used": "2026-06-26T12:02:57.379963+00:00"
+          "use_count": 6,
+          "last_used": "2026-07-20T09:29:48.212314+00:00"
         },
         {
           "command": "interface GigabitEthernet0/0/0",
@@ -2885,11 +2845,11 @@
         }
       ],
       "first_seen": "2026-06-10T09:54:41.345161+00:00",
-      "last_seen": "2026-06-26T18:51:51.634021+00:00"
+      "last_seen": "2026-07-20T10:20:16.840296+00:00"
     },
     "127.0.0.1:2001": {
-      "device_type": "unknown",
-      "display_name": "DEVICE-2001",
+      "device_type": "huawei",
+      "display_name": "127.0.0.1:2001",
       "executed_commands": [
         {
           "command": "region-name huawei",
@@ -3042,10 +3002,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display current-configuration | include sysname\r\n2026-06-26 12:02:58.520 \r\nsysname USG6000V1\r\n<USG6000V1>",
+          "output_preview": "display current-configuration | include sysname\r\n<Huawei>\r\n<Huawei>",
           "timestamp": "2026-06-19T14:45:46.028485+00:00",
-          "use_count": 7,
-          "last_used": "2026-06-26T12:03:02.294010+00:00"
+          "use_count": 9,
+          "last_used": "2026-07-20T09:30:03.497636+00:00"
         },
         {
           "command": "display version",
@@ -3053,10 +3013,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display version\r\n2026-06-26 13:32:10.920 \r\nHuawei Versatile Routing Platform Software\r\nVRP (R) Software, Version 5.170 (USG6000V1 V500R005C10SPC300)\r\nCopyright (C) 2014-2018 Huawei Technologies Co., Ltd.\r\nUSG6000V1-ENSP uptime is 0 week, 0 day, 2 hours, 30 minutes\r\n\r\n\r\nIPS Signature Database Version",
+          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.160 (AP3030DN FIT V200R007C10SPC300)\r\nCopyright (C) 2011-2018 HUAWEI TECH CO., LTD\r\nHuawei AP3030DN Router uptime is 0 week, 0 day, 1 hour, 11 minutes\r\n\r\nMPU 0(Master) : uptime is 0 week, 0 day, 1 hour, 11 minut",
           "timestamp": "2026-06-19T14:46:41.991842+00:00",
-          "use_count": 10,
-          "last_used": "2026-06-26T13:32:14.886490+00:00"
+          "use_count": 12,
+          "last_used": "2026-07-20T09:30:02.005918+00:00"
         },
         {
           "command": "display current-configuration",
@@ -3956,16 +3916,6 @@
           "use_count": 1
         },
         {
-          "command": "display current-configuration | include sysname",
-          "description": "提取设备主机名",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T13:04:08.760249+00:00",
-          "use_count": 1
-        },
-        {
           "command": "display firewall zone",
           "description": "",
           "category": "display",
@@ -4106,16 +4056,6 @@
           "use_count": 1
         },
         {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T13:39:05.371102+00:00",
-          "use_count": 1
-        },
-        {
           "command": "display ip interface brief",
           "description": "显示所有接口IP地址和状态摘要",
           "category": "display",
@@ -4136,16 +4076,6 @@
           "use_count": 1
         },
         {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T14:25:35.164540+00:00",
-          "use_count": 1
-        },
-        {
           "command": "display this",
           "description": "",
           "category": "display",
@@ -4153,16 +4083,6 @@
           "success": false,
           "output_preview": "",
           "timestamp": "2026-06-26T14:25:39.667616+00:00",
-          "use_count": 1
-        },
-        {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T14:27:29.629958+00:00",
           "use_count": 1
         },
         {
@@ -4174,24 +4094,14 @@
           "output_preview": "",
           "timestamp": "2026-06-26T14:27:34.131205+00:00",
           "use_count": 1
-        },
-        {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T14:28:09.168596+00:00",
-          "use_count": 1
         }
       ],
       "first_seen": "2026-06-10T10:08:18.299581+00:00",
-      "last_seen": "2026-06-26T14:28:09.168593+00:00"
+      "last_seen": "2026-07-20T09:30:03.497626+00:00"
     },
     "127.0.0.1:2002": {
       "device_type": "huawei",
-      "display_name": "SW5",
+      "display_name": "127.0.0.1:2002",
       "executed_commands": [
         {
           "command": "ip route-static 10.0.1.2 255.255.255.255 10.0.12.2",
@@ -4328,10 +4238,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S5700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S5700-28C-HI Routing Switch uptime is 0 week, 0 day, 3 hours, 25 minutes\r\n<lsw4>",
+          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S3700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S3700-26C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 11 minutes\r\n<lsw5>",
           "timestamp": "2026-06-17T06:53:24.301505+00:00",
-          "use_count": 12,
-          "last_used": "2026-06-26T14:26:29.412889+00:00"
+          "use_count": 14,
+          "last_used": "2026-07-20T09:30:17.274195+00:00"
         },
         {
           "command": "display cur | inc sysname",
@@ -4414,10 +4324,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display current-configuration | include sysname\r\nsysname lsw4\r\n[lsw4]",
+          "output_preview": "display current-configuration | include sysname\r\nsysname lsw5\r\n<lsw5>",
           "timestamp": "2026-06-19T14:45:47.176228+00:00",
-          "use_count": 8,
-          "last_used": "2026-06-26T12:03:38.930395+00:00"
+          "use_count": 10,
+          "last_used": "2026-07-20T09:30:18.765407+00:00"
         },
         {
           "command": "undo info-center enable",
@@ -5250,26 +5160,6 @@
       ],
       "failed_commands": [
         {
-          "command": "display interface Vlanif 100",
-          "description": "",
-          "category": "display",
-          "risk": "unknown",
-          "success": false,
-          "output_preview": "                                          \r\n--------------------------------------------------------------------------------\r\n<hym-AC>isplay interface Vlanif 100\r\n        ^\r\nError: Unrecognized command found at '^' position.\r\n<hym-AC>\r\n<hym-AC> ",
-          "timestamp": "2026-06-23T06:10:10.491047+00:00",
-          "use_count": 1
-        },
-        {
-          "command": "display security-profile name msc",
-          "description": "",
-          "category": "display",
-          "risk": "unknown",
-          "success": false,
-          "output_preview": "                                          \r\n<hym-AC>isplay security-profile name msc\r\n        ^\r\nError: Unrecognized command found at '^' position.\r\n<hym-AC>\r\n<hym-AC>",
-          "timestamp": "2026-06-23T06:10:43.080065+00:00",
-          "use_count": 1
-        },
-        {
           "command": "display service-set all",
           "description": "",
           "category": "display",
@@ -5728,34 +5618,14 @@
           "output_preview": "",
           "timestamp": "2026-06-26T19:25:09.618532+00:00",
           "use_count": 1
-        },
-        {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T20:13:44.360384+00:00",
-          "use_count": 1
-        },
-        {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T20:31:25.658379+00:00",
-          "use_count": 1
         }
       ],
       "first_seen": "2026-06-10T10:11:25.265866+00:00",
-      "last_seen": "2026-06-26T20:31:25.658375+00:00"
+      "last_seen": "2026-07-20T09:30:18.765395+00:00"
     },
     "127.0.0.1:2003": {
       "device_type": "huawei",
-      "display_name": "SW6",
+      "display_name": "127.0.0.1:2003",
       "executed_commands": [
         {
           "command": "ip pool vlan30",
@@ -6375,10 +6245,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display current-configuration | include sysname\r\nsysname lsw3\r\n<lsw3>",
+          "output_preview": "display current-configuration | include sysname\r\nsysname lsw6\r\n<lsw6>",
           "timestamp": "2026-06-19T14:45:48.322595+00:00",
-          "use_count": 8,
-          "last_used": "2026-06-26T12:03:40.926296+00:00"
+          "use_count": 10,
+          "last_used": "2026-07-20T09:30:34.029345+00:00"
         },
         {
           "command": "display version",
@@ -6386,10 +6256,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S5700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S5700-28C-HI Routing Switch uptime is 0 week, 0 day, 3 hours, 25 minutes\r\n<lsw3>",
+          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S3700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S3700-26C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 12 minutes\r\n<lsw6>",
           "timestamp": "2026-06-19T14:46:46.594324+00:00",
-          "use_count": 10,
-          "last_used": "2026-06-26T14:26:27.458377+00:00"
+          "use_count": 12,
+          "last_used": "2026-07-20T09:30:32.535402+00:00"
         },
         {
           "command": "system-view",
@@ -6822,26 +6692,6 @@
       ],
       "failed_commands": [
         {
-          "command": "eth-trunk 1",
-          "description": "",
-          "category": "other",
-          "risk": "unknown",
-          "success": false,
-          "output_preview": "eth-trunk 1\r\nInfo: This operation may take a few seconds. Please wait for a moment...\r\nError: Failed to add the port into the trunk because the port has been a member of the trunk.\r\n[Huawei-GigabitEthernet0/0/11]",
-          "timestamp": "2026-06-17T09:16:30.595969+00:00",
-          "use_count": 1
-        },
-        {
-          "command": "silent-interface Vlanif10",
-          "description": "",
-          "category": "other",
-          "risk": "unknown",
-          "success": false,
-          "output_preview": "silent-interface Vlanif10\r\nError: The silent interface already exists.\r\n[Huawei-ospf-1]",
-          "timestamp": "2026-06-17T09:16:48.905536+00:00",
-          "use_count": 1
-        },
-        {
           "command": "silent-interface Vlanif20",
           "description": "",
           "category": "other",
@@ -7102,16 +6952,6 @@
           "use_count": 1
         },
         {
-          "command": "display current-configuration | include sysname",
-          "description": "提取设备主机名",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T12:56:32.781721+00:00",
-          "use_count": 1
-        },
-        {
           "command": "Y",
           "description": "",
           "category": "other",
@@ -7300,45 +7140,15 @@
           "output_preview": "",
           "timestamp": "2026-06-26T19:26:06.567507+00:00",
           "use_count": 1
-        },
-        {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T20:13:48.832525+00:00",
-          "use_count": 1
-        },
-        {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T20:31:30.127121+00:00",
-          "use_count": 1
         }
       ],
       "first_seen": "2026-06-10T10:14:32.285887+00:00",
-      "last_seen": "2026-06-26T20:31:30.127118+00:00"
+      "last_seen": "2026-07-20T09:30:34.029329+00:00"
     },
     "127.0.0.1:2004": {
       "device_type": "huawei",
-      "display_name": "SW7",
+      "display_name": "127.0.0.1:2004",
       "executed_commands": [
-        {
-          "command": "ip address 192.168.4.100 255.255.255.0",
-          "description": "",
-          "category": "config",
-          "risk": "unknown",
-          "success": true,
-          "output_preview": "ip address 192.168.4.100 255.255.255.0\r\n[Huawei-Vlanif40]",
-          "timestamp": "2026-06-17T08:47:01.209259+00:00",
-          "use_count": 1
-        },
         {
           "command": "vrrp vrid 40 virtual-ip 192.168.4.254",
           "description": "",
@@ -8321,9 +8131,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S5700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S5700-28C-HI Routing Switch uptime is 0 week, 0 day, 3 hours, 30 minutes\r\n<lsw2>",
+          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S3700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S3700-26C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 12 minutes\r\n<lsw7>",
           "timestamp": "2026-06-26T14:31:32.947490+00:00",
-          "use_count": 1
+          "use_count": 3,
+          "last_used": "2026-07-20T09:30:47.805431+00:00"
         },
         {
           "command": "sysname SW7",
@@ -8390,19 +8201,20 @@
           "timestamp": "2026-06-26T17:32:11.743746+00:00",
           "use_count": 4,
           "last_used": "2026-06-26T17:53:12.918662+00:00"
+        },
+        {
+          "command": "display current-configuration | include sysname",
+          "description": "提取设备主机名",
+          "category": "display",
+          "risk": "safe",
+          "success": true,
+          "output_preview": "display current-configuration | include sysname\r\nsysname lsw7\r\n<lsw7>",
+          "timestamp": "2026-07-20T09:08:29.872566+00:00",
+          "use_count": 2,
+          "last_used": "2026-07-20T09:30:49.294937+00:00"
         }
       ],
       "failed_commands": [
-        {
-          "command": "vrrp vrid 40 virtual-ip 192.168.4.254",
-          "description": "",
-          "category": "config",
-          "risk": "unknown",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T12:51:10.867606+00:00",
-          "use_count": 1
-        },
         {
           "command": "vrrp vrid 40 priority 120",
           "description": "",
@@ -8862,30 +8674,10 @@
           "output_preview": "",
           "timestamp": "2026-06-26T19:27:03.457812+00:00",
           "use_count": 1
-        },
-        {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T20:13:53.302914+00:00",
-          "use_count": 1
-        },
-        {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T20:31:34.596057+00:00",
-          "use_count": 1
         }
       ],
       "first_seen": "2026-06-10T10:17:49.112628+00:00",
-      "last_seen": "2026-06-26T20:31:34.596053+00:00"
+      "last_seen": "2026-07-20T09:30:49.294910+00:00"
     },
     "127.0.0.1:2005": {
       "device_type": "huawei",
@@ -10173,7 +9965,7 @@
     },
     "127.0.0.1:2007": {
       "device_type": "huawei",
-      "display_name": "SW3",
+      "display_name": "127.0.0.1:2007",
       "executed_commands": [
         {
           "command": "display ip pool name ap-pool",
@@ -10679,10 +10471,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display current-configuration | include sysname\r\nsysname lsw9\r\n<lsw9>",
+          "output_preview": "display current-configuration | include sysname\r\nsysname lsw3\r\n<lsw3>",
           "timestamp": "2026-06-17T06:28:54.531349+00:00",
-          "use_count": 3,
-          "last_used": "2026-06-26T12:01:23.590739+00:00"
+          "use_count": 5,
+          "last_used": "2026-07-20T09:31:22.004677+00:00"
         },
         {
           "command": "display version",
@@ -10690,10 +10482,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S5700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S5700-28C-HI Routing Switch uptime is 0 week, 0 day, 3 hours, 17 minutes\r\n<SW3>",
+          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S5700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S5700-28C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 12 minutes\r\n<lsw3>",
           "timestamp": "2026-06-17T06:53:41.240221+00:00",
-          "use_count": 12,
-          "last_used": "2026-06-26T20:13:35.414835+00:00"
+          "use_count": 14,
+          "last_used": "2026-07-20T09:31:20.506428+00:00"
         },
         {
           "command": "display cur | inc sysname",
@@ -11396,16 +11188,6 @@
           "use_count": 1
         },
         {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T20:31:16.685426+00:00",
-          "use_count": 1
-        },
-        {
           "command": "display vlan brief",
           "description": "显示VLAN简要信息",
           "category": "display",
@@ -11417,11 +11199,11 @@
         }
       ],
       "first_seen": "2026-06-10T10:23:10.876839+00:00",
-      "last_seen": "2026-06-26T20:32:04.543801+00:00"
+      "last_seen": "2026-07-20T09:31:22.004658+00:00"
     },
     "127.0.0.1:2009": {
-      "device_type": "unknown",
-      "display_name": "DEVICE-2009",
+      "device_type": "huawei",
+      "display_name": "127.0.0.1:2009",
       "executed_commands": [
         {
           "command": "radio-profile eNSP-Radio",
@@ -11585,10 +11367,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display version\r\nPassword:",
+          "output_preview": "display version\r\n2026-07-20 09:31:35.120 \r\nHuawei Versatile Routing Platform Software\r\nVRP (R) Software, Version 5.170 (USG6000V1 V500R005C10SPC300)\r\nCopyright (C) 2014-2018 Huawei Technologies Co., Ltd.\r\nUSG6000V1-ENSP uptime is 0 week, 0 day, 1 hour, 12 minutes\r\n\r\n\r\nIPS Signature Database Version ",
           "timestamp": "2026-06-10T22:42:20.676475+00:00",
-          "use_count": 17,
-          "last_used": "2026-06-26T20:40:33.263334+00:00"
+          "use_count": 20,
+          "last_used": "2026-07-20T09:31:38.872555+00:00"
         },
         {
           "command": "sys",
@@ -11827,10 +11609,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display current-configuration | include sysname\r\nsysname lsw8\r\n<lsw8>",
+          "output_preview": "display current-configuration | include sysname\r\n2026-07-20 09:31:36.580 \r\nsysname USG6000V1\r\n<USG6000V1>",
           "timestamp": "2026-06-13T16:32:17.176833+00:00",
-          "use_count": 6,
-          "last_used": "2026-06-26T12:01:27.504186+00:00"
+          "use_count": 8,
+          "last_used": "2026-07-20T09:31:40.325641+00:00"
         },
         {
           "command": "sysname LSW2",
@@ -12963,22 +12745,12 @@
         }
       ],
       "first_seen": "2026-06-10T10:23:47.398883+00:00",
-      "last_seen": "2026-06-26T20:40:49.638377+00:00"
+      "last_seen": "2026-07-20T09:31:40.325627+00:00"
     },
     "127.0.0.1:2010": {
       "device_type": "huawei",
-      "display_name": "AC3",
+      "display_name": "127.0.0.1:2010",
       "executed_commands": [
-        {
-          "command": "display bridge mac-address",
-          "description": "",
-          "category": "display",
-          "risk": "unknown",
-          "success": true,
-          "output_preview": "\u001b[42D                                          \u001b[42D\r\n<Huawei>isplay bridge mac-address\r\n        ^\r\nError: Unrecognized command found at '^' position.\r\n<Huawei>\r\n<Huawei>",
-          "timestamp": "2026-06-10T22:33:40.542349+00:00",
-          "use_count": 1
-        },
         {
           "command": "display ip interface brief Vlanif1",
           "description": "",
@@ -14011,10 +13783,20 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.160 (AC6605 V200R007C10SPC300)\r\nCopyright (C) 2011-2018 HUAWEI TECH CO., LTD\r\nHuawei AC6605-26-PWR Router uptime is 0 week, 0 day, 3 hours, 34 minutes\r\n\r\nMPU 0(Master) : uptime is 0 week, 0 day, 3 hours, 34 minu",
+          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.160 (AC6605 V200R007C10SPC300)\r\nCopyright (C) 2011-2018 HUAWEI TECH CO., LTD\r\nHuawei AC6605-26-PWR Router uptime is 0 week, 0 day, 1 hour, 12 minutes\r\n\r\nMPU 0(Master) : uptime is 0 week, 0 day, 1 hour, 12 minute",
           "timestamp": "2026-06-26T20:14:10.072680+00:00",
-          "use_count": 2,
-          "last_used": "2026-06-26T20:31:51.684179+00:00"
+          "use_count": 3,
+          "last_used": "2026-07-20T09:31:54.105368+00:00"
+        },
+        {
+          "command": "display current-configuration | include sysname",
+          "description": "提取设备主机名",
+          "category": "display",
+          "risk": "safe",
+          "success": true,
+          "output_preview": "display current-configuration | include sysname\r\n sysname ac1\r\n<ac1>\r\n<ac1>",
+          "timestamp": "2026-07-20T09:31:55.608716+00:00",
+          "use_count": 1
         }
       ],
       "failed_commands": [
@@ -14260,11 +14042,11 @@
         }
       ],
       "first_seen": "2026-06-10T10:24:23.924238+00:00",
-      "last_seen": "2026-06-26T20:43:52.907038+00:00"
+      "last_seen": "2026-07-20T09:31:55.608712+00:00"
     },
     "127.0.0.1:2011": {
       "device_type": "huawei",
-      "display_name": "SW10",
+      "display_name": "127.0.0.1:2011",
       "executed_commands": [
         {
           "command": "display version",
@@ -14272,10 +14054,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S3700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S3700-26C-HI Routing Switch uptime is 0 week, 0 day, 3 hours, 30 minutes\r\n<lsw6>",
+          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S3700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S3700-26C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 13 minutes\r\n<Huawei>",
           "timestamp": "2026-06-10T10:25:00.426484+00:00",
-          "use_count": 13,
-          "last_used": "2026-06-26T14:31:36.870056+00:00"
+          "use_count": 14,
+          "last_used": "2026-07-20T09:32:09.385711+00:00"
         },
         {
           "command": "display ip interface brief",
@@ -14348,10 +14130,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display current-configuration | include sysname\r\nsysname lsw6\r\n<lsw6>",
+          "output_preview": "display current-configuration | include sysname\r\nsysname Huawei\r\n<Huawei>",
           "timestamp": "2026-06-10T10:38:34.027263+00:00",
-          "use_count": 8,
-          "last_used": "2026-06-26T12:01:31.448250+00:00"
+          "use_count": 9,
+          "last_used": "2026-07-20T09:32:10.883416+00:00"
         },
         {
           "command": "display interface brief",
@@ -15128,26 +14910,6 @@
       ],
       "failed_commands": [
         {
-          "command": "interface Vlanif40",
-          "description": "进入接口视图进行配置",
-          "category": "config",
-          "risk": "low",
-          "success": false,
-          "output_preview": "interface Vlanif40\r\nError: The VLAN does not exist.\r\n[SW10]",
-          "timestamp": "2026-06-26T18:00:39.526960+00:00",
-          "use_count": 1
-        },
-        {
-          "command": "ip address 192.168.4.100 255.255.255.0",
-          "description": "",
-          "category": "config",
-          "risk": "unknown",
-          "success": false,
-          "output_preview": "ip address 192.168.4.100 255.255.255.0\r\n         ^\r\nError: Unrecognized command found at '^' position.\r\n[SW10]",
-          "timestamp": "2026-06-26T18:00:41.571426+00:00",
-          "use_count": 1
-        },
-        {
           "command": "vrrp vrid 40 virtual-ip 192.168.4.254",
           "description": "",
           "category": "config",
@@ -15606,46 +15368,15 @@
           "output_preview": "",
           "timestamp": "2026-06-26T19:30:06.888651+00:00",
           "use_count": 1
-        },
-        {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T20:14:06.715222+00:00",
-          "use_count": 1
-        },
-        {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T20:31:48.009025+00:00",
-          "use_count": 1
         }
       ],
       "first_seen": "2026-06-10T10:25:00.426484+00:00",
-      "last_seen": "2026-06-26T20:31:48.009022+00:00"
+      "last_seen": "2026-07-20T09:32:10.883407+00:00"
     },
     "127.0.0.1:2008": {
       "device_type": "huawei",
-      "display_name": "SW1",
+      "display_name": "127.0.0.1:2008",
       "executed_commands": [
-        {
-          "command": "port trunk allow-pass vlan 100 to 101",
-          "description": "",
-          "category": "other",
-          "risk": "unknown",
-          "success": true,
-          "output_preview": "port trunk allow-pass vlan 100 to 101\r\n[Huawei-GigabitEthernet0/0/5]",
-          "timestamp": "2026-06-17T08:21:25.869070+00:00",
-          "use_count": 3,
-          "last_used": "2026-06-17T09:06:30.281537+00:00"
-        },
         {
           "command": "interface Eth-Trunk2",
           "description": "进入接口视图进行配置",
@@ -16538,10 +16269,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S5700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S5700-28C-HI Routing Switch uptime is 0 week, 0 day, 3 hours, 51 minutes\r\n[SW1]",
+          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S5700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S5700-28C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 13 minutes\r\n<lsw1>",
           "timestamp": "2026-06-26T19:44:29.265478+00:00",
-          "use_count": 6,
-          "last_used": "2026-06-26T20:47:40.251994+00:00"
+          "use_count": 8,
+          "last_used": "2026-07-20T09:31:35.770289+00:00"
         },
         {
           "command": "display current-configuration | begin interface",
@@ -16710,6 +16441,17 @@
           "output_preview": "display vlan brief\r\n                  ^\r\nError: Wrong parameter found at '^' position.\r\n<SW1>",
           "timestamp": "2026-06-26T20:32:00.072379+00:00",
           "use_count": 1
+        },
+        {
+          "command": "display current-configuration | include sysname",
+          "description": "提取设备主机名",
+          "category": "display",
+          "risk": "safe",
+          "success": true,
+          "output_preview": "display current-configuration | include sysname\r\nsysname lsw1\r\n<lsw1>",
+          "timestamp": "2026-07-20T09:09:17.858091+00:00",
+          "use_count": 2,
+          "last_used": "2026-07-20T09:31:37.266713+00:00"
         }
       ],
       "failed_commands": [
@@ -17055,7 +16797,7 @@
         }
       ],
       "first_seen": "2026-06-13T16:31:45.043193+00:00",
-      "last_seen": "2026-06-26T20:51:24.138027+00:00"
+      "last_seen": "2026-07-20T09:31:37.266690+00:00"
     },
     "127.0.0.1:2012": {
       "device_type": "huawei",
@@ -18585,7 +18327,7 @@
     },
     "127.0.0.1:2013": {
       "device_type": "huawei",
-      "display_name": "AR2",
+      "display_name": "127.0.0.1:2013",
       "executed_commands": [
         {
           "command": "network 192.168.1.0 mask 255.255.255.0",
@@ -19597,10 +19339,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "\r\n<R1>",
+          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.130 (AR3200 V200R003C00)\r\nCopyright (C) 2011-2012 HUAWEI TECH CO., LTD\r\nHuawei AR3260 Router uptime is 0 week, 0 day, 1 hour, 13 minutes\r\nBKP 0 version information: \r\n1. PCB      Version  : AR01BAK3A VER.NC\r\n2. ",
           "timestamp": "2026-06-26T11:24:21.571089+00:00",
-          "use_count": 14,
-          "last_used": "2026-06-26T20:31:58.115369+00:00"
+          "use_count": 15,
+          "last_used": "2026-07-20T09:32:26.805160+00:00"
         },
         {
           "command": "display current-configuration | include sysname",
@@ -19608,10 +19350,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display current-configuration | include sysname\r\n<Huawei>\r\n<Huawei>",
+          "output_preview": "display current-configuration | include sysname\r\n sysname ar1\r\n<ar1>",
           "timestamp": "2026-06-26T11:24:25.481343+00:00",
-          "use_count": 3,
-          "last_used": "2026-06-26T12:01:35.361000+00:00"
+          "use_count": 4,
+          "last_used": "2026-07-20T09:32:28.319474+00:00"
         },
         {
           "command": "sysname R1",
@@ -19752,11 +19494,11 @@
         }
       ],
       "first_seen": "2026-06-13T16:33:22.447521+00:00",
-      "last_seen": "2026-06-26T20:32:26.431520+00:00"
+      "last_seen": "2026-07-20T09:32:28.319448+00:00"
     },
     "127.0.0.1:2014": {
       "device_type": "huawei",
-      "display_name": "SW9",
+      "display_name": "127.0.0.1:2014",
       "executed_commands": [
         {
           "command": "system-view",
@@ -20034,10 +19776,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display current-configuration | include sysname\r\n<Huawei>\r\n<Huawei>",
+          "output_preview": "display current-configuration | include sysname\r\nsysname lsw9\r\n<lsw9>",
           "timestamp": "2026-06-17T06:30:06.037833+00:00",
-          "use_count": 4,
-          "last_used": "2026-06-26T12:01:37.317964+00:00"
+          "use_count": 5,
+          "last_used": "2026-07-20T09:32:43.579545+00:00"
         },
         {
           "command": "display version",
@@ -20045,10 +19787,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.160 (AP3030DN FIT V200R007C10SPC300)\r\nCopyright (C) 2011-2018 HUAWEI TECH CO., LTD\r\nHuawei AP3030DN Router uptime is 0 week, 0 day, 3 hours, 25 minutes\r\n\r\nMPU 0(Master) : uptime is 0 week, 0 day, 3 hours, 25 min",
+          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S3700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S3700-26C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 14 minutes\r\n<lsw9>",
           "timestamp": "2026-06-17T06:54:04.957486+00:00",
-          "use_count": 13,
-          "last_used": "2026-06-26T14:27:40.002765+00:00"
+          "use_count": 14,
+          "last_used": "2026-07-20T09:32:42.088593+00:00"
         },
         {
           "command": "display cur | inc sysname",
@@ -20454,34 +20196,14 @@
           "output_preview": "",
           "timestamp": "2026-06-26T19:29:09.954403+00:00",
           "use_count": 1
-        },
-        {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T20:14:02.243021+00:00",
-          "use_count": 1
-        },
-        {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T20:31:43.541646+00:00",
-          "use_count": 1
         }
       ],
       "first_seen": "2026-06-15T12:06:37.293180+00:00",
-      "last_seen": "2026-06-26T20:31:43.541644+00:00"
+      "last_seen": "2026-07-20T09:32:43.579532+00:00"
     },
     "127.0.0.1:2015": {
       "device_type": "huawei",
-      "display_name": "SW2",
+      "display_name": "127.0.0.1:2015",
       "executed_commands": [
         {
           "command": "system-view",
@@ -21255,10 +20977,10 @@
           "category": "display",
           "risk": "safe",
           "success": true,
-          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S5700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S5700-28C-HI Routing Switch uptime is 0 week, 0 day, 3 hours, 34 minutes\r\n<SW2>",
+          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S5700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S5700-28C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 14 minutes\r\n<lsw2>",
           "timestamp": "2026-06-26T20:23:46.722107+00:00",
-          "use_count": 2,
-          "last_used": "2026-06-26T20:31:12.211430+00:00"
+          "use_count": 3,
+          "last_used": "2026-07-20T09:32:57.347125+00:00"
         },
         {
           "command": "display this",
@@ -21321,6 +21043,16 @@
           "output_preview": "display eth-trunk 1\r\nEth-Trunk1's state information is:\r\nLocal:\r\nLAG ID: 1                   WorkingMode: STATIC                               \r\nPreempt Delay: Disabled     Hash arithmetic: According to SIP-XOR-DIP         \r\nSystem Priority: 32768      System ID: 4c1f-ccf2-6cc7                      ",
           "timestamp": "2026-06-26T20:29:35.667986+00:00",
           "use_count": 1
+        },
+        {
+          "command": "display current-configuration | include sysname",
+          "description": "提取设备主机名",
+          "category": "display",
+          "risk": "safe",
+          "success": true,
+          "output_preview": "display current-configuration | include sysname\r\nsysname lsw2\r\n<lsw2>",
+          "timestamp": "2026-07-20T09:32:58.842700+00:00",
+          "use_count": 1
         }
       ],
       "failed_commands": [
@@ -21366,11 +21098,11 @@
         }
       ],
       "first_seen": "2026-06-15T12:07:19.195736+00:00",
-      "last_seen": "2026-06-26T20:42:00.287706+00:00"
+      "last_seen": "2026-07-20T09:32:58.842697+00:00"
     },
     "127.0.0.1:2016": {
       "device_type": "huawei",
-      "display_name": "SW4",
+      "display_name": "127.0.0.1:2016",
       "executed_commands": [
         {
           "command": "system-view",
@@ -21778,29 +21510,19 @@
           "output_preview": "port trunk pvid vlan 100\r\n[SW4-Eth-Trunk1]",
           "timestamp": "2026-06-26T19:02:52.350608+00:00",
           "use_count": 1
+        },
+        {
+          "command": "display version",
+          "description": "显示设备版本信息，识别型号和OS版本",
+          "category": "display",
+          "risk": "safe",
+          "success": true,
+          "output_preview": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S5700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S5700-28C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 14 minutes\r\n<lsw4>",
+          "timestamp": "2026-07-20T09:33:12.620282+00:00",
+          "use_count": 1
         }
       ],
       "failed_commands": [
-        {
-          "command": "interface GigabitEthernet0/0/5",
-          "description": "进入接口视图进行配置",
-          "category": "config",
-          "risk": "low",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T19:23:37.780322+00:00",
-          "use_count": 1
-        },
-        {
-          "command": "port link-type trunk",
-          "description": "",
-          "category": "config",
-          "risk": "unknown",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T19:23:40.944286+00:00",
-          "use_count": 1
-        },
         {
           "command": "port trunk pvid vlan 100",
           "description": "",
@@ -22262,28 +21984,18 @@
           "use_count": 1
         },
         {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
+          "command": "display current-configuration | include sysname",
+          "description": "提取设备主机名",
           "category": "display",
           "risk": "safe",
           "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T20:13:39.885099+00:00",
-          "use_count": 1
-        },
-        {
-          "command": "display version",
-          "description": "显示设备版本信息，识别型号和OS版本",
-          "category": "display",
-          "risk": "safe",
-          "success": false,
-          "output_preview": "",
-          "timestamp": "2026-06-26T20:31:21.153856+00:00",
+          "output_preview": "Error",
+          "timestamp": "2026-07-20T08:53:36.882732+00:00",
           "use_count": 1
         }
       ],
       "first_seen": "2026-06-15T12:08:01.093138+00:00",
-      "last_seen": "2026-06-26T20:31:21.153853+00:00"
+      "last_seen": "2026-07-20T09:33:12.620278+00:00"
     },
     "127.0.0.1:2017": {
       "device_type": "huawei",

@@ -1,0 +1,86 @@
+{
+  "id": "stp_config",
+  "name": "STP生成树配置",
+  "category": "switching",
+  "device_types": [
+    "交换机"
+  ],
+  "description": "配置 STP/RSTP/MSTP 生成树，指定根桥与边缘端口",
+  "prerequisites": [
+    "已进入系统视图 system-view（防火墙还需先配接口IP并加入安全区域）"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "进入系统视图",
+      "commands": [
+        "system-view"
+      ],
+      "notes": []
+    },
+    {
+      "step": 2,
+      "name": "开启STP",
+      "commands": [
+        "stp enable"
+      ],
+      "notes": [
+        "默认已开启"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "配置模式",
+      "commands": [
+        "stp mode mstp"
+      ],
+      "notes": [
+        "可选 stp / rstp / mstp，默认 MSTP"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "指定根桥",
+      "commands": [
+        "stp root primary"
+      ],
+      "notes": [
+        "或直接 stp priority 4096（值越小越优先，默认32768）"
+      ]
+    },
+    {
+      "step": 5,
+      "name": "边缘端口",
+      "commands": [
+        "interface GigabitEthernet 0/0/1",
+        "stp edged-port enable"
+      ],
+      "notes": [
+        "接终端的端口启用，加速收敛；连接交换机的口不要开"
+      ]
+    }
+  ],
+  "verification": [
+    "display stp brief",
+    "display stp"
+  ],
+  "common_errors": [
+    {
+      "error": "根桥非预期",
+      "cause": "优先级未设为最小",
+      "solution": "在目标根桥执行 stp priority 4096 或 stp root primary"
+    }
+  ],
+  "tips": [
+    "MSTP 多实例需在 ALL 交换机上保持一致：region-name / revision-level / instance 划分，并 active region-configuration",
+    "边缘端口接终端，避免收到 BPDU 触发拓扑变更"
+  ],
+  "related_methods": [
+    "eth_trunk_lacp",
+    "vlan_config"
+  ],
+  "created_at": "2026-07-20T17:34:00",
+  "updated_at": "2026-07-20T17:34:00",
+  "usage_count": 0,
+  "success_rate": 0.0
+}

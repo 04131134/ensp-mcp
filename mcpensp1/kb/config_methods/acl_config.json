@@ -1,0 +1,81 @@
+{
+  "id": "acl_config",
+  "name": "ACL访问控制配置",
+  "category": "security",
+  "device_types": [
+    "路由器",
+    "交换机",
+    "防火墙"
+  ],
+  "description": "配置基本ACL(源IP)与高级ACL(五元组)并应用",
+  "prerequisites": [
+    "已进入系统视图 system-view（防火墙还需先配接口IP并加入安全区域）"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "进入系统视图",
+      "commands": [
+        "system-view"
+      ],
+      "notes": []
+    },
+    {
+      "step": 2,
+      "name": "基本ACL(2000-2999)",
+      "commands": [
+        "acl 2000",
+        "rule 5 permit source 192.168.1.0 0.0.0.255",
+        "rule 10 deny source any"
+      ],
+      "notes": [
+        "基于源IP，尽量靠近目标放置"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "应用ACL",
+      "commands": [
+        "interface GigabitEthernet 0/0/0",
+        "traffic-filter inbound acl 2000"
+      ],
+      "notes": [
+        "inbound/outbound 方向"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "高级ACL(3000-3999)",
+      "commands": [
+        "acl 3000",
+        "rule permit tcp source 192.168.1.0 0.0.0.255 destination 10.0.0.0 0.0.0.255 destination-port eq 80",
+        "rule deny ip source any destination any"
+      ],
+      "notes": [
+        "基于五元组，可精确控制"
+      ]
+    }
+  ],
+  "verification": [
+    "display acl all"
+  ],
+  "common_errors": [
+    {
+      "error": "ACL 未生效",
+      "cause": "未在接口 traffic-filter 应用或方向错误",
+      "solution": "在正确接口与方向应用 acl"
+    }
+  ],
+  "tips": [
+    "基本ACL(2000-2999)基于源IP，高级ACL(3000-3999)基于五元组",
+    "ACL 规则按顺序匹配，注意 rule 编号"
+  ],
+  "related_methods": [
+    "nat_config",
+    "firewall_security_policy"
+  ],
+  "created_at": "2026-07-20T17:34:00",
+  "updated_at": "2026-07-20T17:34:00",
+  "usage_count": 0,
+  "success_rate": 0.0
+}

@@ -1,0 +1,86 @@
+{
+  "id": "firewall_security_policy",
+  "name": "防火墙安全区域与安全策略",
+  "category": "security",
+  "device_types": [
+    "防火墙(USG)"
+  ],
+  "description": "将接口加入安全区域并配置安全策略放通区域间流量",
+  "prerequisites": [
+    "已进入系统视图 system-view（防火墙还需先配接口IP并加入安全区域）"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "进入系统视图",
+      "commands": [
+        "system-view"
+      ],
+      "notes": [
+        "防火墙登入后需先改密、配接口IP"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "接口加入区域",
+      "commands": [
+        "firewall zone trust",
+        "add interface GigabitEthernet 1/0/1",
+        "firewall zone untrust",
+        "add interface GigabitEthernet 1/0/0",
+        "firewall zone dmz",
+        "add interface GigabitEthernet 1/0/2"
+      ],
+      "notes": [
+        "trust=85/untrust=5/dmz=50/local=100"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "配置安全策略",
+      "commands": [
+        "security-policy",
+        "rule name Trust_to_Untrust",
+        "source-zone trust",
+        "destination-zone untrust",
+        "source-address 192.168.1.0 24",
+        "destination-address any",
+        "service any",
+        "action permit"
+      ],
+      "notes": [
+        "默认区域间全部拒绝，必须显式放通"
+      ]
+    }
+  ],
+  "verification": [
+    "display security-policy rule all",
+    "display firewall zone"
+  ],
+  "common_errors": [
+    {
+      "error": "区域间不通",
+      "cause": "未配安全策略（默认拒绝）",
+      "solution": "按源/目的区域配置 action permit 策略"
+    },
+    {
+      "error": "管理防火墙登不上",
+      "cause": "接口未加 trust 或到 local 的策略未放通",
+      "solution": "接口加入 trust，并放通到 local 的 ssh/https/icmp"
+    }
+  ],
+  "tips": [
+    "防火墙默认所有区域间流量拒绝，必须配安全策略",
+    "到防火墙自身的管理流量目标区域是 local",
+    "接口需 service-manage 开启管理"
+  ],
+  "related_methods": [
+    "firewall_nat_policy",
+    "firewall_web_login",
+    "acl_config"
+  ],
+  "created_at": "2026-07-20T17:34:00",
+  "updated_at": "2026-07-20T17:34:00",
+  "usage_count": 0,
+  "success_rate": 0.0
+}

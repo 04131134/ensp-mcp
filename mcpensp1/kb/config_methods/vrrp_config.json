@@ -1,0 +1,69 @@
+{
+  "id": "vrrp_config",
+  "name": "VRRP冗余配置",
+  "category": "services",
+  "device_types": [
+    "路由器",
+    "三层交换机"
+  ],
+  "description": "在 VLANIF 接口上配置 VRRP 主备网关冗余",
+  "prerequisites": [
+    "已进入系统视图 system-view（防火墙还需先配接口IP并加入安全区域）"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "进入系统视图",
+      "commands": [
+        "system-view"
+      ],
+      "notes": []
+    },
+    {
+      "step": 2,
+      "name": "主设备",
+      "commands": [
+        "interface Vlanif 10",
+        "vrrp vrid 10 virtual-ip 192.168.10.254",
+        "vrrp vrid 10 priority 120",
+        "vrrp vrid 10 preempt-mode timer delay 20"
+      ],
+      "notes": [
+        "优先级默认100，越大越优先"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "备设备",
+      "commands": [
+        "interface Vlanif 10",
+        "vrrp vrid 10 virtual-ip 192.168.10.254",
+        "vrrp vrid 10 priority 100"
+      ],
+      "notes": []
+    }
+  ],
+  "verification": [
+    "display vrrp",
+    "display vrrp brief"
+  ],
+  "common_errors": [
+    {
+      "error": "状态全为 Initialize",
+      "cause": "Vlanif 接口 down 或 trunk 不通",
+      "solution": "确保 Vlanif up（有对应 VLAN 端口 up）且链路通"
+    }
+  ],
+  "tips": [
+    "虚拟IP即终端网关地址",
+    "主备通过 priority 控制，建议双核心互为主备分担"
+  ],
+  "related_methods": [
+    "vlan_config",
+    "stp_config"
+  ],
+  "created_at": "2026-07-20T17:34:00",
+  "updated_at": "2026-07-20T17:34:00",
+  "usage_count": 0,
+  "success_rate": 0.0
+}

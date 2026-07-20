@@ -55,8 +55,8 @@
     "usage_count": 0,
     "success_rate": 0.0
   },
-  "methods_count": 1,
-  "last_updated": "2026-06-27T00:00:00+08:00",
+  "methods_count": 18,
+  "last_updated": "2026-07-20T17:34:00+00:00",
   "methods": [
     {
       "id": "ac_ap_wireless",
@@ -64,6 +64,125 @@
       "category": "wireless",
       "file": "ac_ap_wireless.json",
       "description": "配置AC控制器和FIT AP，实现WiFi无线覆盖"
+    },
+    {
+      "id": "interface_basic",
+      "name": "接口基础配置",
+      "category": "management",
+      "file": "interface_basic.json",
+      "description": "配置接口IP地址、开启/关闭、描述、速率与双工模式"
+    },
+    {
+      "id": "remote_mgmt_telnet_ssh",
+      "name": "远程管理(Telnet/SSH)",
+      "category": "management",
+      "file": "remote_mgmt_telnet_ssh.json",
+      "description": "配置 VTY 线路，启用 Telnet 或 SSH 远程管理"
+    },
+    {
+      "id": "stp_config",
+      "name": "STP生成树配置",
+      "category": "switching",
+      "file": "stp_config.json",
+      "description": "配置 STP/RSTP/MSTP 生成树，指定根桥与边缘端口"
+    },
+    {
+      "id": "eth_trunk_lacp",
+      "name": "链路聚合(Eth-Trunk/LACP)",
+      "category": "switching",
+      "file": "eth_trunk_lacp.json",
+      "description": "将多个物理接口捆绑为 Eth-Trunk，提升带宽与可靠性"
+    },
+    {
+      "id": "rip_config",
+      "name": "RIP路由配置",
+      "category": "routing",
+      "file": "rip_config.json",
+      "description": "配置 RIP 动态路由协议（v2）"
+    },
+    {
+      "id": "bgp_config",
+      "name": "BGP路由配置",
+      "category": "routing",
+      "file": "bgp_config.json",
+      "description": "配置 BGP 边界网关协议（IBGP/EBGP）"
+    },
+    {
+      "id": "nat_config",
+      "name": "NAT配置",
+      "category": "services",
+      "file": "nat_config.json",
+      "description": "配置 Easy IP(PAT) 与 NAT Server(端口映射)"
+    },
+    {
+      "id": "acl_config",
+      "name": "ACL访问控制配置",
+      "category": "security",
+      "file": "acl_config.json",
+      "description": "配置基本ACL(源IP)与高级ACL(五元组)并应用"
+    },
+    {
+      "id": "vrrp_config",
+      "name": "VRRP冗余配置",
+      "category": "services",
+      "file": "vrrp_config.json",
+      "description": "在 VLANIF 接口上配置 VRRP 主备网关冗余"
+    },
+    {
+      "id": "firewall_security_policy",
+      "name": "防火墙安全区域与安全策略",
+      "category": "security",
+      "file": "firewall_security_policy.json",
+      "description": "将接口加入安全区域并配置安全策略放通区域间流量"
+    },
+    {
+      "id": "firewall_nat_policy",
+      "name": "防火墙NAT策略",
+      "category": "security",
+      "file": "firewall_nat_policy.json",
+      "description": "配置防火墙 NAT 策略（源 NAT / 服务器映射）"
+    },
+    {
+      "id": "firewall_web_login",
+      "name": "USG6000V登录与Web管理",
+      "category": "security",
+      "file": "firewall_web_login.json",
+      "description": "完成 USG6000V 首次登录、接口管理权限开启与 Web/SSH 管理配置"
+    },
+    {
+      "id": "vrp_file_system",
+      "name": "VRP文件系统与配置管理",
+      "category": "management",
+      "file": "vrp_file_system.json",
+      "description": "查看/保存/备份配置、文件系统管理与配置回滚"
+    },
+    {
+      "id": "dhcp_server",
+      "name": "DHCP服务器配置",
+      "category": "services",
+      "file": "dhcp_server.json",
+      "description": "配置DHCP服务器为终端自动分配IP地址"
+    },
+    {
+      "id": "ospf_basic",
+      "name": "OSPF基础配置",
+      "category": "routing",
+      "file": "ospf_basic.json",
+      "description": "配置OSPF路由协议"
+    },
+    {
+      "id": "static_route",
+      "name": "静态路由配置",
+      "category": "routing",
+      "file": "static_route.json",
+      "description": "配置静态路由与默认路由"
+    },
+    {
+      "id": "vlan_config",
+      "name": "VLAN配置",
+      "category": "switching",
+      "file": "vlan_config.json",
+      "description": "配置VLAN、Access/Trunk端口、VLANIF"
     }
   ]
 }

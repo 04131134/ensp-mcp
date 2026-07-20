@@ -10,6 +10,8 @@ from agent.bootstrap import init_agent_runtime, get_agent_runtime
 from device_manager import dm
 from services import kb, topo_engine, config_methods
 from heartbeat import HeartbeatMonitor
+from connection import TelnetConnection
+from view_router import view_router, check_command_error
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('ENSP_SECRET_KEY', secrets.token_hex(32))
@@ -407,11 +409,12 @@ def connect_device(port):
         return {'success': True, 'port': port, 'path': path,
                 'name': dm.get_name(path), 'display_name': display, 'device_type': dt}
     except Exception as e:
+        logger.exception('connect_device failed for %s', path)
         if conn:
             try: conn.close()
             except OSError: pass
         dm.remove(path)
-        return {'success': False, 'error': 'Connection failed'}
+        return {'success': False, 'error': f'Connection failed: {type(e).__name__}: {e}'}
 
 def send_command(path, command):
     conn = dm.get(path)
@@ -470,10 +473,10 @@ def send_command(path, command):
         dm.remove_name(path)
         return {'success': False, 'error': 'Connection lost, device disconnected'}
     except Exception as e:
-        logger.error('Command failed for %s: %s', path, str(e)[:200])
+        logger.exception('Command failed for %s', path)
         dt = dm.get_type(path)
         kb.record_command(command, 'Error', device_type=dt, device_path=path, success=False)
-        return {'success': False, 'error': 'Command execution failed'}
+        return {'success': False, 'error': f'Command execution failed: {type(e).__name__}: {e}'}
 
 
 # ==================== NEW FEATURES ====================

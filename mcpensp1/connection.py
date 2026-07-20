@@ -291,8 +291,10 @@ class TelnetConnection:
     # ════════════ firewall login (unchanged) ════════════
 
     def handle_firewall_login(self, username: str = 'admin',
-                               password: str = 'Admin@1234') -> bool:
-        """Handle USG6000V firewall login flow."""
+                               password: str = 'Admin@123',
+                               new_password: str = 'Huawei@123') -> bool:
+        """Handle USG6000V firewall login flow, including the forced
+        first-login password change (old -> new -> confirm)."""
         if not self.sock:
             return False
         try:
@@ -310,24 +312,33 @@ class TelnetConnection:
                     break
             else:
                 return False
+            # Username
             self.sock.send((username + '\r\n').encode())
             time.sleep(2)
             try:
-                self.sock.settimeout(3)
                 resp = self.sock.recv(65536).decode('gbk', errors='ignore')
             except Exception:
                 resp = ''
             self.sock.settimeout(10)
             if 'Password' not in resp:
                 return False
-            self.sock.send((password + '\r\n').encode())
-            time.sleep(3)
-            try:
-                self.sock.settimeout(3)
-                resp = self.sock.recv(65536).decode('gbk', errors='ignore')
-            except Exception:
-                resp = ''
-            self.sock.settimeout(10)
+            # Password — try the default, fall back to the already-changed one
+            for pw in (password, new_password):
+                self.sock.send((pw + '\r\n').encode())
+                time.sleep(3)
+                try:
+                    self.sock.settimeout(3)
+                    resp = self.sock.recv(65536).decode('gbk', errors='ignore')
+                except Exception:
+                    resp = ''
+                self.sock.settimeout(10)
+                # Re-prompted for password => wrong, try the other one
+                if 'Password' in resp and 'Username' not in resp:
+                    continue
+                break
+            else:
+                return False
+            # Forced first-login password change
             if '[Y/N]' in resp or '(Y/N)' in resp:
                 self.sock.send(b'y')
                 time.sleep(0.5)
@@ -340,14 +351,22 @@ class TelnetConnection:
                     resp = ''
                 self.sock.settimeout(10)
                 if 'old password' in resp.lower():
-                    new_pw = password
-                    self.sock.send((new_pw + '\r\n').encode())
+                    # old
+                    self.sock.send((password + '\r\n').encode())
                     time.sleep(2)
                     try:
                         self.sock.recv(65536)
                     except Exception:
                         pass
-                    self.sock.send((new_pw + '\r\n').encode())
+                    # new
+                    self.sock.send((new_password + '\r\n').encode())
+                    time.sleep(2)
+                    try:
+                        self.sock.recv(65536)
+                    except Exception:
+                        pass
+                    # confirm
+                    self.sock.send((new_password + '\r\n').encode())
                     time.sleep(3)
                     try:
                         self.sock.recv(65536)
@@ -356,7 +375,7 @@ class TelnetConnection:
                     self.sock.settimeout(10)
             time.sleep(1)
             self._flush()
-            self.sock.send(b'\r\n')
+            self.sock.send(b'\r\n')   # answer "Please Press ENTER."
             time.sleep(0.5)
             self._flush()
             return True

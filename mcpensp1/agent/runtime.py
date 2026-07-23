@@ -14,6 +14,7 @@ import time
 import uuid
 import logging
 import threading
+import re
 from typing import Any, Callable, Dict, List, Optional
 from .types import (
     TaskPhase, TaskGoal, ExecutionPlan, PlanNode, NodeType,
@@ -26,6 +27,11 @@ from .verifier import SemanticVerifier
 from .recovery import RecoveryEngine
 from .reflection import ReflectionEngine
 from .learning import LearningEngine
+from .blueprint_learner import BlueprintLearner
+from .constraint_store import ConstraintStore
+from .constraint_updater import ConstraintUpdater
+from .error_library import ErrorClassifier
+from .regression_test_generator import RegressionTestGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +44,7 @@ class AgentRuntime:
         data_dir: str,
         command_executor: Callable[[str, str], Dict[str, Any]],
         device_scanner: Optional[Callable[[], Dict[str, Any]]] = None,
+        topology_provider: Optional[Callable[[], Dict[str, Any]]] = None,
     ):
         """
         Args:
@@ -73,6 +80,14 @@ class AgentRuntime:
         self.recovery = RecoveryEngine(command_executor)
         self.reflection = ReflectionEngine()
         self.learning = LearningEngine(self.memory, self.knowledge)
+        self._blueprint_learner = BlueprintLearner(self.knowledge)
+        self._error_classifier = ErrorClassifier()
+        self._constraint_updater = ConstraintUpdater(
+            ConstraintStore(os.path.join(data_dir, 'constraints.json')),
+            self.knowledge,
+            self.memory,
+        )
+        self._regression_test_generator = RegressionTestGenerator()
 
         # 第二阶段 Step9: reflection 接入 error_library（因果分析）
         try:
@@ -109,6 +124,7 @@ class AgentRuntime:
 
         self._exec_cmd = command_executor
         self._scan_devices = device_scanner
+        self._topology_provider = topology_provider
 
         # 活跃实验跟踪
         self._active_experiments: Dict[str, Dict[str, Any]] = {}
@@ -262,6 +278,10 @@ class AgentRuntime:
         finally:
             result.duration_seconds = time.time() - start_time
             self._update_phase(experiment_id, TaskPhase.COMPLETED if result.success else TaskPhase.FAILED)
+            try:
+                self._run_knowledge_growth(result)
+            except Exception as exc:
+                logger.warning('[知识成长] 收尾处理异常，不影响任务结果: %s', exc, exc_info=True)
             # 清理活跃实验
             with self._lock:
                 self._active_experiments.pop(experiment_id, None)
@@ -348,7 +368,7 @@ class AgentRuntime:
         for cmd in node.commands:
             resp = self._exec_cmd(device_path, cmd)
             # Fix H4: check cmd_success (actual command result) not just transport success
-            output_text = resp.get('output', '')
+            output_text = str(resp.get('output', ''))
             cmd_ok = resp.get('cmd_success', resp.get('success', False))
             # Also detect CLI errors in output
             if cmd_ok and ('Error' in output_text[:200] or 'Unrecognized command' in output_text[:200]):
@@ -357,6 +377,14 @@ class AgentRuntime:
                 'command': cmd,
                 'success': cmd_ok,
                 'output': output_text[:200],
+            })
+            result.execution_log.append({
+                'command': cmd,
+                'output': output_text,
+                'view': self._extract_view_from_output(output_text),
+                'device_path': device_path,
+                'node_id': node.node_id,
+                'success': cmd_ok,
             })
             result.total_commands += 1
             if cmd_ok:
@@ -371,6 +399,139 @@ class AgentRuntime:
         else:
             node.status = 'failed'
             node.result = {'commands': cmd_results, 'error': '部分命令执行失败'}
+
+    @staticmethod
+    def _extract_view_from_output(output: str) -> str:
+        """从设备输出末尾的提示符提取当前视图。"""
+        prompts = re.findall(r'(?:<[^<>\r\n]+>|\[[^\[\]\r\n]+\])', output)
+        return prompts[-1] if prompts else ''
+
+    def _run_knowledge_growth(self, result: ExperimentResult) -> None:
+        """在主流程收尾时执行知识成长，所有失败均只记录日志。"""
+        if result.success:
+            device_path = ''
+            if result.execution_log:
+                device_path = str(result.execution_log[0].get('device_path', ''))
+            device_info = self._device_info_for_path(device_path)
+            try:
+                self._blueprint_learner.learn_from_success(
+                    result.experiment_id,
+                    result.execution_log,
+                    device_info,
+                    self._get_topology_data(),
+                )
+            except Exception as exc:
+                logger.warning('[知识成长] 蓝图学习失败，不影响任务结果: %s', exc, exc_info=True)
+            return
+
+        for entry in result.execution_log:
+            if entry.get('success') is not False:
+                continue
+            try:
+                self._process_failed_command(result.experiment_id, entry)
+            except Exception as exc:
+                logger.warning('[知识成长] 失败命令处理异常，不影响任务结果: %s', exc, exc_info=True)
+
+    def _process_failed_command(self, task_id: str, entry: Dict[str, Any]) -> None:
+        """分类一条失败配置命令，并按需更新约束和生成回归测试。"""
+        device_info = self._device_info_for_path(str(entry.get('device_path', '')))
+        failed_command = str(entry.get('command', ''))
+        try:
+            error_record = self._error_classifier.classify(
+                device_info,
+                failed_command,
+                str(entry.get('output', '')),
+                str(entry.get('view', '')),
+            )
+        except Exception as exc:
+            logger.warning('[知识成长] 错误分类失败，跳过命令 %s: %s', failed_command, exc, exc_info=True)
+            return
+        if not isinstance(error_record, dict):
+            logger.warning('[知识成长] 错误分类结果无效，跳过命令 %s', failed_command)
+            return
+
+        error_record.update({
+            'task_id': task_id,
+            'device_info': device_info,
+            'device_model': str(device_info.get('model') or ''),
+            'failed_command': failed_command,
+        })
+        if error_record.get('error_type') == 'context_error':
+            error_record.setdefault('required_view', 'system-view')
+            error_record.setdefault('view_entry_command', 'system-view')
+
+        try:
+            self._constraint_updater.update_from_error(error_record)
+        except Exception as exc:
+            logger.warning('[知识成长] 约束更新失败，命令 %s: %s', failed_command, exc, exc_info=True)
+
+        self._generate_regression_test(error_record)
+
+    def _generate_regression_test(self, error_record: Dict[str, Any]) -> None:
+        """仅为具备可执行替代命令的设备或环境约束生成回归测试。"""
+        error_type = error_record.get('error_type')
+        if error_type not in {'device_not_supported', 'environment_issue'}:
+            return
+        constraint = error_record.get('constraint')
+        if not isinstance(constraint, dict):
+            logger.info('[知识成长] 跳过回归测试：%s 错误没有完整约束', error_type)
+            return
+
+        alternative_command = error_record.get('alternative_command')
+        if not alternative_command:
+            alternative_command = constraint.get('alternative_command')
+        if not isinstance(alternative_command, str) or not alternative_command.strip():
+            logger.info('[知识成长] 跳过回归测试：未提供可执行替代命令')
+            return
+
+        regression_constraint = dict(constraint)
+        regression_constraint['device_model'] = str(error_record.get('device_model') or '')
+        regression_constraint['alternative'] = alternative_command.strip()
+        try:
+            self._regression_test_generator.generate_test(regression_constraint)
+        except Exception as exc:
+            logger.warning('[知识成长] 回归测试生成失败: %s', exc, exc_info=True)
+
+    def _device_info_for_path(self, device_path: str) -> Dict[str, Any]:
+        """从已连接设备摘要中匹配设备信息，并提供稳定的安全默认值。"""
+        device_info: Dict[str, Any] = {
+            'model': 'unknown',
+            'role': 'network_device',
+            'software_version': '',
+        }
+        if not self._scan_devices:
+            return device_info
+        try:
+            summary = self._scan_devices()
+        except Exception as exc:
+            logger.warning('[知识成长] 读取设备摘要失败: %s', exc, exc_info=True)
+            return device_info
+
+        devices = summary.get('devices', []) if isinstance(summary, dict) else summary
+        if not isinstance(devices, list):
+            return device_info
+        for device in devices:
+            if not isinstance(device, dict) or str(device.get('path', '')) != device_path:
+                continue
+            model = device.get('model') or device.get('device_type') or device_info['model']
+            device_info.update({
+                'model': str(model),
+                'role': str(device.get('role') or device.get('device_type') or device_info['role']),
+                'software_version': str(device.get('software_version') or ''),
+            })
+            break
+        return device_info
+
+    def _get_topology_data(self) -> Dict[str, Any]:
+        """安全读取拓扑摘要，无法读取时回退为空拓扑。"""
+        if not self._topology_provider:
+            return {}
+        try:
+            topology_data = self._topology_provider()
+            return topology_data if isinstance(topology_data, dict) else {}
+        except Exception as exc:
+            logger.warning('[知识成长] 读取拓扑摘要失败: %s', exc, exc_info=True)
+            return {}
 
     def _execute_verify_node(self, node: PlanNode, device_path: str, result: ExperimentResult):
         """执行验证节点"""

@@ -126,7 +126,7 @@ logger = logging.getLogger(__name__)
 _agent_runtime = None
 
 
-def init_agent_runtime(app, command_executor, device_scanner=None):
+def init_agent_runtime(app, command_executor, device_scanner=None, topology_provider=None):
     """
     初始化 Agent Runtime 并注册路由
 
@@ -148,6 +148,7 @@ def init_agent_runtime(app, command_executor, device_scanner=None):
         data_dir=data_dir,
         command_executor=command_executor,
         device_scanner=device_scanner,
+        topology_provider=topology_provider,
     )
 
     # Migrate legacy knowledge base data into KnowledgeStore

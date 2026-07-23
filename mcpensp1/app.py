@@ -260,7 +260,12 @@ def _extract_topo_names(data):
 
 # ==================== Agent Runtime v3.0 集成 ====================
 try:
-    _agent_runtime = init_agent_runtime(app, lambda p, c: send_command(p, c))
+    _agent_runtime = init_agent_runtime(
+        app,
+        lambda p, c: send_command(p, c),
+        device_scanner=dm.get_connected_summary,
+        topology_provider=topo_engine.get_summary,
+    )
     logger.info('[App] Agent Runtime v3.0 集成成功')
 except Exception as _agent_err:
     logger.warning(f'[App] Agent Runtime 加载失败，原有功能不受影响: {_agent_err}')

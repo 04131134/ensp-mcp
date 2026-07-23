@@ -257,6 +257,7 @@ class ExperimentResult:
     repair_attempts: int = 0
     knowledge_entries_created: int = 0
     memory_entries_created: int = 0
+    execution_log: List[Dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         d = {
@@ -269,6 +270,7 @@ class ExperimentResult:
             'repair_attempts': self.repair_attempts,
             'knowledge_entries_created': self.knowledge_entries_created,
             'memory_entries_created': self.memory_entries_created,
+            'execution_log': self.execution_log,
         }
         if self.goal:
             d['goal'] = asdict(self.goal)

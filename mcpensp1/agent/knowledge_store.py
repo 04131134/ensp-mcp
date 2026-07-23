@@ -111,6 +111,15 @@ class KnowledgeStore:
             self._save()
             return record_id
 
+    def update(self, record: KnowledgeRecord) -> None:
+        """更新一条已存在的知识记录并持久化。"""
+        with self._lock:
+            if record.record_id not in self._records:
+                raise KeyError(f"未知知识记录: {record.record_id}")
+            self._records[record.record_id] = record
+            self._dirty = True
+            self._save()
+
     def search(
         self,
         query: str = "",

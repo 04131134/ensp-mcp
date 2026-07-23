@@ -16,6 +16,7 @@ Agent 的增长知识库：记录配置成功/失败经验、最佳实践、验�
 | 方法 | 返回值 |
 |------|--------|
 | `add(record)` | `str` (record_id) |
+| `update(record)` | `None`，更新既有记录并持久化 |
 | `search(query, category, device_type, limit)` | `List[KnowledgeRecord]` |
 | `query_for_task(task, device_type)` | `Dict` |
 | `record_success(task, commands, device_type)` | `None` |

@@ -126,7 +126,8 @@ logger = logging.getLogger(__name__)
 _agent_runtime = None
 
 
-def init_agent_runtime(app, command_executor, device_scanner=None, topology_provider=None):
+def init_agent_runtime(app, command_executor, device_scanner=None, topology_provider=None,
+                       register_routes=True):
     """
     初始化 Agent Runtime 并注册路由
 
@@ -159,7 +160,8 @@ def init_agent_runtime(app, command_executor, device_scanner=None, topology_prov
     except Exception as _mig_err:
         logger.warning('[Bootstrap] KB migration skipped: %s', _mig_err)
 
-    register_agent_routes(app, _agent_runtime)
+    if register_routes:
+        register_agent_routes(app, _agent_runtime)
 
     logger.info('[Bootstrap] Agent Runtime v3.0 已集成到 Flask 应用')
     return _agent_runtime

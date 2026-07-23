@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 # Direct module imports for Phase 3 (bypass HTTP round-trip)
 from device_manager import dm
 from command_executor import cmd_executor
-from services import kb, topo_engine, config_methods
+from services import services, kb, topo_engine, config_methods
 
 ENSP_API_KEY = os.environ.get('ENSP_API_KEY', '')
 from mcp.server import Server
@@ -13,23 +13,17 @@ from mcp.types import Tool, TextContent
 from mcp.types import Prompt, PromptMessage, PromptArgument
 from mcp.server.stdio import stdio_server
 
-# httpx is needed for the ~10 remaining HTTP-forwarding tools (agent_plan/execute/status etc.)
-import httpx
-
 MCP_SERVER_NAME = "ensp-mcp-server"
-SERVER_URL = os.environ.get('ENSP_SERVER_URL', 'http://127.0.0.1:5000')
+# 保留历史常量，MCP 工具不再使用该地址转发请求。
+SERVER_URL = os.environ.get('ENSP_SERVER_URL', 'in-process')
 mcp_server = Server(MCP_SERVER_NAME)
-
-_http_client = httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=5.0))
-
-_MAX_RETRIES = 2
-_RETRY_DELAY = 1.0
 
 
 # ==================== Phase 3: Direct tool helpers (no HTTP) ====================
 
 async def _direct_connect(port: int) -> str:
     """Connect to eNSP device directly via Telnet (async-safe)."""
+    return json.dumps(services.devices.connect(port), ensure_ascii=False)
     try:
         from connection import TelnetConnection
         path = f'127.0.0.1:{port}'
@@ -95,6 +89,7 @@ async def _direct_connect(port: int) -> str:
 
 async def _direct_send_cmd(path: str, command: str) -> str:
     """Directly send command to device via Telnet, bypassing Flask."""
+    return json.dumps(services.commands.send(path, command), ensure_ascii=False)
     conn = dm.get(path)
     if not conn:
         return json.dumps({'success': False, 'error': 'Device not connected'})
@@ -123,6 +118,7 @@ async def _direct_send_cmd(path: str, command: str) -> str:
 
 async def _direct_disconnect(path: str) -> str:
     """Direct disconnect without HTTP."""
+    return json.dumps(services.devices.disconnect(path), ensure_ascii=False)
     result = dm.remove(path)
     dm.remove_name(path)
     if result:
@@ -135,6 +131,8 @@ async def _direct_disconnect(path: str) -> str:
 
 async def _direct_batch_cmd(path: str, commands: list, **opts) -> dict:
     """Batch command execution (async-safe, non-blocking between commands)."""
+    return services.commands.batch(path, commands, opts.get('wait', 0.1),
+                                   opts.get('auto_view', True), opts.get('auto_undo_tm', True))
     conn = dm.get(path)
     if not conn:
         return {'success': False, 'error': 'Device not connected'}
@@ -182,6 +180,8 @@ async def _direct_batch_cmd(path: str, commands: list, **opts) -> dict:
 
 async def _direct_fetch_name(path: str) -> str:
     """Fetch device name directly via Telnet."""
+    name, device_type = services.devices.fetch_name(path)
+    return json.dumps({'success': True, 'path': path, 'name': name, 'device_type': device_type}, ensure_ascii=False)
     conn = dm.get(path)
     if not conn:
         return json.dumps({'success': False, 'error': 'Device not connected'})
@@ -215,6 +215,7 @@ async def _direct_fetch_name(path: str) -> str:
 
 async def _direct_group_cmd(paths: list, command: str) -> dict:
     """Send command to multiple devices directly."""
+    return services.commands.group(paths, command)
     results = []
     for path in paths:
         r = await _direct_send_cmd(path, command)
@@ -243,33 +244,8 @@ def _load_agent_prompt(version: str = "v3") -> str:
 AGENT_SYSTEM_PROMPT = _load_agent_prompt()
 
 async def mcp_req(method, path, json_data=None, params=None):
-    headers = {}
-    if ENSP_API_KEY:
-        headers['X-API-Key'] = ENSP_API_KEY
-    url = f"{SERVER_URL}{path}"
-    last_error = None
-    for attempt in range(_MAX_RETRIES + 1):
-        try:
-            if method == "GET":
-                resp = await _http_client.get(url, params=params, headers=headers)
-            elif method == "POST":
-                resp = await _http_client.post(url, json=json_data, headers=headers)
-            else:
-                return json.dumps({"error": "Unsupported method"})
-            if resp.status_code != 200:
-                return json.dumps({"error": "Backend request failed", "status_code": resp.status_code, "detail": resp.text[:200]})
-            return resp.text
-        except httpx.ConnectError as e:
-            last_error = f"Cannot connect to backend at {SERVER_URL}. Is app.py running?"
-            if attempt < _MAX_RETRIES:
-                import asyncio
-                await asyncio.sleep(_RETRY_DELAY)
-        except httpx.TimeoutException:
-            last_error = f"Request to {url} timed out (attempt {attempt+1})"
-            if attempt < _MAX_RETRIES:
-                import asyncio
-                await asyncio.sleep(_RETRY_DELAY)
-    return json.dumps({"error": last_error})
+    """历史兼容占位。MCP 不再通过 HTTP 调用 Flask。"""
+    raise RuntimeError('MCP HTTP 代理已移除，请直接调用 services')
 
 _REQUIRED_PARAMS = {
     "connect_device": ["port"],
@@ -365,7 +341,7 @@ async def call_tool(name, arguments):
         if name == "scan_devices":
             start = arguments.get("start", 2000)
             end = arguments.get("end", 2050)
-            text = json.dumps(dm.scan_devices(start, end), ensure_ascii=False)
+            text = json.dumps(services.devices.scan(start, end), ensure_ascii=False)
         elif name == "connect_device":
             text = await _direct_connect(arguments["port"])
         elif name == "send_command":
@@ -373,18 +349,10 @@ async def call_tool(name, arguments):
         elif name == "disconnect_device":
             text = await _direct_disconnect(arguments["path"])
         elif name == "get_connected_devices":
-            text = json.dumps(dm.get_connected_summary(), ensure_ascii=False)
-        elif name == "rename_device": dm.set_name(arguments["path"], arguments["name"]); text = json.dumps({"success": True, "path": arguments["path"], "name": arguments["name"]})
+            text = json.dumps(services.devices.connected(), ensure_ascii=False)
+        elif name == "rename_device": text = json.dumps(services.devices.rename(arguments["path"], arguments["name"]), ensure_ascii=False)
         elif name == "fetch_device_name": text = await _direct_fetch_name(arguments["path"])
-        elif name == "get_command_catalog":
-            params = {}
-            if arguments.get("category"):
-                params["category"] = arguments["category"]
-            if arguments.get("device_type"):
-                params["device_type"] = arguments["device_type"]
-            if arguments.get("risk"):
-                params["risk"] = arguments["risk"]
-            text = await mcp_req("GET", "/api/kb/catalog", params=params)
+        elif name == "get_command_catalog": text = json.dumps(kb.get_command_catalog(arguments.get("category"), arguments.get("device_type"), arguments.get("risk")), ensure_ascii=False)
         elif name == "get_device_capabilities":
             text = json.dumps(kb.get_device_capabilities(arguments.get("path")), ensure_ascii=False)
         elif name == "get_device_history":
@@ -424,48 +392,35 @@ async def call_tool(name, arguments):
                 auto_view=arguments.get("auto_view", True),
                 auto_undo_tm=arguments.get("auto_undo_tm", True))
             text = json.dumps(result, ensure_ascii=False)
-        elif name == "search_kb":
-            text = await mcp_req("GET", "/api/kb/search", params={"q": arguments["q"], "limit": arguments.get("limit", 20)})
-        elif name == "get_command_help":
-            text = await mcp_req("GET", "/api/kb/help", params={"cmd": arguments["cmd"]})
+        elif name == "search_kb": text = json.dumps(kb.search_markdown_reference(arguments["q"], arguments.get("limit", 20)), ensure_ascii=False)
+        elif name == "get_command_help": text = json.dumps(kb.search_markdown_reference(arguments["cmd"], 20), ensure_ascii=False)
         elif name == "group_command":
             text = json.dumps(await _direct_group_cmd(arguments["paths"], arguments["command"]), ensure_ascii=False)
-        elif name == "generate_lab_report":
-            text = await mcp_req("POST", "/api/kb/lab-report", json_data={"name": arguments.get("name", "eNSP Lab Report"), "paths": arguments.get("paths")})
-        elif name == "auto_record_experience":
-            text = await mcp_req("POST", "/api/kb/auto-extract", json_data={"path": arguments["path"]})
+        elif name == "generate_lab_report": text = json.dumps({'name': arguments.get("name", "eNSP Lab Report"), 'devices': services.devices.connected(), 'knowledge': kb.get_stats()}, ensure_ascii=False)
+        elif name == "auto_record_experience": text = json.dumps({'success': False, 'error': 'No command results supplied'}, ensure_ascii=False)
         # ---- Agent Runtime v3.0 ----
         # 以下 6 个 agent 记忆/知识工具原调用旧 knowledge.py 的 kb（与 AgentRuntime 记忆无关），
         # 现统一经 mcp_req 代理到真实 AgentRuntime 后端（/api/agent/*），避免“冒牌 Agent 记忆”。
         elif name == "agent_memory_query":
-            params = {"query": arguments.get("query", ""), "limit": arguments.get("limit", 20)}
-            if arguments.get("category"):
-                params["category"] = arguments["category"]
-            text = await mcp_req("GET", "/api/agent/memory", params=params)
+            runtime = services.agent_runtime; entries = runtime.memory.recall(query=arguments.get("query", ""), category=arguments.get("category"), limit=arguments.get("limit", 20)); text = json.dumps({'success': True, 'data': {'entries': [entry.to_dict() for entry in entries], 'total': len(entries)}}, ensure_ascii=False)
         elif name == "agent_memory_lessons":
-            text = await mcp_req("GET", "/api/agent/memory/lessons")
+            text = json.dumps({'success': True, 'data': {'lessons': [entry.to_dict() for entry in services.agent_runtime.memory.get_lessons(limit=50)]}}, ensure_ascii=False)
         elif name == "agent_memory_stats":
-            text = await mcp_req("GET", "/api/agent/memory/stats")
+            text = json.dumps({'success': True, 'data': services.agent_runtime.memory.get_stats()}, ensure_ascii=False)
         elif name == "agent_knowledge_search":
-            params = {"query": arguments.get("query", ""), "limit": arguments.get("limit", 20)}
-            if arguments.get("category"):
-                params["category"] = arguments["category"]
-            if arguments.get("device_type"):
-                params["device_type"] = arguments["device_type"]
-            text = await mcp_req("GET", "/api/agent/knowledge/search", params=params)
+            records = services.agent_runtime.knowledge.search(arguments.get("query", ""), arguments.get("category"), arguments.get("device_type"), arguments.get("limit", 20)); text = json.dumps({'success': True, 'data': {'records': [record.to_dict() for record in records], 'total': len(records)}}, ensure_ascii=False)
         elif name == "agent_knowledge_best_practices":
-            text = await mcp_req("GET", "/api/agent/knowledge/best-practices")
+            text = json.dumps({'success': True, 'data': {'practices': [record.to_dict() for record in services.agent_runtime.knowledge.search(category='best_practice', limit=20)]}}, ensure_ascii=False)
         elif name == "agent_knowledge_troubleshooting":
-            text = await mcp_req("GET", "/api/agent/knowledge/troubleshooting",
-                                 params={"query": arguments.get("query", "")})
+            text = json.dumps({'success': True, 'data': {'cases': [record.to_dict() for record in services.agent_runtime.knowledge.search(arguments.get("query", ""), 'troubleshoot', limit=20)]}}, ensure_ascii=False)
         elif name == "agent_plan":
-            text = await mcp_req("POST", "/api/agent/plan", json_data={"goal": arguments["goal"], "experiment_type": arguments.get("experiment_type", "general")})
+            text = json.dumps({'success': True, 'data': services.agent_runtime.get_plan(arguments["goal"], arguments.get("experiment_type", "general"))}, ensure_ascii=False)
         elif name == "agent_execute":
-            text = await mcp_req("POST", "/api/agent/execute", json_data={"request": arguments["request"], "device_paths": arguments.get("device_paths", []), "experiment_type": arguments.get("experiment_type", "general"), "constraints": arguments.get("constraints", [])})
+            result = services.agent_runtime.execute_task(arguments["request"], arguments.get("device_paths", []), arguments.get("experiment_type", "general"), arguments.get("constraints", [])); text = json.dumps({'success': True, 'data': result.to_dict()}, ensure_ascii=False)
         elif name == "agent_status":
-            text = await mcp_req("GET", "/api/agent/status")
+            text = json.dumps({'success': True, 'data': services.agent_runtime.get_status()}, ensure_ascii=False)
         elif name == "agent_daily_review":
-            text = await mcp_req("POST", "/api/agent/learning/daily-review")
+            text = json.dumps({'success': True, 'data': services.agent_runtime.learning.daily_review()}, ensure_ascii=False)
         # ---- ÷ ----
         elif name == "config_method_list": text = json.dumps(config_methods.list_methods(arguments.get("category")), ensure_ascii=False)
         elif name == "config_method_get": text = json.dumps(config_methods.get_method(arguments["method_id"]), ensure_ascii=False)
@@ -475,29 +430,13 @@ async def call_tool(name, arguments):
         elif name == "config_method_update": text = json.dumps(config_methods.update_method(arguments["method_id"], arguments["updates"]), ensure_ascii=False)
         else: text = json.dumps({"error": "Unknown tool"})
         return [TextContent(type="text", text=text)]
-    except httpx.ConnectError: return [TextContent(type="text", text=json.dumps({"error": "Cannot connect to backend server"}))]
-    except httpx.TimeoutException: return [TextContent(type="text", text=json.dumps({"error": "Request timed out"}))]
     except Exception as e:
         logger.exception("Unhandled error in tool call: %s", e)
         return [TextContent(type="text", text=json.dumps({"error": "An internal error occurred"}))]
 
 async def check_backend_health():
-    """Probe backend readiness before accepting MCP tool calls."""
-    import asyncio
-    for attempt in range(10):
-        try:
-            resp = await _http_client.get(f"{SERVER_URL}/api/health")
-            if resp.status_code == 200:
-                data = resp.json()
-                logger.info("Backend ready: %s devices, KB loaded", data.get('devices', 0))
-                return True
-        except (httpx.ConnectError, httpx.TimeoutException):
-            pass
-        if attempt < 9:
-            logger.info("Waiting for backend... (attempt %s/10)", attempt + 1)
-            await asyncio.sleep(2)
-    logger.warning("Backend at %s not reachable after 10 attempts", SERVER_URL)
-    return False
+    """统一服务已在当前进程初始化，无需探测 Web 后端。"""
+    return True
 
 async def run_mcp_server():
     async with stdio_server() as (r, w):

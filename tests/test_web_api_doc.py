@@ -38,7 +38,7 @@ def _runtime_http_paths():
 
 
 def _socketio_events():
-    src = open("mcpensp1/app.py", encoding="utf-8").read()
+    src = open("mcpensp1/web/socketio_handlers.py", encoding="utf-8").read()
     return set(re.findall(r'@socketio\.on\("([^"]+)"\)', src))
 
 

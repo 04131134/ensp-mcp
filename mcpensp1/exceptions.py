@@ -26,7 +26,23 @@ from __future__ import annotations
 from typing import Any, Dict, Optional
 
 
-class ENSPError(Exception):
+class ENSPMCPError(Exception):
+    """面向 Web 与 MCP 边界的统一业务异常。"""
+
+    code = 'ensp_mcp_error'
+
+    def __init__(self, message: str = '', code: Optional[str] = None,
+                 details: Optional[Dict[str, Any]] = None):
+        super().__init__(message)
+        self.message = message
+        self.code = code or self.code
+        self.details: Dict[str, Any] = details or {}
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {'message': self.message, 'code': self.code, 'details': self.details}
+
+
+class ENSPError(ENSPMCPError):
     """所有 eNSP-MCP 自定义异常的基类。
 
     Attributes:
@@ -35,17 +51,18 @@ class ENSPError(Exception):
     """
 
     def __init__(self, message: str = "", context: Optional[Dict[str, Any]] = None):
-        super().__init__(message)
-        self.message = message
+        super().__init__(message, details=context)
         self.context: Dict[str, Any] = context or {}
 
     def to_dict(self) -> Dict[str, Any]:
         """转换为可序列化字典（供 API 返回 / 日志结构化）。"""
-        return {
+        data = {
             'error_type': self.__class__.__name__,
             'message': self.message,
             'context': self.context,
         }
+        data.update({'code': self.code, 'details': self.details})
+        return data
 
     def __str__(self) -> str:
         if self.context:
@@ -167,6 +184,30 @@ class TransactionRollbackFailed(ENSPError):
         ctx = {'transaction_id': transaction_id, **kwargs}
         super().__init__(message, ctx)
         self.transaction_id = transaction_id
+
+
+class DeviceConnectionError(NetworkError):
+    code = 'device_connection_error'
+
+
+class CommandExecutionError(CommandError):
+    code = 'command_execution_error'
+
+
+class KnowledgeNotFoundError(KnowledgeError):
+    code = 'knowledge_not_found'
+
+
+class TopologyError(ENSPMCPError):
+    code = 'topology_error'
+
+
+class ExperimentError(ExecutionError):
+    code = 'experiment_error'
+
+
+class AgentError(ExecutionError):
+    code = 'agent_error'
 
 
 # ==================== 便捷函数 ====================

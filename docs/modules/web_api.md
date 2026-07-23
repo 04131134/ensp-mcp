@@ -1,10 +1,13 @@
 # Flask Web API
 
 ## 位置
-`mcpensp1/app.py`（`app` Flask 实例）+ `mcpensp1/agent/routes.py`（由 `init_agent_runtime(app, ...)` 在导入时注册）
+`mcpensp1/app.py`（应用装配）+ `mcpensp1/web/`（领域蓝图与 SocketIO 事件）
 
 ## 职责
 eNSP-MCP 的 Web 控制台后端。所有对外 HTTP 接口与 SocketIO 事件均在此暴露，供前端 Dashboard（静态资源 `static/app.js`）调用。**注意**：AI Agent 不直接走 REST，AI 交互统一经 MCP 协议（`mcp_server.py`）；此处接口是给人/前端用的。
+
+## 结构（2026-07）
+`app.py` 仅创建 Flask、初始化 SocketIO、注册蓝图并启动服务。`web/devices.py`、`commands.py`、`knowledge.py`、`topology.py`、`experiments.py` 与 `agent.py` 按领域提供路由；所有蓝图工厂接收相同的 `services.ServiceRegistry`，不得自行创建核心服务。SocketIO 事件集中在 `web/socketio_handlers.py`，设备与命令分别使用 `/devices`、`/commands` 命名空间。
 
 ## 通用约定
 - 基础路径：`http://127.0.0.1:5000`（本地 eNSP 配套 Web 服务）

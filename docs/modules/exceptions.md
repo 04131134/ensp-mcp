@@ -7,6 +7,9 @@
 定义 eNSP-MCP 全项目统一异常层次，消除 30+ 处 `except Exception: pass` 静默吞错。
 所有异常分类捕获、记录日志、返回原因、支持恢复。
 
+## Web 与 MCP 边界
+`ENSPMCPError` 是统一业务异常基类，包含 `message`、`code`、`details`。`DeviceConnectionError`、`CommandExecutionError`、`KnowledgeNotFoundError`、`TopologyError`、`ExperimentError` 和 `AgentError` 用于领域失败。Flask 在应用边界转换为 JSON 响应，MCP 在工具边界转换为文本错误；既有 `ENSPError` 保持兼容并继承该基类。
+
 ## 异常层次
 
 ```

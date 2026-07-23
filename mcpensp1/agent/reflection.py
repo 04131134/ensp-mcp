@@ -21,7 +21,21 @@ logger = logging.getLogger(__name__)
 
 
 class ReflectionEngine:
-    """实验反思引擎"""
+    """实验反思引擎
+
+    v3.1 增强（第二阶段 Step9）:
+    - set_error_library(): 注入 ErrorLibrary 后，对失败节点关联错误原因做因果分析
+    - 输出结构化因果（cause/fix/confidence）而非纯字符串拼接
+    - 开关 causal_reflection，未注入 error_library 时回退原有行为
+    """
+
+    def __init__(self):
+        self._error_library = None
+        self.causal_reflection: bool = True
+
+    def set_error_library(self, lib) -> None:
+        """注入 ErrorLibrary 实例，启用失败节点因果分析。传 None 关闭。"""
+        self._error_library = lib
 
     def reflect(self, result: ExperimentResult) -> ReflectionEntry:
         """对实验结果进行反思"""
@@ -51,6 +65,13 @@ class ReflectionEngine:
                 reflection.what_went_wrong.append(f"验证失败: {vr.check_name} - {vr.detail}")
                 if vr.suggestions:
                     reflection.optimization_suggestions.extend(vr.suggestions)
+
+        # 2.5 因果分析：关联 error_library 解释失败节点原因（Step9）
+        causes = self._analyze_failure_causes(result)
+        for cause in causes:
+            reflection.what_went_wrong.append(cause['summary'])
+            if cause.get('fix'):
+                reflection.optimization_suggestions.append(cause['fix'])
 
         # 3. 提取经验教训
         reflection.lessons_learned = self._extract_lessons(result)
@@ -164,3 +185,46 @@ class ReflectionEngine:
             parts.append(f"总结 {len(reflection.lessons_learned)} 条经验")
 
         return ', '.join(parts)
+
+    def _analyze_failure_causes(self, result: ExperimentResult) -> List[Dict[str, Any]]:
+        """对失败节点关联 error_library 进行因果分析（Step9）。
+
+        遍历 plan 中 status=failed 的节点，提取 error 文本查 error_library，
+        命中则返回结构化因果 {node_id, summary, fix, confidence}。
+        开关 causal_reflection=False / error_library 未注入 / 查询异常 → 返回空列表。
+        """
+        causes: List[Dict[str, Any]] = []
+        if not self.causal_reflection or not self._error_library:
+            return causes
+        if not result.plan:
+            return causes
+        for node in result.plan.nodes.values():
+            if node.status != 'failed' or not node.result:
+                continue
+            # 从 node.result 提取错误文本
+            if isinstance(node.result, dict):
+                error_text = str(node.result.get('error', '') or node.result.get('commands', ''))
+            else:
+                error_text = str(node.result)
+            if not error_text or error_text == '[]':
+                continue
+            try:
+                lookup = self._error_library.lookup(error_text)
+                if lookup.get('found'):
+                    cause = lookup.get('cause', '未知原因')
+                    fix = lookup.get('fix')
+                    confidence = lookup.get('confidence', 0.5)
+                    summary = f"节点 {node.label} 失败原因: {cause}"
+                    causes.append({
+                        'node_id': node.node_id,
+                        'summary': summary,
+                        'fix': f"修复建议({node.node_id}): {fix}" if fix else None,
+                        'confidence': confidence,
+                    })
+                    logger.info(
+                        '[Reflection] 因果分析: 节点 %s → %s (confidence=%.2f)',
+                        node.node_id, cause, confidence,
+                    )
+            except Exception as e:
+                logger.warning('[Reflection] error_library 查询异常 (%s): %s', node.node_id, e)
+        return causes

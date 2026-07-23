@@ -20,3 +20,12 @@ def test_kb_search_endpoint_returns_200():
     client = flask_app.app.test_client()
     resp = client.get("/api/kb/search?q=vlan")
     assert resp.status_code == 200, resp.get_data(as_text=True)[:300]
+
+
+@pytest.mark.skipif(flask_app is None, reason="Flask app 无法导入")
+def test_kb_search_includes_markdown_reference():
+    client = flask_app.app.test_client()
+    resp = client.get("/api/kb/search?q=ospf")
+
+    assert resp.status_code == 200, resp.get_data(as_text=True)[:300]
+    assert any(item.get('type') == 'markdown_reference' for item in resp.get_json())

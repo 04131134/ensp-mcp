@@ -206,3 +206,48 @@ display vap all
 display radio all
 # 期望: 2.4G和5G都显示 ST=on
 ```
+
+## 七、AC6005 双机备份实战补充 (2026-07-21)
+
+本次实验用 **AC6005 + AP3030DN**，与六节的 AC6605 校园网实训有本质差异，关键纠正如下：
+
+### 1. type-id 因平台而异（最重要！）
+- AC6005: `display ap-type all` → **45 = AP3030DN**, 56 = AP6050DN
+- AC6605: 56 = AP3030DN
+- 错配 type-id 的后果：AP 卡 `idle`/`fault`、射频 `Total:0`，CAPWAP 建链但射频起不来
+- **铁律：每台 AC 上线前先 `display ap-type all` 取真实 id**
+
+### 2. 真实拓扑：AP 挂在 AR 后，不是直连交换机
+```
+AP → AR Eth0/0/0 → AR Eth0/0/1 → LSW1 GE0/0/x → AC
+```
+- 接 AP 的口是 **路由器 AR 的口**（不是交换机口）
+- AR 接 AP 口配置（漏配/错配会让 AP 永远拿不到管理 IP）：
+  ```
+  interface Ethernet0/0/0
+   port link-type trunk
+   port trunk pvid vlan 10
+   port trunk allow-pass vlan 10 20 30 40
+  ```
+- 曾被错配成 `access vlan 20/30`，把 AP 锁在用户 VLAN → 只能 169.254.x.x → idle。修正为 trunk pvid vlan 10 后 AP 立即 normal。
+
+### 3. AC6005 的 HSB(ac protect) 在 eNSP 不支持双隧道
+- 配置必须在 **wlan 视图** 下做（system-view 下报 Wrong parameter）
+- 全局：`ac protect enable` / `ac protect priority 0` / `ac protect protect-ac <对端IP>`
+- AP 级：`ap-id N` 视图内 `ac-list <对端IP>`（弹 [Y/N] 须回大写 YES）；**无** `ap protect enable` 子命令，也**无** `ac source ip`
+- 模拟限制：配置能正确下发（`display ac protect` 全对），但 AP 重启后全 `fault`，建不了双 CAPWAP 隧道 → **eNSP AC6005 不做 HSB**
+- 残留 `ac-list` 会让 AP 持续 fault，须先 YES 清 [Y/N] 提示再 `undo ac-list`（不带 IP）
+
+### 4. 冷备 failover（实测可用，推荐）
+- 两台 AC 独立配相同 WLAN，AP 双归属
+- 主 AC `interface Vlanif10` → `shutdown` 后，AP 约 **150~160s** 内切到备 AC 并 `normal`（射频 up、VAP ON）
+- 验证命令：主备都 `display ap all`，切完后备 AC 上 State 变 normal
+
+### 5. 瘦 AP 限制
+- AP 控制台 `port link-type` / `ip address` 均 Unrecognized
+- AP 管理 IP 只能从 DHCP 自动获取，且必须处在管理 VLAN（本实验 VLAN10）
+- AP 拿不到 IP 只能从交换机/路由器侧修（把接 AP 的口划进管理 VLAN），AP 侧无法自救
+
+### 6. 无线 STA 子网 DHCP
+- 用户 VLAN（本实验 20/30/40）的网关在各 AR 上，需补 `interface Vlanif<x>` + `ip pool sta` + `dhcp select global`，并 `ospf` 通告该网段，否则 STA 拿不到 IP、全网不通
+```

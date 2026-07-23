@@ -1,0 +1,35 @@
+LSW1| gateway-list 10.1.1.254|gateway-list 10.1.1.254
+Error:Part of the gateway IP has already exist.
+[lsw1-ip-pool-ap-mgmt]
+LSW1| network 10.1.1.0 mask 255.255.255.0|network 10.1.1.0 mask 255.255.255.0
+Error:Please delete the network section first.
+[lsw1-ip-pool-ap-mgmt]
+LSW1| excluded-ip-address 10.1.1.1 10.1.1.2|excluded-ip-address 10.1.1.1 10.1.1.2
+Error:Some of addresses not be excluded are not idle,or not in the pool.
+[lsw1-ip-pool-ap-mgmt]
+LSW1| ip address 10.1.1.254 255.255.255.0|ip address 10.1.1.254 255.255.255.0
+Error: The address already exists.
+[lsw1-Vlanif10]
+AR1| portswitch|portswitch
+                   ^
+Error: Unrecognized command found at '^' position.
+[ar1-Ethernet0/0/1]
+[ar1-Ethernet0/0/1]
+AR2| portswitch|portswitch
+                   ^
+Error: Unrecognized command found at '^' position.
+[ar2-Ethernet0/0/1]
+[ar2-Ethernet0/0/1]
+AR3| portswitch|portswitch
+                   ^
+Error: Unrecognized command found at '^' position.
+[ar3-Ethernet0/0/1]
+[ar3-Ethernet0/0/1]
+AC1| ip address 10.1.1.1 255.255.255.0|ip address 10.1.1.1 255.255.255.0
+Error: The address already exists.
+[ac1-Vlanif10]
+[ac1-Vlanif10]
+AC2| ip address 10.1.1.2 255.255.255.0|ip address 10.1.1.2 255.255.255.0
+Error: The address already exists.
+[ac2-Vlanif10]
+[ac2-Vlanif10]

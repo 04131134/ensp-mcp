@@ -1,0 +1,175 @@
+
+===== AC1 display ap all =====
+display ap all
+Info: This operation may take a few seconds. Please wait for a moment.done.
+Total AP information:
+fault: fault           [2]
+nor  : normal          [1]
+---------------------------------------------------------------------------------------
+ID   MAC            Name Group   IP         Type            State STA Uptime
+---------------------------------------------------------------------------------------
+1    00e0-fc1b-3720 AP1  default 10.1.1.251 AP3030DN        nor   0   34S
+2    00e0-fcdb-0400 AP2  default -          AP3030DN        fault 0   -
+3    00e0-fcf8-32e0 AP3  default -          AP3030DN        fault 0   -
+---------------------------------------------------------------------------------------
+Total: 3
+<AC1>
+<AC1>
+
+===== AC1 display vap ap-group default =====
+display vap ap-group default
+Info: This operation may take a few seconds, please wait.
+WID : WLAN ID            
+--------------------------------------------------------------------------------
+AP ID AP name RfID WID  BSSID          Status  Auth type     STA   SSID       
+--------------------------------------------------------------------------------
+1     AP1     0    1    00E0-FC1B-3720 ON      WPA/WPA2-PSK  0     Office-Cold
+1     AP1     1    1    00E0-FC1B-3730 ON      WPA/WPA2-PSK  0     Office-Cold
+2     AP2     0    1    00E0-FCDB-0400 OFF     WPA/WPA2-PSK  0     Office-Cold
+2     AP2     1    1    00E0-FCDB-0410 OFF     WPA/WPA2-PSK  0     Office-Cold
+3     AP3     0    1    00E0-FCF8-32E0 OFF     WPA/WPA2-PSK  0     Office-Cold
+3     AP3     1    1    00E0-FCF8-32F0 OFF     WPA/WPA2-PSK  0     Office-Cold
+--------------------------------------------------------------------------------
+Total: 6
+<AC1>
+<AC1>
+
+===== AC1 display ac protect =====
+display ac protect
+------------------------------------------------------------
+Protect state             : disable
+Protect AC                : -
+Priority                  : 0
+Protect restore           : enable
+Coldbackup kickoff station: disable
+------------------------------------------------------------
+<AC1>
+<AC1>
+
+===== AC1 security-profile sec1 =====
+display security-profile name sec1
+------------------------------------------------------------
+Security policy               : WPA-WPA2 PSK
+Encryption                    : AES
+------------------------------------------------------------
+WEP's configuration
+Key 0                         : *****
+Key 1                         : *****
+Key 2                         : *****
+Key 3                         : *****
+Default key ID                : 0
+------------------------------------------------------------
+WPA/WPA2's configuration
+PTK update                    : disable
+PTK update interval(s)        : 43200
+------------------------------------------------------------
+WAPI's configuration
+CA certificate filename       : -
+ASU certificate filename      : -
+AC certificate filename       : -
+AC private key filename       : -
+Authentication server IP      : -
+WAI timeout(s)                : 60
+BK update interval(s)         : 43200
+BK lifetime threshold(%)      : 70
+  ---- More ----                                          USK update method             : Time-based
+  ---- More ----                                          USK update interval(s)        : 86400
+MSK update method             : Time-based
+MSK update interval(s)        : 86400
+Cert auth retrans count       : 3
+USK negotiate retrans count   : 3
+MSK negotiate retrans count   : 3
+------------------------------------------------------------
+<AC1>     
+
+===== AC2 display ap all =====
+display ap all
+Info: This operation may take a few seconds. Please wait for a moment.done.
+Total AP information:
+fault: fault           [2]
+idle : idle            [1]
+-------------------------------------------------------------------------------
+ID   MAC            Name Group   IP Type            State STA Uptime
+-------------------------------------------------------------------------------
+1    00e0-fc1b-3720 AP1  default -  AP3030DN        idle  0   -
+2    00e0-fcdb-0400 AP2  default -  AP3030DN        fault 0   -
+3    00e0-fcf8-32e0 AP3  default -  AP3030DN        fault 0   -
+-------------------------------------------------------------------------------
+Total: 3
+<AC2>
+<AC2>
+
+===== AC2 display vap ap-group default =====
+display vap ap-group default
+Info: This operation may take a few seconds, please wait.
+WID : WLAN ID            
+--------------------------------------------------------------------------------
+AP ID AP name RfID WID  BSSID          Status  Auth type     STA   SSID       
+--------------------------------------------------------------------------------
+2     AP2     0    1    00E0-FCDB-0400 OFF     WPA/WPA2-PSK  0     Office-Cold
+2     AP2     1    1    00E0-FCDB-0410 OFF     WPA/WPA2-PSK  0     Office-Cold
+3     AP3     0    1    00E0-FCF8-32E0 OFF     WPA/WPA2-PSK  0     Office-Cold
+3     AP3     1    1    00E0-FCF8-32F0 OFF     WPA/WPA2-PSK  0     Office-Cold
+--------------------------------------------------------------------------------
+Total: 4
+<AC2>
+<AC2>
+
+===== AC2 display ac protect =====
+display ac protect
+------------------------------------------------------------
+Protect state             : disable
+Protect AC                : -
+Priority                  : 0
+Protect restore           : enable
+Coldbackup kickoff station: disable
+------------------------------------------------------------
+<AC2>
+<AC2>
+
+===== LSW1 AP DHCP used (vlan10) =====
+display ip pool name vlan10 used 
+  Pool-name      : vlan10
+  Pool-No        : 0
+  Lease          : 1 Days 0 Hours 0 Minutes
+  Domain-name    : -
+  Option-code    : 43
+  Option-subcode : 3
+  Option-type    : ascii
+  Option-value   : 10.1.1.1
+  DNS-server0    : -               
+  NBNS-server0   : -               
+  Netbios-type   : -               
+  Position       : Local           Status           : Unlocked
+  Gateway-0      : 10.1.1.254      
+  Mask           : 255.255.255.0
+  VPN instance   : --
+ -----------------------------------------------------------------------------
+         Start           End     Total  Used  Idle(Expired)  Conflict  Disable
+ -----------------------------------------------------------------------------
+        10.1.1.1      10.1.1.254   253     3        247(0)         0        3
+ -----------------------------------------------------------------------------
+
+  Network section : 
+  --------------------------------------------------------------------------
+  Index              IP               MAC      Lease   Status  
+  --------------------------------------------------------------------------
+    250      10.1.1.251    00e0-fc1b-3720         96   Used       
+    251      10.1.1.252    00e0-fcdb-0400         25   Used       
+    252      10.1.1.253    00e0-fcf8-32e0         22   Used       
+  --------------------------------------------------------------------------
+
+<LSW1>
+
+===== LSW1 OSPF peer (Full mesh?) =====
+display ospf peer brief
+
+	 OSPF Process 1 with Router ID 10.1.1.254
+		  Peer Statistic Information
+ ----------------------------------------------------------------------------
+ Area Id          Interface                        Neighbor id      State    
+ 0.0.0.0          Vlanif10                         10.1.1.3         Full        
+ 0.0.0.0          Vlanif10                         10.1.1.11        Full        
+ 0.0.0.0          Vlanif10                         10.1.1.12        Full        
+ ----------------------------------------------------------------------------
+<LSW1>

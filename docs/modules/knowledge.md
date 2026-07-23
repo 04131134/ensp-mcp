@@ -12,6 +12,7 @@
 - **全局命令**：`kb/global_kb.json` —— 全量命令使用记录
 - **结构化命令库**：`kb/structured_commands_kb.json` —— 用户/系统视图命令、最佳实践、经验、排错案例
 - **配置方法**：`kb/config_methods/*.json` —— 标准配置流程
+- **VRP 命令参考**：`kb/vrp_command_knowledge_agent.md` —— 导入的全量 Markdown 命令库；启动时按标题建立章节索引，通过既有 `search_kb` 返回相关章节、命令和摘要。
 
 ## 与 Agent 知识库的关系
 `agent/knowledge_store.py` 的 `KnowledgeStore` 是 **Agent 学习 / 记录库**（记录式增长数据，方法为 search / get_stats / export_for_sharing / import_shared），与本文的 `KnowledgeBase`（结构化命令知识库）**数据模型与方法均不同**，是两套独立系统，**不合并**。
@@ -37,6 +38,8 @@
 | `suggest_commands(model)` | `Dict` | 按型号建议命令 |
 | `scan_device_commands(path)` | `Dict` | 扫描设备并建议命令 |
 | `reload_structured_kb()` / `load_structured_kb()` | `Dict/bool` | 加载结构化库 |
+| `search_markdown_reference(query, limit)` | `List[Dict]` | 检索导入的 VRP Markdown 命令参考章节 |
+| `get_markdown_reference_stats()` | `Dict` | 返回 Markdown 命令参考的来源、章节数与命令数 |
 
 ## v2.4 已废弃（已删除）
 - ~~`get_config_guidance(topic)`~~ —— 已从 `knowledge.py` 移除
@@ -48,6 +51,7 @@ mcp_server.py → services.py → KnowledgeBase (knowledge.py，唯一来源)
 app.py        → 通过 from services import kb 复用同一实例（不再重复定义）
     record_command        → devices_kb.json + global_kb.json
     record_experience     → structured_commands_kb.json
+    search_kb             → structured_commands_kb.json + vrp_command_knowledge_agent.md
     get_*                 → 读取各 JSON
 ```
 

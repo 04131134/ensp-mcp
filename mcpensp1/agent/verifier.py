@@ -25,8 +25,16 @@ class SemanticVerifier:
         """
         Args:
             command_executor: 命令执行函数 (device_path, command) -> {'success': bool, 'output': str}
+
+        v3.3（第四阶段 Step6）严格校验开关:
+            strict_acl: ACL 校验是否严格（统计实际 rule 数，非仅判字符串）。默认 True。
+            ping_loss_threshold: ping 丢包率阈值（%），<= 阈值才通过。默认 0（要求 0% 丢包）。
+                设为 100 时等价旧逻辑（<100% 即通过，向后兼容）。
         """
         self._exec_cmd = command_executor
+        # 第四阶段 Step6: 修复两个永真判定
+        self.strict_acl: bool = True
+        self.ping_loss_threshold: int = 0
 
     def verify_all(self, device_path: str, target_ip: Optional[str] = None) -> List[VerificationResult]:
         """执行全面验证"""
@@ -168,7 +176,13 @@ class SemanticVerifier:
         )
 
     def verify_acl(self, device_path: str) -> VerificationResult:
-        """验证 ACL"""
+        """验证 ACL
+
+        v3.3（第四阶段 Step6）:
+        - strict_acl=True（默认）: 统计 display acl all 输出中实际 `rule N` 数量，
+          rule_count > 0 才通过。修复旧逻辑仅判输出含 'rule'/'acl' 字符串导致几乎永真。
+        - strict_acl=False: 回退旧逻辑（向后兼容）。
+        """
         resp = self._exec_cmd(device_path, 'display acl all')
         if not resp.get('success'):
             return VerificationResult(
@@ -179,12 +193,27 @@ class SemanticVerifier:
                 confidence=0.5,
             )
         output = resp.get('output', '')
-        has_acl = 'rule' in output.lower() or 'acl' in output.lower()
+        output_lower = output.lower()
+
+        if self.strict_acl:
+            # 严格模式：统计实际 rule 行（rule N permit/deny ...），排除表头 "rules"
+            rule_matches = re.findall(r'rule\s+\d+\s+(?:permit|deny)', output_lower)
+            rule_count = len(rule_matches)
+            passed = rule_count > 0
+            detail = f'ACL 已配置（{rule_count} 条规则）' if passed else '未发现 ACL 规则（0 条 rule）'
+            return VerificationResult(
+                check_name='acl_config',
+                passed=passed,
+                detail=detail,
+                evidence={'has_rules': passed, 'rule_count': rule_count, 'strict': True},
+            )
+        # 非严格模式：回退旧逻辑（向后兼容）
+        has_acl = 'rule' in output_lower or 'acl' in output_lower
         return VerificationResult(
             check_name='acl_config',
             passed=has_acl,
             detail='ACL 已配置' if has_acl else '未发现 ACL 规则',
-            evidence={'has_rules': has_acl},
+            evidence={'has_rules': has_acl, 'strict': False},
         )
 
     def verify_connectivity(self, device_path: str, target_ip: str) -> VerificationResult:
@@ -203,7 +232,9 @@ class SemanticVerifier:
         loss_rate = int(loss_match.group(1)) if loss_match else 100
         rtt_match = re.search(r'(?:avg|average)\s*=?\s*(\d+)', output)
         avg_rtt = int(rtt_match.group(1)) if rtt_match else None
-        passed = loss_rate < 100
+        # v3.3（第四阶段 Step6）: 严格判定，loss_rate <= 阈值才通过
+        # 默认阈值 0（要求 0% 丢包）；设为 100 时等价旧逻辑（<100% 即通过，向后兼容）
+        passed = loss_rate <= self.ping_loss_threshold
         return VerificationResult(
             check_name='connectivity',
             passed=passed,

@@ -1,0 +1,109 @@
+===== display current-configuration =====
+display current-configuration
+[V200R003C00]
+#
+ sysname ar1
+#
+ snmp-agent local-engineid 800007DB03000000000000
+ snmp-agent 
+#
+ clock timezone China-Standard-Time minus 08:00:00
+#
+portal local-server load portalpage.zip
+#
+ drop illegal-mac alarm
+#
+ set cpu-usage threshold 80 restore 75
+#
+aaa 
+ authentication-scheme default
+ authorization-scheme default
+ accounting-scheme default
+ domain default 
+ domain default_admin 
+ local-user admin password cipher %$%$K8m.Nt84DZ}e#<0`8bmE3Uw}%$%$
+ local-user admin service-type http
+#
+  ---- More ----                                          firewall zone Local
+  ---- More ----                                           priority 15
+#
+interface Ethernet0/0/0
+#
+interface Ethernet0/0/1
+#
+interface Ethernet0/0/2
+#
+interface Ethernet0/0/3
+#
+interface Ethernet0/0/4
+#
+interface Ethernet0/0/5
+#
+interface Ethernet0/0/6
+#
+interface Ethernet0/0/7
+#
+interface Ethernet0/0/8
+#
+interface NULL0
+#
+user-interface con 0
+ authentication-mode password
+  ---- More ----                                          user-interface vty 0 4
+user-interface vty 16 20
+#
+wlan ac
+#
+return
+<ar1>      
+
+===== display interface brief =====
+display interface brief
+PHY: Physical
+*down: administratively down
+(l): loopback
+(s): spoofing
+(b): BFD down
+^down: standby
+(e): ETHOAM down
+(d): Dampening Suppressed
+InUti/OutUti: input utility/output utility
+Interface                   PHY   Protocol InUti OutUti   inErrors  outErrors
+Ethernet0/0/0               up    up          0%     0%          0          0
+Ethernet0/0/1               up    up          0%     0%          0          0
+Ethernet0/0/2               down  down        0%     0%          0          0
+Ethernet0/0/3               down  down        0%     0%          0          0
+Ethernet0/0/4               down  down        0%     0%          0          0
+Ethernet0/0/5               down  down        0%     0%          0          0
+Ethernet0/0/6               down  down        0%     0%          0          0
+Ethernet0/0/7               down  down        0%     0%          0          0
+Ethernet0/0/8               down  down        0%     0%          0          0
+NULL0                       up    up(s)       0%     0%          0          0
+<ar1>
+
+===== display ip interface brief =====
+display ip interface brief
+*down: administratively down
+^down: standby
+(l): loopback
+(s): spoofing
+The number of interface that is UP in Physical is 1
+The number of interface that is DOWN in Physical is 1
+The number of interface that is UP in Protocol is 1
+The number of interface that is DOWN in Protocol is 1
+
+Interface                         IP Address/Mask      Physical   Protocol  
+Ethernet0/0/8                     unassigned           down       down      
+NULL0                             unassigned           up         up(s)     
+<ar1>
+<ar1>
+
+===== display vlan summary =====
+display vlan summary
+static vlan:
+Total 1 static vlan exist(s).
+1 
+dynamic vlan:
+Total 0 dynamic vlan exist(s).
+<ar1>
+<ar1>

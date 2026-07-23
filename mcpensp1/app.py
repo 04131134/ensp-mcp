@@ -171,27 +171,24 @@ COMMAND_CATALOG = {
 import knowledge as _knowledge_mod
 _knowledge_mod.COMMAND_CATALOG = COMMAND_CATALOG
 
-def _build_interface_map(dev_element):
+def _build_interface_map(dev_element, model=None):
     """Build a mapping from interface index to real interface name (e.g. GE0/0/1).
-    Huawei devices typically start port numbering from 1, not 0."""
-    ifaces = []
-    type_counter = {}
-    for slot in dev_element.iter('slot'):
-        for iface in slot.iter('interface'):
-            name = iface.get('interfacename', '')
-            count = int(iface.get('count', 0))
-            for i in range(count):
-                idx = type_counter.get(name, 0) + 1
-                ifaces.append(f'{name}0/0/{idx}')
-                type_counter[name] = idx
-    return {idx: name for idx, name in enumerate(ifaces)}
+
+    v3.2（第三阶段 Step7）：型号感知，委托给 interface_resolver。
+    - 盒式设备（S5700/S3700/AC6605）：端口 1 起始 → G0/0/(N+1)
+    - 子卡设备（AR3260/USG6000V）：端口 0 起始 → G0/0/N
+    model 为 None 时默认盒式（向后兼容旧行为）。
+    """
+    from interface_resolver import build_interface_map as _build
+    return _build(dev_element, model)
 
 def _resolve_interface(iface_map, index):
-    """Resolve an interface index to its name, fallback to IndexN."""
-    try:
-        return iface_map.get(int(index), f'Index{index}')
-    except (ValueError, TypeError):
-        return f'Index{index}'
+    """Resolve an interface index to its name, fallback to IndexN.
+
+    v3.2：委托给 interface_resolver.resolve_interface（签名不变，向后兼容）。
+    """
+    from interface_resolver import resolve_interface as _resolve
+    return _resolve(iface_map, index)
 
 class TopologyEngine:
     def __init__(self):
@@ -694,6 +691,7 @@ def search_kb(query, limit=20):
             if query_lower in lesson.lower(): score += 2
         if score > 0:
             results.append({'type': 'experience', 'score': score, **exp})
+    results.extend(kb.search_markdown_reference(query, limit=limit))
     results.sort(key=lambda x: x.get('score', 0), reverse=True)
     return results[:limit]
 
@@ -1012,6 +1010,7 @@ def api_kb_stats():
         'experiment_count': len(skb.get('experiences', [])),
         'best_practice_count': len(skb.get('best_practices', {}).get('command_rules', []))
     }
+    stats['markdown_reference'] = kb.get_markdown_reference_stats()
     return jsonify(stats)
 
 
@@ -1279,7 +1278,8 @@ def api_upload_topology():
                 dev_iface_maps = {}
                 for dev in root.iter("dev"):
                     dev_id = dev.get("id", "")
-                    dev_iface_maps[dev_id] = _build_interface_map(dev)
+                    # v3.2（第三阶段 Step7）：传 model 给接口映射，区分盒式/子卡设备
+                    dev_iface_maps[dev_id] = _build_interface_map(dev, dev.get("model"))
                 # Handle eNSP native format (<line> tags with <interfacePair>)
                 for line_elem in root.iter("line"):
                     src_id = line_elem.get("srcDeviceID", "")

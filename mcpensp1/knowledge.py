@@ -19,7 +19,11 @@ class KnowledgeBase:
         self.global_path = os.path.join(kb_folder, 'global_kb.json')
         self.devices_path = os.path.join(kb_folder, 'devices_kb.json')
         self.structured_path = os.path.join(kb_folder, 'structured_commands_kb.json')
+        self.markdown_reference_path = os.path.join(
+            kb_folder, 'vrp_command_knowledge_agent.md'
+        )
         self._skb_cache = None
+        self._markdown_reference_cache = None
         self.lock = threading.Lock()
         # In-memory cache to avoid disk IO on every command
         self._gkb_cache = None
@@ -33,6 +37,7 @@ class KnowledgeBase:
         self._gkb_cache = self._load(self.global_path)
         self._dkb_cache = self._load(self.devices_path)
         self._skb_cache = self.load_structured_kb()
+        self._markdown_reference_cache = self.load_markdown_reference()
 
     def _flush_if_needed(self):
         """Flush dirty cache to disk if enough time has passed."""
@@ -211,7 +216,8 @@ class KnowledgeBase:
             gkb = self._load(self.global_path)
             dkb = self._load(self.devices_path)
             return {'total_commands_recorded': len(gkb.get('commands', [])), 'total_devices': len(dkb.get('devices', {})),
-                    'catalog_size': len(COMMAND_CATALOG), 'last_updated': gkb.get('last_updated', 'never')}
+                    'catalog_size': len(COMMAND_CATALOG), 'last_updated': gkb.get('last_updated', 'never'),
+                    'markdown_reference': self.get_markdown_reference_stats()}
 
     def load_structured_kb(self):
         """Load the structured command knowledge base from JSON file."""
@@ -227,6 +233,106 @@ class KnowledgeBase:
             logger.error('Failed to load structured KB: %s', e)
             return {}
 
+    def load_markdown_reference(self):
+        """加载并按 Markdown 标题切分 VRP 命令参考文档。"""
+        try:
+            with open(self.markdown_reference_path, 'r', encoding='utf-8') as f:
+                text = f.read()
+        except FileNotFoundError:
+            logger.warning('Markdown command reference not found: %s', self.markdown_reference_path)
+            return {'source': os.path.basename(self.markdown_reference_path), 'sections': []}
+        except Exception as e:
+            logger.error('Failed to load Markdown command reference: %s', e)
+            return {'source': os.path.basename(self.markdown_reference_path), 'sections': []}
+
+        sections = []
+        current = {'title': '文档说明', 'content': [], 'commands': []}
+        in_code_block = False
+
+        def append_current():
+            content = '\n'.join(current['content']).strip()
+            if not content and not current['commands']:
+                return
+            sections.append({
+                'title': current['title'],
+                'content': content,
+                'commands': list(dict.fromkeys(current['commands'])),
+            })
+
+        for raw_line in text.splitlines():
+            line = raw_line.rstrip()
+            heading = re.match(r'^#{1,6}\s+(.+?)\s*$', line)
+            if heading:
+                append_current()
+                current = {'title': heading.group(1), 'content': [], 'commands': []}
+                in_code_block = False
+                continue
+            if line.strip().startswith('```'):
+                in_code_block = not in_code_block
+                continue
+            current['content'].append(line)
+            if in_code_block:
+                command = line.strip()
+                if command and not command.startswith('#'):
+                    command = command.split(' #', 1)[0].strip()
+                    if command:
+                        current['commands'].append(command)
+        append_current()
+
+        logger.info('Loaded Markdown command reference: %d sections', len(sections))
+        return {'source': os.path.basename(self.markdown_reference_path), 'sections': sections}
+
+    def get_markdown_reference_stats(self):
+        """返回 Markdown 命令参考文档的加载统计。"""
+        reference = self._markdown_reference_cache or {}
+        sections = reference.get('sections', [])
+        return {
+            'loaded': bool(sections),
+            'source': reference.get('source', os.path.basename(self.markdown_reference_path)),
+            'section_count': len(sections),
+            'command_count': sum(len(section.get('commands', [])) for section in sections),
+        }
+
+    def search_markdown_reference(self, query, limit=20):
+        """在导入的 VRP Markdown 命令文档中检索相关章节。"""
+        query = (query or '').strip()
+        if not query:
+            return []
+        reference = self._markdown_reference_cache or self.load_markdown_reference()
+        query_lower = query.lower()
+        tokens = set(re.findall(r'[a-z0-9][a-z0-9_/-]*', query_lower))
+        results = []
+
+        for section in reference.get('sections', []):
+            title = section.get('title', '')
+            content = section.get('content', '')
+            title_lower = title.lower()
+            content_lower = content.lower()
+            score = 0
+            if query_lower in title_lower:
+                score += 8
+            if query_lower in content_lower:
+                score += 4
+            for token in tokens:
+                if token != query_lower:
+                    if token in title_lower:
+                        score += 2
+                    if token in content_lower:
+                        score += 1
+            if not score:
+                continue
+            excerpt = re.sub(r'\s+', ' ', content).strip()
+            results.append({
+                'type': 'markdown_reference',
+                'source': reference.get('source', os.path.basename(self.markdown_reference_path)),
+                'section': title,
+                'commands': section.get('commands', [])[:12],
+                'excerpt': excerpt[:500],
+                'score': score,
+            })
+        results.sort(key=lambda item: item['score'], reverse=True)
+        return results[:limit]
+
     def get_structured_kb(self, view_type=None, device_model=None):
         """Get structured KB, optionally filtered by view type and/or device model."""
         skb = self._skb_cache or {}
@@ -234,29 +340,18 @@ class KnowledgeBase:
             return skb
         result = {}
         if view_type == 'user_view':
-            uv = skb.get('user_view_commands', {})
-            if device_model:
-                result['user_view_commands'] = {
-                    '_meta': uv.get('_meta', {}),
-                    device_model: uv.get(device_model, uv.get('common', {}))
-                }
-            else:
-                result['user_view_commands'] = uv
+            cmds = self._flatten_commands('user_view', device_model or '')
+            result['user_view_commands'] = {'_meta': {}, 'commands': cmds}
         elif view_type == 'system_view':
-            sv = skb.get('system_view_commands', {})
-            if device_model:
-                result['system_view_commands'] = {
-                    '_meta': sv.get('_meta', {}),
-                    device_model: sv.get(device_model, {})
-                }
-            else:
-                result['system_view_commands'] = sv
+            cmds = self._flatten_commands('system_view', device_model or '')
+            result['system_view_commands'] = {'_meta': {}, 'commands': cmds}
         else:
-            if device_model:
-                uv = skb.get('user_view_commands', {})
-                sv = skb.get('system_view_commands', {})
-                result['user_view_commands'] = {'_meta': uv.get('_meta', {}), device_model: uv.get(device_model, uv.get('common', {}))}
-                result['system_view_commands'] = {'_meta': sv.get('_meta', {}), device_model: sv.get(device_model, {})}
+            result['user_view_commands'] = {
+                '_meta': {}, 'commands': self._flatten_commands('user_view', device_model or ''),
+            }
+            result['system_view_commands'] = {
+                '_meta': {}, 'commands': self._flatten_commands('system_view', device_model or ''),
+            }
         result['troubleshooting'] = skb.get('troubleshooting', {})
         result['config_order'] = skb.get('config_order', [])
         return result
@@ -268,26 +363,79 @@ class KnowledgeBase:
         model_key = self._match_model(device_model)
         
         if view_type is None or view_type == 'user_view':
-            uv = skb.get('user_view_commands', {})
-            common_cmds = uv.get('common', {}).get('commands', [])
-            suggestions['user_view'].extend([{'group': 'common', **c} for c in common_cmds])
-            if model_key and model_key in uv:
-                model_cmds = uv[model_key].get('commands', [])
-                suggestions['user_view'].extend([{'group': model_key, **c} for c in model_cmds])
+            cmds = self._flatten_commands('user_view', device_model)
+            suggestions['user_view'] = [
+                {'group': c.get('category', 'common'), 'model': c.get('model', ''), **c}
+                for c in cmds
+            ]
         
         if view_type is None or view_type == 'system_view':
-            sv = skb.get('system_view_commands', {})
-            if model_key and model_key in sv:
-                topics = sv[model_key].get('topics', {})
-                for topic_name, topic_data in topics.items():
-                    cmds = topic_data.get('commands', [])
-                    tips = topic_data.get('tips', [])
-                    view = topic_data.get('view', '')
-                    for c in cmds:
-                        suggestions['system_view'].append({
-                            'group': topic_name, 'view': view, 'tips': tips, **c
-                        })
+            cmds = self._flatten_commands('system_view', device_model)
+            for c in cmds:
+                suggestions['system_view'].append({
+                    'group': c.get('function', ''),
+                    'view': 'system_view',
+                    'tips': c.get('tips', []),
+                    'model': c.get('model', ''),
+                    'category': c.get('category', ''),
+                    **{k: v for k, v in c.items()
+                       if k not in ('function', 'tips', 'model', 'category')}
+                })
         return suggestions
+
+    def _flatten_commands(self, view_type: str, device_model: str = ""):
+        """从 structured KB 扁平提取某视图的命令列表（统一 user_view/system_view 结构差异）。
+
+        华为 VRP 用户视图只能执行 display/ping/save 等查看类命令。
+        系统视图只能执行 vlan/interface/ospf/bgp/acl 等配置类命令。
+
+        structured_commands_kb.json 实际结构:
+          user_view:   views.user_view.categories.设备类.models.型号.commands
+          system_view: views.system_view.categories.设备类.models.型号.functions.功能.commands
+
+        本方法封装这两套结构的差异，统一返回扁平命令列表，调用方不再直接处理 JSON 深层嵌套。
+
+        Args:
+            view_type: 'user_view' 或 'system_view'
+            device_model: 可选型号过滤（如 'S5700'）。空字符串返回所有型号命令。
+
+        Returns:
+            [{cmd, desc, when/tips, function, model, category, ...}, ...]
+        """
+        skb = self._skb_cache or {}
+        views = skb.get('views', {})
+        view_data = views.get(view_type, {})
+        categories = view_data.get('categories', {})
+        if not categories:
+            return []
+
+        result = []
+        # 标准化型号名（支持 FW1→USG6000V 等别名）
+        std_model = self._match_model(device_model) or device_model if device_model else ""
+        for cat_name, cat in categories.items():
+            for model_name, model in cat.get('models', {}).items():
+                # 型号过滤（标准化后精确匹配，忽略大小写）
+                if std_model and std_model.upper() != model_name.upper():
+                    continue
+
+                if view_type == 'user_view':
+                    # user_view: model 下直接有 commands 数组
+                    for c in model.get('commands', []):
+                        item = dict(c)
+                        item.setdefault('model', model_name)
+                        item.setdefault('category', cat_name)
+                        result.append(item)
+                else:
+                    # system_view: model 下多一层 functions（如 functions.vlan.commands）
+                    for func_name, func in model.get('functions', {}).items():
+                        for c in func.get('commands', []):
+                            item = dict(c)
+                            item['function'] = func_name
+                            item.setdefault('model', model_name)
+                            item.setdefault('category', cat_name)
+                            item.setdefault('tips', func.get('tips', []))
+                            result.append(item)
+        return result
 
     def _match_model(self, device_name):
         """Match a device name/model to a known model key in the structured KB."""
@@ -494,8 +642,9 @@ class KnowledgeBase:
         return 'unknown'
 
     def reload_structured_kb(self):
-        """Force reload the structured KB from disk."""
+        """重新加载结构化库和 Markdown 命令参考文档。"""
         self._skb_cache = self.load_structured_kb()
+        self._markdown_reference_cache = self.load_markdown_reference()
         return bool(self._skb_cache)
 
     def _guess_cat(self, cmd):
@@ -583,25 +732,6 @@ class KnowledgeBase:
         except Exception as e:
             __import__("logging").getLogger(__name__).error("Auto knowledge failed: %s", e)
 
-def _build_interface_map(dev_element):
-    """Build a mapping from interface index to real interface name (e.g. GE0/0/1).
-    Huawei devices typically start port numbering from 1, not 0."""
-    ifaces = []
-    type_counter = {}
-    for slot in dev_element.iter('slot'):
-        for iface in slot.iter('interface'):
-            name = iface.get('interfacename', '')
-            count = int(iface.get('count', 0))
-            for i in range(count):
-                idx = type_counter.get(name, 0) + 1
-                ifaces.append(f'{name}0/0/{idx}')
-                type_counter[name] = idx
-    return {idx: name for idx, name in enumerate(ifaces)}
-
-def _resolve_interface(iface_map, index):
-    """Resolve an interface index to its name, fallback to IndexN."""
-    try:
-        return iface_map.get(int(index), f'Index{index}')
-    except (ValueError, TypeError):
-        return f'Index{index}'
+# v3.2（第三阶段 Step7）：_build_interface_map/_resolve_interface 死代码副本已移除，
+# 统一由 interface_resolver.py 提供，app.py 通过 thin wrapper 调用。
 

@@ -172,10 +172,49 @@ def _resolve_verify_commands(protocol: str, variables: Optional[Dict[str, str]] 
 
 
 class DAGPlanner:
-    """DAG Execution Planner - now generates actual CLI commands."""
+    """DAG Execution Planner - now generates actual CLI commands.
+
+    v3.1 增强（第二阶段，经验/能力驱动）:
+    - set_knowledge_store(): 注入知识库后，plan_from_goal 优先用成功经验覆盖模板命令
+    - set_capability_manager(): 注入能力管理器后，校验设备是否支持目标协议
+    - 两项均通过开关控制，默认开启但依赖注入；未注入时回退原有模板行为（向后兼容）
+    """
 
     def __init__(self):
         self._templates: Dict[str, Dict[str, Any]] = self._load_default_templates()
+        # 第二阶段：经验/能力驱动（可选注入，None 时回退模板行为）
+        self._knowledge_store = None
+        self._capability_manager = None
+        self.use_experience: bool = True    # 开关：经验覆盖命令
+        self.check_capability: bool = True  # 开关：能力校验
+        # 批次1：结构化命令库（可选注入）
+        self._knowledge_base = None
+        self.use_structured_kb: bool = True  # 开关：结构化命令增强
+        self._experience_applied_nodes: set = set()  # 追踪被经验覆盖的节点（不重复覆盖）
+
+    def set_knowledge_store(self, store) -> None:
+        """注入 KnowledgeStore 实例，启用经验驱动命令生成。
+
+        注入后 plan_from_goal 会检索 success_case，命中则用经验命令覆盖模板命令。
+        传 None 关闭经验覆盖（回退纯模板行为）。
+        """
+        self._knowledge_store = store
+
+    def set_capability_manager(self, cm) -> None:
+        """注入 CapabilityManager 实例，启用设备能力校验。
+
+        注入后 plan_from_goal 会校验目标协议是否被设备支持，不支持仅 log warning（不阻塞）。
+        传 None 关闭能力校验。
+        """
+        self._capability_manager = cm
+
+    def set_knowledge_base(self, kb) -> None:
+        """注入 KnowledgeBase 实例，启用结构化命令增强（批次1）。
+
+        plan_from_goal 会调用 suggest_commands 查询设备型号对应的配置命令，
+        增强未被经验覆盖的 ConfigNode。传 None 关闭结构化命令增强。
+        """
+        self._knowledge_base = kb
 
     def _load_default_templates(self) -> Dict[str, Dict[str, Any]]:
         return {
@@ -250,8 +289,19 @@ class DAGPlanner:
         else:
             plan = self._plan_from_analysis(goal, knowledge_context, devices, variables)
 
+        # 第二阶段：经验驱动 — 用知识库成功经验覆盖模板命令（开关 use_experience）
+        self._experience_applied_nodes.clear()
+        self._apply_experience(plan, goal)
+
+        # 批次1：结构化命令增强 — 用 structured_commands_kb 增强未被经验覆盖的节点（开关 use_structured_kb）
+        self._enrich_with_structured_kb(plan, devices)
+
         self._add_verification_nodes(plan, variables)
         self._set_recovery_strategies(plan)
+
+        # 第二阶段：能力驱动 — 校验设备是否支持目标协议（开关 check_capability，不阻塞）
+        self._check_capabilities(self._extract_protocols(goal.description), devices)
+
         plan.status = 'ready'
         logger.info('[Planner] Plan: %d nodes, order: %s', len(plan.nodes), plan.execution_order)
         return plan
@@ -454,6 +504,169 @@ class DAGPlanner:
             if node.node_type == NodeType.VERIFY:
                 continue
             node.recovery_strategy = RecoveryStrategy.RETRY
+
+    def _apply_experience(self, plan: ExecutionPlan, goal: TaskGoal) -> None:
+        """用知识库成功经验覆盖模板命令（经验驱动）。
+
+        检索 knowledge_store 的 success_case，若某 experiment_type 有高置信度经验，
+        则用经验命令覆盖对应 ConfigNode 的 commands。
+        开关 use_experience=False / store 未注入 / 检索异常 → 静默回退模板行为。
+        """
+        if not self.use_experience or not self._knowledge_store:
+            return
+        try:
+            results = self._knowledge_store.query_for_task(goal.description)
+        except Exception as e:
+            logger.warning('[Planner] 经验检索失败，回退模板: %s', e)
+            return
+        success_cases = results.get('success_cases', []) if isinstance(results, dict) else []
+        if not success_cases:
+            return
+        # 建立 experiment_type / protocol -> 经验命令 映射
+        exp_cmds_by_key: Dict[str, List[str]] = {}
+        for rec in success_cases:
+            content = rec.content if isinstance(rec.content, dict) else {}
+            cmds = content.get('commands')
+            exp_type = content.get('experiment_type', '') or getattr(rec, 'protocol', '')
+            if cmds and exp_type:
+                exp_cmds_by_key[exp_type] = list(cmds)
+        if not exp_cmds_by_key:
+            return
+        # 覆盖 config 节点命令（节点 id 通常对应 protocol 或 experiment_type）
+        applied = 0
+        for node in plan.nodes.values():
+            if node.node_type != NodeType.CONFIG:
+                continue
+            exp_cmds = exp_cmds_by_key.get(node.node_id)
+            if exp_cmds:
+                node.commands = list(exp_cmds)
+                applied += 1
+                self._experience_applied_nodes.add(node.node_id)
+                logger.info('[Planner] 节点 %s 用经验命令覆盖 (%d 条)', node.node_id, len(node.commands))
+        if applied:
+            logger.info('[Planner] 经验驱动: 覆盖 %d 个节点的命令', applied)
+
+    def _enrich_with_structured_kb(
+        self, plan: ExecutionPlan, devices: Optional[Dict[str, Any]],
+    ) -> None:
+        """用 structured_commands_kb 增强命令候选（批次1，优先级 P1）。
+
+        调用 suggest_commands(device_model, 'system_view') 获取设备型号对应的配置命令，
+        按 function 名称模糊匹配 plan 的 ConfigNode，为未被经验覆盖的节点提供命令。
+
+        只增强，不覆盖：
+        - 已被 _apply_experience 覆盖的节点 → 跳过（保留经验+上下文）
+        - VerifyNode / 已有丰富 verify_commands 的节点 → 跳过
+        - 结构化 KB 未命中 → 跳过后续 COMMAND_TEMPLATES 兜底
+
+        开关 use_structured_kb=False / kb 未注入 / devices 无型号 → 静默跳过。
+        """
+        if not self.use_structured_kb or not self._knowledge_base:
+            return
+        if not devices:
+            return
+        device_model = devices.get('model') if isinstance(devices, dict) else None
+        if not device_model:
+            return
+
+        try:
+            result = self._knowledge_base.suggest_commands(device_model, 'system_view')
+        except Exception as e:
+            logger.warning('[Planner] structured_kb 查询失败，降级模板: %s', e)
+            return
+
+        sv_cmds = result.get('system_view', [])
+        if not sv_cmds:
+            return
+
+        # 按 function 分组: {function_name: [cmd_text, ...]}
+        func_cmds: Dict[str, List[str]] = {}
+        for c in sv_cmds:
+            fn = c.get('group', '')
+            cmd_text = c.get('cmd', '')
+            if fn and cmd_text:
+                func_cmds.setdefault(fn, []).append(cmd_text)
+
+        if not func_cmds:
+            return
+
+        # 模糊匹配 plan 的 ConfigNode
+        applied = 0
+        for node in plan.nodes.values():
+            if node.node_type != NodeType.CONFIG:
+                continue
+            # 跳过已被经验覆盖的节点（保留经验命令+上下文）
+            if node.node_id in self._experience_applied_nodes:
+                continue
+
+            # 匹配: node_id 或 label 与 function 名模糊匹配
+            matched_cmds = self._match_structured_commands(node.node_id, node.label, func_cmds)
+            if matched_cmds:
+                # 保留原有 verify_commands（结构化 KB 不覆盖验证命令）
+                node.commands = list(matched_cmds)
+                applied += 1
+                logger.info(
+                    '[Planner] structured_kb 增强节点 %s (%d 条命令)',
+                    node.node_id, len(node.commands),
+                )
+
+        if applied:
+            logger.info('[Planner] structured_kb 增强 %d 个节点', applied)
+
+    @staticmethod
+    def _match_structured_commands(
+        node_id: str, label: str, func_cmds: Dict[str, List[str]],
+    ) -> Optional[List[str]]:
+        """模糊匹配 plan 节点 ID/标签到 structured_kb 的 function 名。
+
+        匹配规则（子串双向匹配，不区分大小写）:
+            node_id='vlan', func_name='VLAN'       → True
+            node_id='ospf', func_name='OSPF路由'   → True
+            node_id='interface', func_name='接口配置' → True
+            node_id='bgp', func_name='BGP路由'     → True
+            label='VLAN Config', func_name='VLAN'  → True
+        """
+        nk = node_id.lower()
+        nl = label.lower()
+        for fn_name, cmds in func_cmds.items():
+            fl = fn_name.lower()
+            # 双向子串匹配
+            if nk in fl or fl in nk or nl in fl or fl in nl:
+                return cmds
+        return None
+
+    def _check_capabilities(
+        self, protocols: List[str], devices: Optional[Dict[str, Any]],
+    ) -> None:
+        """校验设备是否支持目标协议（能力驱动，不阻塞）。
+
+        需 devices 含设备型号信息（dict 形如 {'model': 'S5700'} 或 {'models': [...]}）。
+        当前 runtime 未传 devices，故默认跳过；未来 runtime 传入型号后自动生效。
+        开关 check_capability=False / cm 未注入 / devices 缺型号 → 跳过。
+        不支持的协议仅 log warning，不抛异常（避免破坏现有流程）。
+        """
+        if not self.check_capability or not self._capability_manager:
+            return
+        if not devices or not protocols:
+            return
+        # 从 devices 提取型号（兼容多种结构）
+        models: List[str] = []
+        if isinstance(devices, dict):
+            models = devices.get('models') or ([devices.get('model')] if devices.get('model') else [])
+        models = [m for m in models if m]
+        if not models:
+            return
+        for model in models:
+            for proto in protocols:
+                try:
+                    result = self._capability_manager.check_protocol(model, proto)
+                    if not result.get('supported'):
+                        logger.warning(
+                            '[Planner] 能力校验: 设备 %s 不支持协议 %s — %s',
+                            model, proto, result.get('reason'),
+                        )
+                except Exception as e:
+                    logger.warning('[Planner] 能力校验异常 %s/%s: %s', model, proto, e)
 
     def update_plan_after_failure(
         self, plan: ExecutionPlan, failed_node_id: str, error_info: Dict[str, Any],

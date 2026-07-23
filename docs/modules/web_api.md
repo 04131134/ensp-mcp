@@ -50,10 +50,10 @@ eNSP-MCP 的 Web 控制台后端。所有对外 HTTP 接口与 SocketIO 事件�
 | GET | /api/kb/devices/<path:p> | 指定设备的命令记录 |
 | GET | /api/kb/troubleshooting | 排错知识库。query: `symptom` |
 | GET | /api/kb/help | 查询特定命令帮助。query: `cmd` |
-| GET | /api/kb/search | 知识库全文搜索。query: `q`, `limit` |
+| GET | /api/kb/search | 知识库全文搜索，包含结构化知识与导入的 VRP Markdown 命令参考。query: `q`, `limit` |
 | POST | /api/kb/scan | 扫描历史设备识别型号并推荐命令。body: `{"path": str}` |
 | POST | /api/kb/detect-view | 探测设备当前视图（用户 `< >` / 系统 `[ ]`）。body: `{"prompt": str}` |
-| POST | /api/kb/reload | 重新加载结构化知识库（外部修改 KB 文件后） |
+| POST | /api/kb/reload | 重新加载结构化知识库及 VRP Markdown 命令参考（外部修改 KB 文件后） |
 | POST | /api/kb/auto-extract | 自动提取设备命令序列并归纳实验记录。body: `{"path": str}` |
 | GET | /api/kb/experience | 获取实验经验记录。query: `experiment` |
 | POST | /api/kb/experience | 记录实验经验。body: `{"experiment", "date", "topology", "features_implemented", "new_commands_learned", "lessons_learned", "troubleshooting_cases"}` |

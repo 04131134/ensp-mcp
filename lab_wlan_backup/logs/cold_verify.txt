@@ -1,0 +1,56 @@
+===== AC1 (主) =====
+--- display ap all ---
+display ap all
+Info: This operation may take a few seconds. Please wait for a moment.done.
+Total AP information:
+nor  : normal          [3]
+----------------------------------------------------------------------------------------
+ID   MAC            Name Group   IP         Type            State STA Uptime
+----------------------------------------------------------------------------------------
+1    00e0-fc1b-3720 AP1  default 10.1.1.251 AP3030DN        nor   0   21M:0S
+2    00e0-fcdb-0400 AP2  default 10.1.1.253 AP3030DN        nor   0   20M:36S
+3    00e0-fcf8-32e0 AP3  default 10.1.1.252 AP3030DN        nor   0   20M:46S
+----------------------------------------------------------------------------------------
+Total: 3
+<ac1>
+<ac1>
+--- display station all ---
+display station all
+Rf/WLAN: Radio ID/WLAN ID                                                     
+Rx/Tx: link receive rate/link transmit rate(Mbps)                             
+--------------------------------------------------------------------------------------------------
+STA MAC          AP ID Ap name  Rf/WLAN  Band  Type  Rx/Tx      RSSI  VLAN  IP address  SSID                   
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+Total: 0 2.4G: 0 5G: 0
+<ac1>
+<ac1>
+--- display capwap link ---
+display capwap link
+                    ^
+Error: Unrecognized command found at '^' position.
+<ac1>
+<ac1>
+
+===== AC2 (备) =====
+--- display ap all ---
+display ap all
+Info: This operation may take a few seconds. Please wait for a moment.done.
+--------------------------------------------------------------------------------
+ID   MAC            Name  Group  IP  Type  State  STA  Uptime
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+Total: 0
+<ac2>
+<ac2>
+--- display station all ---
+display station all
+Rf/WLAN: Radio ID/WLAN ID                                                     
+Rx/Tx: link receive rate/link transmit rate(Mbps)                             
+--------------------------------------------------------------------------------------------------
+STA MAC          AP ID Ap name  Rf/WLAN  Band  Type  Rx/Tx      RSSI  VLAN  IP address  SSID                   
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+Total: 0 2.4G: 0 5G: 0
+<ac2>
+<ac2>

@@ -1,0 +1,178 @@
+{
+    "base_url": "http://127.0.0.1:5000",
+    "connected": 15,
+    "devices": [
+        {
+            "Port": 2000,
+            "Name": "AP1",
+            "Type": "huawei",
+            "Model": "AP3030DN FIT",
+            "VRP": "5.160",
+            "Sysname": "Huawei",
+            "Connect": "OK",
+            "VersionOutput": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.160 (AP3030DN FIT V200R007C10SPC300)\r\nCopyright (C) 2011-2018 HUAWEI TECH CO., LTD\r\nHuawei AP3030DN Router uptime is 0 week, 0 day, 1 hour, 11 minutes\r\n\r\nMPU 0(Master) : uptime is 0 week, 0 day, 1 hour, 11 minutes\r\nNOR FLASH Memory Size: 32      M bytes\r\nMPU version information : \r\n1. PCB      Version  : VER.A\r\n2. MAB      Version  : 0\r\n3. Board    Type     : AP3030DN\r\n4. BootROM  Version  : 0\r\n\r\n<Huawei>\r\n<Huawei>"
+        },
+        {
+            "Port": 2001,
+            "Name": "AP2",
+            "Type": "huawei",
+            "Model": "AP3030DN FIT",
+            "VRP": "5.160",
+            "Sysname": "Huawei",
+            "Connect": "OK",
+            "VersionOutput": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.160 (AP3030DN FIT V200R007C10SPC300)\r\nCopyright (C) 2011-2018 HUAWEI TECH CO., LTD\r\nHuawei AP3030DN Router uptime is 0 week, 0 day, 1 hour, 11 minutes\r\n\r\nMPU 0(Master) : uptime is 0 week, 0 day, 1 hour, 11 minutes\r\nNOR FLASH Memory Size: 32      M bytes\r\nMPU version information : \r\n1. PCB      Version  : VER.A\r\n2. MAB      Version  : 0\r\n3. Board    Type     : AP3030DN\r\n4. BootROM  Version  : 0\r\n\r\n<Huawei>\r\n<Huawei>"
+        },
+        {
+            "Port": 2002,
+            "Name": "lsw5",
+            "Type": "huawei",
+            "Model": "S3700",
+            "VRP": "5.110",
+            "Sysname": "lsw5",
+            "Connect": "OK",
+            "VersionOutput": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S3700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S3700-26C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 11 minutes\r\n<lsw5>"
+        },
+        {
+            "Port": 2003,
+            "Name": "lsw6",
+            "Type": "huawei",
+            "Model": "S3700",
+            "VRP": "5.110",
+            "Sysname": "lsw6",
+            "Connect": "OK",
+            "VersionOutput": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S3700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S3700-26C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 12 minutes\r\n<lsw6>"
+        },
+        {
+            "Port": 2004,
+            "Name": "lsw7",
+            "Type": "huawei",
+            "Model": "S3700",
+            "VRP": "5.110",
+            "Sysname": "lsw7",
+            "Connect": "OK",
+            "VersionOutput": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S3700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S3700-26C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 12 minutes\r\n<lsw7>"
+        },
+        {
+            "Port": 2005,
+            "Name": "-",
+            "Type": "-",
+            "Model": "",
+            "VRP": "",
+            "Sysname": "",
+            "Connect": "FAIL: Connection failed: ConnectionRefusedError: [WinError 10061] 由于目标计算机积极拒绝，无法连接。",
+            "VersionOutput": ""
+        },
+        {
+            "Port": 2006,
+            "Name": "lsw8",
+            "Type": "huawei",
+            "Model": "S3700",
+            "VRP": "5.110",
+            "Sysname": "lsw8",
+            "Connect": "OK",
+            "VersionOutput": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S3700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S3700-26C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 12 minutes\r\n<lsw8>"
+        },
+        {
+            "Port": 2007,
+            "Name": "lsw3",
+            "Type": "huawei",
+            "Model": "S5700",
+            "VRP": "5.110",
+            "Sysname": "lsw3",
+            "Connect": "OK",
+            "VersionOutput": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S5700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S5700-28C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 12 minutes\r\n<lsw3>"
+        },
+        {
+            "Port": 2008,
+            "Name": "lsw1",
+            "Type": "huawei",
+            "Model": "S5700",
+            "VRP": "5.110",
+            "Sysname": "lsw1",
+            "Connect": "OK",
+            "VersionOutput": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S5700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S5700-28C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 13 minutes\r\n<lsw1>"
+        },
+        {
+            "Port": 2009,
+            "Name": "USG6000V1",
+            "Type": "huawei",
+            "Model": "USG6000V1",
+            "VRP": "5.170",
+            "Sysname": "USG6000V1",
+            "Connect": "OK",
+            "VersionOutput": "display version\r\n2026-07-20 09:31:35.120 \r\nHuawei Versatile Routing Platform Software\r\nVRP (R) Software, Version 5.170 (USG6000V1 V500R005C10SPC300)\r\nCopyright (C) 2014-2018 Huawei Technologies Co., Ltd.\r\nUSG6000V1-ENSP uptime is 0 week, 0 day, 1 hour, 12 minutes\r\n\r\n\r\nIPS Signature Database Version   : 2018122108\r\nIPS Engine Version               : V200R005C10SPC030\r\nAV Signature Database Version    : \r\nSA Signature Database Version    : 2018102401\r\nC&C Domain Name Database Version : \r\nFILE Reputation Database Version : \r\nLocation Database Version        : 2018061815\r\n\r\n\r\n<USG6000V1>"
+        },
+        {
+            "Port": 2010,
+            "Name": "AC1",
+            "Type": "huawei",
+            "Model": "AC6605",
+            "VRP": "5.160",
+            "Sysname": "ac1",
+            "Connect": "OK",
+            "VersionOutput": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.160 (AC6605 V200R007C10SPC300)\r\nCopyright (C) 2011-2018 HUAWEI TECH CO., LTD\r\nHuawei AC6605-26-PWR Router uptime is 0 week, 0 day, 1 hour, 12 minutes\r\n\r\nMPU 0(Master) : uptime is 0 week, 0 day, 1 hour, 12 minutes\r\nMPU version information : \r\n1. PCB      Version  : H852V26S VER.A\r\n2. MAB      Version  : 0\r\n3. Board    Type     : AC6605-26-PWR\r\n4. BootROM  Version  : 0\r\n\r\nPWRCARD I information\r\nPCB      Version : PWR VER  VER.NC\r\nPWRCARD II information\r\nPCB      Version : PWR VER  VER.NC\r\n<ac1>\r\n<ac1>"
+        },
+        {
+            "Port": 2011,
+            "Name": "SW1",
+            "Type": "huawei",
+            "Model": "S3700",
+            "VRP": "5.110",
+            "Sysname": "Huawei",
+            "Connect": "OK",
+            "VersionOutput": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S3700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S3700-26C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 13 minutes\r\n<Huawei>"
+        },
+        {
+            "Port": 2012,
+            "Name": "-",
+            "Type": "-",
+            "Model": "",
+            "VRP": "",
+            "Sysname": "",
+            "Connect": "FAIL: Connection failed: ConnectionRefusedError: [WinError 10061] 由于目标计算机积极拒绝，无法连接。",
+            "VersionOutput": ""
+        },
+        {
+            "Port": 2013,
+            "Name": "AR1",
+            "Type": "huawei",
+            "Model": "AR3200",
+            "VRP": "5.130",
+            "Sysname": "ar1",
+            "Connect": "OK",
+            "VersionOutput": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.130 (AR3200 V200R003C00)\r\nCopyright (C) 2011-2012 HUAWEI TECH CO., LTD\r\nHuawei AR3260 Router uptime is 0 week, 0 day, 1 hour, 13 minutes\r\nBKP 0 version information: \r\n1. PCB      Version  : AR01BAK3A VER.NC\r\n2. If Supporting PoE : No\r\n3. Board    Type     : AR3260\r\n4. MPU Slot Quantity : 2\r\n5. LPU Slot Quantity : 10\r\n\r\nMPU 15(Master) : uptime is 0 week, 0 day, 1 hour, 13 minutes\r\nMPU version information : \r\n1. PCB      Version  : AR01SRU3A VER.A\r\n2. MAB      Version  : 0\r\n3. Board    Type     : SRU80\r\n4. BootROM  Version  : 0\r\n\r\nFAN version information : \r\n1. PCB      Version  : AR01DF05A VER.A\r\n2. Board    Type     : FAN\r\n3. Software Version  : 0\r\n\r\n<ar1>\r\n<ar1>"
+        },
+        {
+            "Port": 2014,
+            "Name": "lsw9",
+            "Type": "huawei",
+            "Model": "S3700",
+            "VRP": "5.110",
+            "Sysname": "lsw9",
+            "Connect": "OK",
+            "VersionOutput": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S3700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S3700-26C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 14 minutes\r\n<lsw9>"
+        },
+        {
+            "Port": 2015,
+            "Name": "lsw2",
+            "Type": "huawei",
+            "Model": "S5700",
+            "VRP": "5.110",
+            "Sysname": "lsw2",
+            "Connect": "OK",
+            "VersionOutput": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S5700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S5700-28C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 14 minutes\r\n<lsw2>"
+        },
+        {
+            "Port": 2016,
+            "Name": "lsw4",
+            "Type": "huawei",
+            "Model": "S5700",
+            "VRP": "5.110",
+            "Sysname": "lsw4",
+            "Connect": "OK",
+            "VersionOutput": "display version\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 5.110 (S5700 V200R001C00)\r\nCopyright (c) 2000-2011 HUAWEI TECH CO., LTD\r\n\r\nQuidway S5700-28C-HI Routing Switch uptime is 0 week, 0 day, 1 hour, 14 minutes\r\n<lsw4>"
+        }
+    ],
+    "generated": "2026-07-20 17:33:14",
+    "scanned": 17
+}

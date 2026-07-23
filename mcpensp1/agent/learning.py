@@ -18,6 +18,10 @@ from .types import (
 
 logger = logging.getLogger(__name__)
 
+# eNSP 平台默认设备类型（eNSP 仅模拟华为设备）。
+# 提取为常量消除魔法字符串散落，_infer_device_type 预留多厂商扩展口。
+DEFAULT_DEVICE_TYPE = 'huawei'
+
 
 class LearningEngine:
     """自主学习引擎"""
@@ -30,6 +34,30 @@ class LearningEngine:
         """
         self._memory = memory_store
         self._knowledge = knowledge_store
+
+    def _infer_device_type(self, result: ExperimentResult) -> str:
+        """从实验结果推断设备类型。
+
+        当前 ExperimentResult 未携带设备型号字段，eNSP 平台默认 huawei。
+        未来 runtime 填充 result.device_models 后，此处可优先取实际型号。
+        """
+        # TODO(第二阶段后续): 当 ExperimentResult 增加 device_models 字段后，
+        #   优先 return result.device_models[0] if result.device_models else DEFAULT_DEVICE_TYPE
+        return DEFAULT_DEVICE_TYPE
+
+    def _extract_verify_commands(self, vr) -> List[str]:
+        """从验证结果提取实际使用的命令，兜底用检查名。
+
+        VerificationResult 不直接存命令，但 verifier 可能把命令放进 evidence。
+        若 evidence 无命令，用 check_name 作为标识（避免 record_verify_method 传空 commands）。
+        """
+        if vr.evidence:
+            cmd = vr.evidence.get('command') or vr.evidence.get('commands')
+            if isinstance(cmd, list) and cmd:
+                return [str(c) for c in cmd]
+            if isinstance(cmd, str) and cmd:
+                return [cmd]
+        return [vr.check_name]
 
     def learn_from_experiment(self, result: ExperimentResult, reflection: ReflectionEntry) -> Dict[str, int]:
         """从实验结果中学习"""
@@ -66,7 +94,7 @@ class LearningEngine:
             if success_cmds:
                 self._knowledge.record_success(
                     commands=success_cmds,
-                    device_type='huawei',
+                    device_type=self._infer_device_type(result),
                     experiment_type=result.experiment_id,
                     context={'plan_id': result.plan.plan_id},
                 )
@@ -79,7 +107,7 @@ class LearningEngine:
                     self._knowledge.record_failure(
                         failed_command=node.commands[0] if node.commands else '',
                         error_message=str(node.result)[:200] if node.result else '未知错误',
-                        device_type='huawei',
+                        device_type=self._infer_device_type(result),
                         experiment_type=result.experiment_id,
                     )
                     stats['knowledge_created'] += 1
@@ -103,7 +131,7 @@ class LearningEngine:
             if vr.passed:
                 self._knowledge.record_verify_method(
                     protocol=vr.check_name,
-                    commands=[],  # 从验证结果中推断
+                    commands=self._extract_verify_commands(vr),
                     expected=vr.detail,
                 )
                 stats['knowledge_created'] += 1

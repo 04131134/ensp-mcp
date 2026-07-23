@@ -52,7 +52,18 @@ class AgentRuntime:
         self.memory = MemoryStore(os.path.join(data_dir, 'memory.json'))
         self.knowledge = KnowledgeStore(os.path.join(data_dir, 'knowledge_store.json'))
         self.planner = DAGPlanner()
-        
+
+        # 第二阶段 Step1: planner 接入知识库（经验驱动命令生成）
+        self.planner.set_knowledge_store(self.knowledge)
+
+        # 第二阶段 Step2: planner 接入能力管理器（设备能力校验，不阻塞）
+        try:
+            from .capability_manager import CapabilityManager
+            self.planner.set_capability_manager(CapabilityManager())
+            logger.info('[Runtime] capability_manager 已注入 planner')
+        except Exception as e:
+            logger.warning('[Runtime] capability_manager 注入失败，能力校验关闭: %s', e)
+
         # 初始化配置方法库（优先级最高）
         import sys
         sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
@@ -62,6 +73,39 @@ class AgentRuntime:
         self.recovery = RecoveryEngine(command_executor)
         self.reflection = ReflectionEngine()
         self.learning = LearningEngine(self.memory, self.knowledge)
+
+        # 第二阶段 Step9: reflection 接入 error_library（因果分析）
+        try:
+            from .error_library import ErrorLibrary
+            errors_path = os.path.join(
+                os.path.dirname(os.path.dirname(__file__)), 'kb', 'errors', 'huawei_errors.json',
+            )
+            self.reflection.set_error_library(ErrorLibrary(errors_path))
+            logger.info('[Runtime] error_library 已注入 reflection')
+        except Exception as e:
+            logger.warning('[Runtime] error_library 注入失败，因果分析关闭: %s', e)
+
+        # 第四阶段 Step5: 接入 plan_reviewer（计划审核，不阻塞）
+        self._plan_reviewer = None
+        self.review_plan: bool = True  # 开关：是否审核计划
+        try:
+            from .plan_reviewer import PlanReviewer
+            self._plan_reviewer = PlanReviewer()
+            logger.info('[Runtime] plan_reviewer 已注入')
+        except Exception as e:
+            logger.warning('[Runtime] plan_reviewer 注入失败，计划审核关闭: %s', e)
+
+        # 批次1: planner 接入 KnowledgeBase（结构化命令增强）
+        try:
+            mcpensp1_dir = os.path.dirname(os.path.dirname(__file__))
+            from knowledge import KnowledgeBase
+            kb_folder = os.path.join(mcpensp1_dir, 'kb')
+            self._kb = KnowledgeBase(kb_folder=kb_folder)
+            self.planner.set_knowledge_base(self._kb)
+            logger.info('[Runtime] KnowledgeBase 已注入 planner')
+        except Exception as e:
+            self._kb = None
+            logger.warning('[Runtime] KnowledgeBase 注入失败: %s', e)
 
         self._exec_cmd = command_executor
         self._scan_devices = device_scanner
@@ -172,6 +216,9 @@ class AgentRuntime:
             result.plan = plan
             plan.experiment_id = experiment_id
             logger.info('[阶段4] 生成计划: %d 步', len(plan.nodes))
+
+            # 第四阶段 Step5: 计划审核（plan_reviewer，不阻塞）
+            self._review_plan(plan, experiment_id)
 
             # ========== 阶段 5: 检查依赖 ==========
             self._update_phase(experiment_id, TaskPhase.DEPENDENCY_CHECK)
@@ -377,6 +424,41 @@ class AgentRuntime:
             except Exception:
                 pass
         return detected
+
+    def _review_plan(self, plan: ExecutionPlan, experiment_id: str) -> None:
+        """审核执行计划（第四阶段 Step5，不阻塞）。
+
+        调 plan_reviewer.review(plan.to_dict())，critical 问题 log warning。
+        不抛异常、不阻塞执行（即使审核不通过仍继续，由调用方决策）。
+        开关 review_plan=False / reviewer 未注入 / 异常 → 跳过。
+        """
+        if not self.review_plan or not self._plan_reviewer:
+            return
+        try:
+            plan_dict = plan.to_dict()
+            review = self._plan_reviewer.review(plan_dict)
+            approved = review.get('approved', True)
+            score = review.get('score', 1.0)
+            issues = review.get('issues', [])
+            critical_issues = [i for i in issues if i.get('severity') == 'critical']
+            warning_issues = [i for i in issues if i.get('severity') == 'warning']
+            if critical_issues:
+                logger.warning(
+                    '[阶段4.5] 计划审核: %d 个 critical 问题 (score=%.2f)',
+                    len(critical_issues), score,
+                )
+                for issue in critical_issues[:5]:  # 最多记 5 条避免日志爆炸
+                    logger.warning(
+                        '[阶段4.5] critical: %s (node=%s, cmd=%s)',
+                        issue.get('message', ''), issue.get('node', ''), issue.get('command', ''),
+                    )
+            else:
+                logger.info(
+                    '[阶段4.5] 计划审核通过 (score=%.2f, %d 个 warning)',
+                    score, len(warning_issues),
+                )
+        except Exception as e:
+            logger.warning('[阶段4.5] 计划审核异常，跳过: %s', e)
 
     def _has_circular_dependency(self, plan: ExecutionPlan) -> bool:
         """检查循环依赖"""

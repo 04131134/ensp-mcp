@@ -1,0 +1,20 @@
+[AC1] undo ac protect: .
+Info: Capwap echo interval has changed to default value 25, capwap echo times to 6.
+[AC1-wlan-view]
+[AC1-wlan-view]
+[AC2] undo ac protect: .
+Info: Capwap echo interval has changed to default value 25, capwap echo times to 6.
+[AC2-wlan-view]
+[AC2-wlan-view]
+[AC1] ap all: dle  0   -
+3    00e0-fcf8-32e0 AP3  default -  AP3030DN        fault 0   -
+-------------------------------------------------------------------------------
+Total: 3
+[AC1-wlan-view]
+[AC1-wlan-view]
+[AC2] ap all: dle  0   -
+3    00e0-fcf8-32e0 AP3  default -  AP3030DN        fault 0   -
+-------------------------------------------------------------------------------
+Total: 3
+[AC2-wlan-view]
+[AC2-wlan-view]

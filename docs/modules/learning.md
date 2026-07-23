@@ -46,3 +46,22 @@ AgentRuntime.execute_task()
         ├── KnowledgeStore.record_failure()
         └── KnowledgeStore.record_best_practice()
 ```
+
+## v3.1 增强（第二阶段：数据质量修复）
+
+### 修复的问题
+1. **device_type 硬编码 'huawei'** → 改为 `_infer_device_type(result)` 推断
+2. **record_verify_method 传空 commands=[]** → 改为 `_extract_verify_commands(vr)` 提取
+
+### 新增接口
+
+| 接口 | 说明 |
+|------|------|
+| `DEFAULT_DEVICE_TYPE = 'huawei'` | 模块级常量，eNSP 平台默认设备类型（消除魔法字符串散落） |
+| `_infer_device_type(result)` | 从实验结果推断设备类型，当前默认 huawei，预留多厂商扩展口 |
+| `_extract_verify_commands(vr)` | 从 VerificationResult.evidence 提取命令，兜底用 check_name |
+
+### verify_method 命令提取规则
+1. 优先取 `vr.evidence['command']`（字符串）
+2. 其次取 `vr.evidence['commands']`（列表）
+3. 兜底用 `vr.check_name`（保证非空，不再是 `[]`）

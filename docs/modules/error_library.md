@@ -1,5 +1,11 @@
 # ErrorLibrary（错误查询库）
 
+## ErrorClassifier
+
+`ErrorClassifier.classify(device_info, failed_command, output, current_view)` 根据单次命令执行失败生成结构化记录。它不改变 `ErrorLibrary` 的静态错误查询行为，供知识库成长流程按规则记录失败经验。
+
+返回字段包括 `error_type`、`confidence`、`suggestion` 和 `raw_output_summary`；设备不支持命令时额外提供 `constraint`，其中包含失败命令模式和替代处理建议。支持的错误类型为 `syntax_error`、`context_error`、`device_not_supported`、`config_conflict`、`environment_issue` 和 `planning_error`。
+
 ## 位置
 `mcpensp1/agent/error_library.py`
 

@@ -21,4 +21,7 @@ norecursedirs = [
     ".codex",
 ]
 filterwarnings = ["ignore::DeprecationWarning"]
+markers = [
+    "regression_device: 需要已配置 eNSP 设备的自动生成回归测试",
+]
 

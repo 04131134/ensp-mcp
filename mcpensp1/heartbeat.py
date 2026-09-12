@@ -14,7 +14,7 @@ HEARTBEAT_RECONNECT_ATTEMPTS = int(os.environ.get('HEARTBEAT_RECONNECT', '3'))
 
 logger = logging.getLogger(__name__)
 
-# Set by app.py after import: heartbeat_module.socketio_ref = socketio_instance
+# 由 app.py 在 create_app() 中接线：heartbeat_module.socketio_ref = socketio_instance
 socketio_ref = None
 
 
@@ -63,7 +63,9 @@ class HeartbeatMonitor:
     
     def _sio_emit(self, event, data):
         if socketio_ref:
-            try: socketio_ref.emit(event, data)
+            # 事件必须发到前端连接的设备命名空间，否则前端收不到
+            # （与 web/socketio_handlers.py 的 DEVICE_NAMESPACE 保持一致）
+            try: socketio_ref.emit(event, data, namespace='/devices')
             except Exception: pass
 
     def _check_all(self):

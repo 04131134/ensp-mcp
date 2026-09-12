@@ -6,7 +6,8 @@
 
 /* ==================== Socket.IO 初始化 ==================== */
 var socket;
-try { socket = io(); } catch (e) { console.error('socket.io failed:', e); }
+// 必须连接服务端注册事件的设备命名空间（/devices），否则收不到任何实时事件
+try { socket = io('/devices'); } catch (e) { console.error('socket.io failed:', e); }
 if (typeof socket === 'undefined' || !socket) { socket = { on: function () {}, emit: function () {} }; }
 
 /* ==================== 全局状态 ==================== */

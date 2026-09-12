@@ -8,6 +8,7 @@ import secrets
 from flask import Flask, make_response, render_template
 from flask_socketio import SocketIO
 
+import heartbeat as heartbeat_module
 from agent.bootstrap import init_agent_runtime
 from services import services
 from web import agent, commands, devices, experiments, knowledge, topology
@@ -22,6 +23,8 @@ def create_app():
         MAX_CONTENT_LENGTH=10 * 1024 * 1024,
     )
     socket = SocketIO(application, cors_allowed_origins=os.environ.get('CORS_ORIGINS', 'http://127.0.0.1:5000'), async_mode='threading')
+    # 心跳线程通过模块级 socketio_ref 推送设备保活状态，必须在启动前接线
+    heartbeat_module.socketio_ref = socket
     require_auth, rate_limit, limiter = make_guards()
     for factory in (devices.create_blueprint, commands.create_blueprint, knowledge.create_blueprint,
                     topology.create_blueprint, experiments.create_blueprint, agent.create_blueprint):

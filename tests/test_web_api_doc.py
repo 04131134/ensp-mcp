@@ -39,7 +39,8 @@ def _runtime_http_paths():
 
 def _socketio_events():
     src = open("mcpensp1/web/socketio_handlers.py", encoding="utf-8").read()
-    return set(re.findall(r'@socketio\.on\("([^"]+)"\)', src))
+    # 事件名可能是单引号或双引号，且带 namespace 关键字参数
+    return set(re.findall(r"@socketio\.on\(\s*['\"]([^'\"]+)['\"]", src))
 
 
 @pytest.mark.skipif(flask_app is None, reason="Flask app 无法导入")

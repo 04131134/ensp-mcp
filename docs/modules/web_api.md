@@ -123,17 +123,30 @@ eNSP-MCP 的 Web 控制台后端。所有对外 HTTP 接口与 SocketIO 事件�
 | POST | /api/agent/knowledge/import | 导入知识。body: 知识数据 |
 
 ## SocketIO 事件
-前端经 WebSocket 实时交互，事件与上方 Devices 的 HTTP 操作一一对应：
-| 事件 | 说明 | 典型 payload |
-|------|------|-------------|
-| `connect` | 客户端建立连接 | — |
-| `scan` | 扫描设备端口 | — |
-| `get_connected_devices` | 获取已连接设备列表 | — |
-| `connect_device` | 连接设备 | `{"port": int}` |
-| `send_command` | 发送命令 | `{"path": str, "command": str}` |
-| `disconnect_device` | 断开设备 | `{"path": str}` |
-| `rename_device` | 重命名设备 | `{"path": str, "name": str}` |
-| `fetch_device_name` | 获取设备名 | `{"path": str}` |
+前端经 WebSocket 实时接收服务端推送，事件与上方 Devices 的 HTTP 操作一一对应。
+
+**命名空间**：设备生命周期事件在 `/devices`，命令事件在 `/commands`。前端必须连接
+对应命名空间（`io('/devices')`），否则一条事件都收不到。
+
+**鉴权**：设置 `ENSP_API_KEY` 后，两个命名空间的连接与每条事件都要求携带
+`X-API-Key` 请求头，未通过则直接拒绝连接；未设置该环境变量时行为与历史版本一致（全部放行）。
+
+| 命名空间 | 事件 | 说明 | 典型 payload |
+|------|------|------|-------------|
+| `/devices` | `connect` | 客户端建立连接 | — |
+| `/devices` | `scan` | 扫描设备端口 | — |
+| `/devices` | `get_connected_devices` | 获取已连接设备列表 | — |
+| `/devices` | `connect_device` | 连接设备 | `{"port": int}` |
+| `/devices` | `disconnect_device` | 断开设备 | `{"path": str}` |
+| `/devices` | `rename_device` | 重命名设备 | `{"path": str, "name": str}` |
+| `/commands` | `connect` | 客户端建立连接 | — |
+| `/commands` | `send_command` | 发送命令 | `{"path": str, "command": str}` |
+
+服务端推送事件：`scan_result`、`connected_devices_list`、`device_connected`、
+`device_output`、`device_error`、`device_disconnected`、`device_renamed`，
+以及心跳线程推送到 `/devices` 的 `heartbeat_status`。
+
+说明：`fetch_device_name` 没有 SocketIO 事件实现，前端改走 `POST /api/devices/fetch-name`。
 
 ## 另见
 - `docs/modules/command_executor.md` —— 命令执行与返回契约

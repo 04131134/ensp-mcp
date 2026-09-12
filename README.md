@@ -63,7 +63,7 @@ v3.0 为「版本与文档统一」版本：**不新增功能**，仅把此前�
 
 ## MCP 工具清单
 
-共 **47 个工具**，均已实现（`search_kb` 经 `mcp_req` 代理到 Flask `/api/kb/search`）。
+共 **47 个工具**，均已实现，且全部为**直连型**（在 MCP Server 进程内执行，不依赖 Flask）。
 
 > 📘 **完整工具使用说明（参数 / 示例 / 依赖）见 [`docs/api/mcp_tools_reference.md`](docs/api/mcp_tools_reference.md)**，这是调用本工具时的主要参考。
 

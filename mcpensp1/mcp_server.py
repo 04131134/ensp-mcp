@@ -1,4 +1,5 @@
 import asyncio, json, os, logging
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
@@ -226,6 +227,25 @@ async def _direct_group_cmd(paths: list, command: str) -> dict:
     return {'success': True, 'results': results}
 
 
+def _render_lab_report_markdown(name: str, devices: list, stats: dict) -> str:
+    """把设备清单与知识库统计渲染成 Markdown 实验报告。"""
+    lines = [f'# {name}', '',
+             f'- 生成时间: {datetime.now(timezone.utc).isoformat()}',
+             f'- 已连接设备: {len(devices)}', '',
+             '## 设备清单', '']
+    if devices:
+        lines += ['| 设备 | 类型 | 路径 | 存活 |', '|------|------|------|------|']
+        for item in devices:
+            lines.append(f"| {item.get('name', '')} | {item.get('device_type', '')} "
+                         f"| {item.get('path', '')} | {item.get('alive', '')} |")
+    else:
+        lines.append('_无已连接设备_')
+    lines += ['', '## 知识库统计', '']
+    for key, value in (stats or {}).items():
+        lines.append(f'- {key}: {value}')
+    return '\n'.join(lines)
+
+
 # ==================== MCP tool definitions (active) ====================
 
 # ==================== AGENT SYSTEM PROMPT v3.0 ====================
@@ -304,8 +324,8 @@ async def list_tools():
         Tool(name="detect_device_view", description="探测设备当前视图类型：< > 用户视图，[ ] 系统视图。命令执行前先探测", inputSchema={"type":"object","properties":{"prompt":{"type":"string","description":"示例<LSW1>[LSW1]"}},"required":["prompt"]}),
         Tool(name="get_troubleshooting_kb", description="获取排错知识库（故障现象+原因+解决方案）", inputSchema={"type":"object","properties":{"symptom":{"type":"string","description":"症状"}}}),
         Tool(name="reload_kb", description="重新加载结构化知识库（知识库文件外部修改后用）", inputSchema={"type":"object","properties":{}}),
-        Tool(name="generate_lab_report", description="自动生成实验报告：包含所有设备配置、命令执行、知识库数据，输出 Markdown 格式", inputSchema={"type":"object","properties":{"name":{"type":"string","description":"实验"},"paths":{"type":"array","items":{"type":"string"},"description":"设备列表"}}}),
-        Tool(name="auto_record_experience", description="自动提取设备已执行的命令序列，识别关键配置意图（AC/WLAN、OSPF、VLAN等）并归纳为实验记录", inputSchema={"type":"object","properties":{"path":{"type":"string","description":"设备路径"}},"required":["path"]}),
+        Tool(name="generate_lab_report", description="自动生成实验报告：包含已连接设备与知识库统计，\"markdown\" 字段为 Markdown 正文", inputSchema={"type":"object","properties":{"name":{"type":"string","description":"实验"},"paths":{"type":"array","items":{"type":"string"},"description":"设备列表"}}}),
+        Tool(name="auto_record_experience", description="自动提取知识库中已记录的该设备命令序列，识别关键配置意图（AC/WLAN、OSPF、VLAN等）并归纳为实验记录", inputSchema={"type":"object","properties":{"path":{"type":"string","description":"设备路径"}},"required":["path"]}),
         Tool(name="batch_command", description="批量发送命令到设备，自动切换视图、自动 undo t m，一次最多 200 条", inputSchema={"type":"object","properties":{"path":{"type":"string"},"commands":{"type":"array","items":{"type":"string"}},"wait":{"type":"number","default":0.1},"auto_view":{"type":"boolean","default":True},"auto_undo_tm":{"type":"boolean","default":True}},"required":["path","commands"]}),
         Tool(name="search_kb", description="知识库全文搜索：命令、排错经验、实验记录", inputSchema={"type":"object","properties":{"q":{"type":"string"},"limit":{"type":"integer","default":20}},"required":["q"]}),
         Tool(name="get_command_help", description="查询特定命令的帮助信息，从知识库返回用法和示例", inputSchema={"type":"object","properties":{"cmd":{"type":"string"}},"required":["cmd"]}),
@@ -358,7 +378,11 @@ async def call_tool(name, arguments):
         elif name == "get_device_history":
             text = json.dumps(kb.get_device_history(arguments.get("path")), ensure_ascii=False)
         elif name == "get_kb_commands":
-            text = json.dumps({"commands": kb.get_device_history(), "note": "Use get_command_catalog for catalog"}, ensure_ascii=False)
+            commands = kb.get_global_commands(category=arguments.get("category"),
+                                              device_type=arguments.get("device_type"),
+                                              risk=arguments.get("risk"),
+                                              limit=arguments.get("limit", 50))
+            text = json.dumps({"success": True, "commands": commands, "count": len(commands)}, ensure_ascii=False)
         elif name == "get_kb_stats": text = json.dumps(kb.get_stats(), ensure_ascii=False)
         elif name == "get_topology": text = json.dumps(topo_engine.get_summary(), ensure_ascii=False)
         elif name == "save_topology": topo_engine.load(arguments.get("data", {})); text = json.dumps({"success": True})
@@ -366,7 +390,7 @@ async def call_tool(name, arguments):
         elif name == "get_topology_device":
             text = json.dumps(topo_engine.get_device_connections(arguments["node_id"]), ensure_ascii=False)
         elif name == "get_structured_kb":
-            text = json.dumps(kb.load_structured_kb() or {}, ensure_ascii=False)
+            text = json.dumps(kb.get_structured_kb(arguments.get("view_type"), arguments.get("model")) or {}, ensure_ascii=False)
         elif name == "suggest_commands":
             text = json.dumps(kb.suggest_commands(arguments["model"], arguments.get("view_type", "")), ensure_ascii=False)
         elif name == "scan_device_commands":
@@ -396,8 +420,28 @@ async def call_tool(name, arguments):
         elif name == "get_command_help": text = json.dumps(kb.search_markdown_reference(arguments["cmd"], 20), ensure_ascii=False)
         elif name == "group_command":
             text = json.dumps(await _direct_group_cmd(arguments["paths"], arguments["command"]), ensure_ascii=False)
-        elif name == "generate_lab_report": text = json.dumps({'name': arguments.get("name", "eNSP Lab Report"), 'devices': services.devices.connected(), 'knowledge': kb.get_stats()}, ensure_ascii=False)
-        elif name == "auto_record_experience": text = json.dumps({'success': False, 'error': 'No command results supplied'}, ensure_ascii=False)
+        elif name == "generate_lab_report":
+            report_name = arguments.get("name", "eNSP Lab Report")
+            report_devices = services.devices.connected()
+            report_stats = kb.get_stats()
+            text = json.dumps({'success': True, 'name': report_name,
+                               'devices': report_devices, 'knowledge': report_stats,
+                               'markdown': _render_lab_report_markdown(report_name, report_devices, report_stats)},
+                              ensure_ascii=False)
+        elif name == "auto_record_experience":
+            path = arguments["path"]
+            history = kb.get_device_history(path) or {}
+            results = list(history.get("executed_commands", [])) + list(history.get("failed_commands", []))
+            if not results:
+                text = json.dumps({'success': False,
+                                   'error': 'No command history recorded for ' + path}, ensure_ascii=False)
+            else:
+                before = len(kb.get_experiences() or [])
+                kb._auto_record_knowledge(path, dm.get_type(path), results)
+                text = json.dumps({'success': True, 'path': path,
+                                   'commands_analyzed': len(results),
+                                   'experiences_created': len(kb.get_experiences() or []) - before},
+                                  ensure_ascii=False)
         # ---- Agent Runtime v3.0 ----
         # 以下 6 个 agent 记忆/知识工具原调用旧 knowledge.py 的 kb（与 AgentRuntime 记忆无关），
         # 现统一经 mcp_req 代理到真实 AgentRuntime 后端（/api/agent/*），避免“冒牌 Agent 记忆”。

@@ -9,10 +9,9 @@
 
 - **MCP Server**：`cd mcpensp1 && python mcp_server.py`（stdio 模式，无需 Flask 即可启动）。
 - **设备路径格式**：`127.0.0.1:<telnet_port>`（例如 `127.0.0.1:2001`）。先用 `scan_devices` 发现端口，再用 `connect_device` 建立连接，之后所有设备操作均用该 path 定位。
-- **两类依赖**：
-  - **直连型**：直接在 MCP Server 进程内操作设备/知识库/拓扑，无需 Flask。
-  - **后端型（需先启动 `python app.py`）**：经 HTTP 代理到 Flask 的 `/api/*` 端点（见每工具的「后端路由」）。
-- 启动顺序建议：先 `python app.py`（Flask，默认 5000 端口），再启动 MCP Server。
+- **依赖形态**：全部工具均为**直连型**，在 MCP Server 进程内直接操作设备/知识库/拓扑。
+  历史版本的 HTTP 代理模式（「后端型」）已按 ADR-002 移除，`mcp_req` 仅作为抛异常的兼容占位。
+- Flask（`python app.py`）只服务于 Web 控制台，MCP Server 的启动不依赖它。
 
 
 ## 返回格式（通用）
@@ -20,7 +19,6 @@
 所有工具返回统一的 JSON 字符串（封装在 MCP `TextContent` 中）：
 
 - **直连型**：返回结构因工具而异，常见为 `{"success": true, ...}` 或数据对象；失败返回 `{"error": "..."}`。
-- **后端型**：镜像 Flask `/api/*` 的 JSON 响应；若 Flask 未启动，返回 `{"error": "Cannot connect to backend server"}`。
 - 调用方应解析该 JSON 文本获取字段。
 
 
@@ -291,8 +289,7 @@ _无参数_
 
 **说明**：获取命令目录，包括支持的命令、参数说明、风险等级及支持设备类型。AI agent 用此了解整体能力
 
-**依赖**：**后端型** —— 需先启动 `python app.py`
-（后端路由：`GET /api/kb/catalog`）
+**依赖**：**直连型** —— 仅 MCP Server 即可
 
 
 **参数**：
@@ -632,10 +629,9 @@ _无参数_
 
 ### `generate_lab_report`
 
-**说明**：自动生成实验报告：包含所有设备配置、命令执行、知识库数据，输出 Markdown 格式
+**说明**：自动生成实验报告：包含已连接设备与知识库统计，"markdown" 字段为 Markdown 正文
 
-**依赖**：**后端型** —— 需先启动 `python app.py`
-（后端路由：`POST /api/kb/lab-report`）
+**依赖**：**直连型** —— 仅 MCP Server 即可
 
 
 **参数**：
@@ -657,10 +653,9 @@ _无参数_
 
 ### `auto_record_experience`
 
-**说明**：自动提取设备已执行的命令序列，识别关键配置意图（AC/WLAN、OSPF、VLAN等）并归纳为实验记录
+**说明**：自动提取知识库中已记录的该设备命令序列，识别关键配置意图（AC/WLAN、OSPF、VLAN等）并归纳为实验记录
 
-**依赖**：**后端型** —— 需先启动 `python app.py`
-（后端路由：`POST /api/kb/auto-extract`）
+**依赖**：**直连型** —— 仅 MCP Server 即可
 
 
 **参数**：
@@ -685,8 +680,7 @@ _无参数_
 
 **说明**：知识库全文搜索：命令、排错经验、实验记录
 
-**依赖**：**后端型** —— 需先启动 `python app.py`
-（后端路由：`GET /api/kb/search`）
+**依赖**：**直连型** —— 仅 MCP Server 即可
 
 
 **参数**：
@@ -713,8 +707,7 @@ _无参数_
 
 **说明**：查询特定命令的帮助信息，从知识库返回用法和示例
 
-**依赖**：**后端型** —— 需先启动 `python app.py`
-（后端路由：`GET /api/kb/help`）
+**依赖**：**直连型** —— 仅 MCP Server 即可
 
 
 **参数**：
@@ -1000,8 +993,7 @@ _无参数_
 
 **说明**：[Memory Query] Query Agent long-term memory
 
-**依赖**：**后端型** —— 需先启动 `python app.py`
-（后端路由：`GET /api/agent/memory`）
+**依赖**：**直连型** —— 仅 MCP Server 即可
 
 
 **参数**：
@@ -1028,8 +1020,7 @@ _无参数_
 
 **说明**：[Lessons] Get lessons from experiments
 
-**依赖**：**后端型** —— 需先启动 `python app.py`
-（后端路由：`GET /api/agent/memory/lessons`）
+**依赖**：**直连型** —— 仅 MCP Server 即可
 
 
 **参数**：
@@ -1050,8 +1041,7 @@ _无参数_
 
 **说明**：[Memory Stats] Memory statistics
 
-**依赖**：**后端型** —— 需先启动 `python app.py`
-（后端路由：`GET /api/agent/memory/stats`）
+**依赖**：**直连型** —— 仅 MCP Server 即可
 
 
 **参数**：
@@ -1072,8 +1062,7 @@ _无参数_
 
 **说明**：[Knowledge Search] Search growing knowledge base
 
-**依赖**：**后端型** —— 需先启动 `python app.py`
-（后端路由：`GET /api/agent/knowledge/search`）
+**依赖**：**直连型** —— 仅 MCP Server 即可
 
 
 **参数**：
@@ -1101,8 +1090,7 @@ _无参数_
 
 **说明**：[Best Practices] Network config best practices
 
-**依赖**：**后端型** —— 需先启动 `python app.py`
-（后端路由：`GET /api/agent/knowledge/best-practices`）
+**依赖**：**直连型** —— 仅 MCP Server 即可
 
 
 **参数**：
@@ -1123,8 +1111,7 @@ _无参数_
 
 **说明**：[Troubleshooting] Historical troubleshooting cases
 
-**依赖**：**后端型** —— 需先启动 `python app.py`
-（后端路由：`GET /api/agent/knowledge/troubleshooting`）
+**依赖**：**直连型** —— 仅 MCP Server 即可
 
 
 **参数**：
@@ -1147,8 +1134,7 @@ _无参数_
 
 **说明**：[Smart Planning] Generate DAG execution plan. USE BEFORE config.
 
-**依赖**：**后端型** —— 需先启动 `python app.py`
-（后端路由：`POST /api/agent/plan`）
+**依赖**：**直连型** —— 仅 MCP Server 即可
 
 
 **参数**：
@@ -1174,8 +1160,7 @@ _无参数_
 
 **说明**：[Full Experiment] One-click closed-loop experiment. RECOMMENDED.
 
-**依赖**：**后端型** —— 需先启动 `python app.py`
-（后端路由：`POST /api/agent/execute`）
+**依赖**：**直连型** —— 仅 MCP Server 即可
 
 
 **参数**：
@@ -1203,8 +1188,7 @@ _无参数_
 
 **说明**：[Agent Status] Runtime status and stats
 
-**依赖**：**后端型** —— 需先启动 `python app.py`
-（后端路由：`GET /api/agent/status`）
+**依赖**：**直连型** —— 仅 MCP Server 即可
 
 
 **参数**：
@@ -1225,8 +1209,7 @@ _无参数_
 
 **说明**：[Daily Review] Memory review and optimization
 
-**依赖**：**后端型** —— 需先启动 `python app.py`
-（后端路由：`POST /api/agent/learning/daily-review`）
+**依赖**：**直连型** —— 仅 MCP Server 即可
 
 
 **参数**：

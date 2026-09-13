@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Agent Runtime API 路由
+Agent Runtime API 路由（历史模块，当前未接入运行链路）
 
-新增 API 端点：
+状态：已被 mcpensp1/web/agent.py 取代。app.py 以 register_routes=False 调用
+init_agent_runtime()，因此本模块的路由不会注册到运行中的应用；模块暂时保留，
+以保证 init_agent_runtime(register_routes=...) 参数向后兼容。
+
+新增或修改 Agent HTTP 端点请改 web/agent.py，避免两份实现继续漂移。
+
+历史上新增的 API 端点：
 - /api/agent/memory - 长期记忆管理
 - /api/agent/knowledge - 可成长知识库
 - /api/agent/planner - 执行计划生成

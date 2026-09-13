@@ -102,25 +102,17 @@ eNSP-MCP 的 Web 控制台后端。所有对外 HTTP 接口与 SocketIO 事件�
 | POST | /api/agent/execute | 一键闭环实验执行（推荐）。body: `{"request", "device_paths", "experiment_type", "constraints"}` |
 | GET | /api/agent/status | Agent 运行时状态与统计 |
 | GET | /api/agent/status/<experiment_id> | 指定实验的状态 |
-| GET | /api/agent/reflection/<experiment_id> | 实验反思结果 |
 | POST | /api/agent/learning/daily-review | 记忆每日复盘与优化 |
 | GET | /api/agent/memory | 长期记忆查询 |
 | GET | /api/agent/memory/lessons | 实验经验教训 |
-| GET | /api/agent/memory/errors | 错误案例 |
-| GET | /api/agent/memory/commands | 记忆中的命令 |
-| GET | /api/agent/memory/templates | 记忆模板 |
 | GET | /api/agent/memory/stats | 记忆统计 |
-| GET | /api/agent/memory/export | 导出记忆 |
-| POST | /api/agent/memory/import | 导入记忆。body: 记忆数据 |
 | GET | /api/agent/knowledge/search | 搜索增长知识库。query: `query`, `category`, `device_type`, `limit` |
-| GET | /api/agent/knowledge/stats | 知识统计 |
-| GET | /api/agent/knowledge/success-cases | 成功案例 |
-| GET | /api/agent/knowledge/failure-cases | 失败案例 |
 | GET | /api/agent/knowledge/troubleshooting | 历史排错案例 |
 | GET | /api/agent/knowledge/best-practices | 网络配置最佳实践 |
-| GET | /api/agent/knowledge/templates | 知识模板 |
-| GET | /api/agent/knowledge/export | 导出知识 |
-| POST | /api/agent/knowledge/import | 导入知识。body: 知识数据 |
+
+> 说明：`agent/routes.py` 曾实现 `/api/agent/reflection/*`、`/api/agent/memory/(errors|commands|templates|export|import)`、
+> `/api/agent/knowledge/(stats|success-cases|failure-cases|templates|export|import)`，但该模块已不再注册
+> （`app.py` 以 `register_routes=False` 调用），这些端点在运行中**并不存在**。
 
 ## SocketIO 事件
 前端经 WebSocket 实时接收服务端推送，事件与上方 Devices 的 HTTP 操作一一对应。

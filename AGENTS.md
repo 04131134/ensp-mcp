@@ -99,7 +99,7 @@ eNSP-MCP/
 │   │   ├── memory.py       # 长期记忆
 │   │   └── knowledge_store.py # 增长知识库
 │   └── kb/                 # 静态知识库数据
-├── tests/                  # 测试（223 passed, 3 skipped）
+├── tests/                  # 测试（380 passed, 3 skipped）
 └── docs/                   # 项目文档（本知识库）
     ├── architecture/       # 架构文档
     ├── development/        # 开发规范

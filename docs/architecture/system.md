@@ -13,7 +13,7 @@ eNSP-MCP 是一个面向华为 eNSP 网络仿真平台的 AI 网络自动化工�
 | 连接层 | Telnet（asyncio + threading） |
 | AI Agent | 自研 DAGPlanner + AgentRuntime + SemanticVerifier |
 | 知识层 | JSON 知识库 + MemoryStore + KnowledgeStore |
-| 测试 | pytest（224 条测试） |
+| 测试 | pytest（380 passed, 3 skipped） |
 
 ## 核心架构图
 
@@ -109,11 +109,15 @@ mcp_server.py ──→ services.py ──→ device_manager.py
            └── learning.py
 ```
 
-> ⚠️ **未接入运行链路的候选模块**：上图 `agent/` 下的 `capability_manager.py`、`plan_reviewer.py`、`transaction.py`、`runtime_action.py` 及其依赖的 `action_types / cli_state / prompt_parser / command_generator / command_validator / dependency_graph / error_library` 共 11 个模块代码已实现，但 `AgentRuntime`（`agent/runtime.py`）在初始化与 `execute_task` 中**并未实例化或调用它们**，全仓仅测试引用。因此“Planner 先查能力矩阵”“计划必须审核”“事务回滚”“Action 驱动引擎与 AgentRuntime 共存”等能力**当前均未生效**。这些属于设计意图 / 候选增强，非已上线功能。详见各模块文档头部的状态提示。
+> ⚠️ **模块接入状态**（2026-09 核对）：`AgentRuntime`（`agent/runtime.py`）目前**已接入** `capability_manager.py`（注入 planner 做设备能力校验）与 `plan_reviewer.py`（阶段 4.5 审核计划，仅告警不阻塞）。
+>
+> **仍未接入运行链路**的模块：`transaction.py`、`runtime_action.py` 及其依赖的 `action_types / cli_state / prompt_parser / command_generator / command_validator / dependency_graph`，全仓仅测试引用。因此“事务回滚”“Action 驱动引擎与 AgentRuntime 共存”**当前未生效**，属于设计意图 / 候选增强。
+>
+> 另：`agent/routes.py` 已被 `web/agent.py` 取代，`app.py` 以 `register_routes=False` 调用，运行期不会注册其路由；模块暂时保留以维持 `init_agent_runtime` 参数兼容。
 
 ## 关键设计决策
 
-1. **MCP 作为唯一外部协议**：所有 AI 交互通过 MCP，不暴露 REST API 给 AI
+1. **AI 交互统一走 MCP**：AI 客户端通过 MCP 协议调用工具；Flask 的 HTTP 端点（59 个）只服务人工使用的 Web 控制台，不作为 AI 的接入方式。
 2. **直连模式**：工具函数直接调用 Python 模块，不经过 HTTP 转发（已从 45+ HTTP 调用降至 ~10）
 3. **DeviceManager 单例**：全局唯一的设备连接池，线程安全
 4. **Telnet prompt 驱动**：基于 prompt 检测的命令读取，支持分页和超时

@@ -23,7 +23,7 @@ MCP Server (mcp_server.py, 47 个工具)
      |
      4 个 Agent Runtime 模块经 HTTP 调 Flask
      v
-Flask Web UI (app.py, 74 个 HTTP 端点 = 51 Flask + 23 Agent 运行时注册, 另 8 个 SocketIO 事件)
+Flask Web UI (app.py + web/ 蓝图, 59 个 HTTP 端点, 另 7 个 SocketIO 事件)
      +---> Agent Runtime v3.0 (planner/runtime/verifier/reflection/learning)
 ```
 
@@ -140,7 +140,9 @@ python app.py
 ```
 eNSP-MCP/
 ├── mcpensp1/
-│   ├── app.py                  # Flask Web UI（1716 行, 74 HTTP 端点 + 8 SocketIO 事件）
+│   ├── app.py                  # Flask 应用装配（创建 app/SocketIO、注册蓝图）
+│   ├── web/                    # Web 蓝图 + SocketIO 事件（devices/commands/knowledge/
+│   │                           #   topology/experiments/agent，共 59 个 HTTP 端点）
 │   ├── mcp_server.py           # MCP Server（47 个工具）
 │   ├── connection.py           # Telnet 连接层（缓冲 + 超时）
 │   ├── device_manager.py       # 设备连接池（保活）
@@ -168,7 +170,7 @@ eNSP-MCP/
 │   │   └── config_methods/     # 配置方法 JSON（VLAN/OSPF/DHCP/static_route）
 │   ├── static/                 # Web 静态资源
 │   └── templates/              # Web 模板
-├── tests/                      # 测试（236 passed, 3 skipped）
+├── tests/                      # 测试（380 passed, 3 skipped）
 │   ├── test_smoke.py           # 冒烟（需真实 eNSP 设备，skip）
 │   ├── test_regression.py      # 回归
 │   ├── test_agent_runtime.py   # Agent 运行时
@@ -190,7 +192,7 @@ eNSP-MCP/
 ```bash
 cd eNSP-MCP
 python -m pytest tests/ -q
-# 236 passed, 3 skipped
+# 380 passed, 3 skipped
 ```
 
 ---

@@ -1,0 +1,26 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pytest:
+    # 项目依赖 Windows + eNSP 的 Telnet 行为，与开发环境保持一致
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r mcpensp1/requirements.txt
+          pip install pytest
+
+      - name: Run test suite
+        run: python -m pytest tests/ -q

@@ -60,7 +60,11 @@ _baseline_*/
 
 # Agent runtime data (generated at runtime)
 mcpensp1/agent_data/*.json
+mcpensp1/agent_data/*.db
 mcpensp1/agent_data/.kb_migrated
+
+# SQLite databases (runtime state, never source)
+*.db
 
 # Debug / startup logs
 mcpensp1/server_debug.log

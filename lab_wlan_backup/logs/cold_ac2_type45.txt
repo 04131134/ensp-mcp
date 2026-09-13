@@ -1,7 +1,0 @@
-AC2 用 type-id 45 重建后核查
---- display ap all ---
-#
---- display radio all ---
-#
---- display ap-type all | include 45 ---
-#

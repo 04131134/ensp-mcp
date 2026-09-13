@@ -17,7 +17,6 @@ norecursedirs = [
     "backup*",
     ".git",
     "__pycache__",
-    "campus_lab",
     ".codex",
 ]
 filterwarnings = ["ignore::DeprecationWarning"]

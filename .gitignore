@@ -76,9 +76,6 @@ __pycache__/
 # Experiment engine data
 mcpensp1/experiments/
 
-# Campus lab generated files
-campus_lab/*.docx
-
 # Legacy patch scripts
 _patch*.py
 _experiment_engine_src.py

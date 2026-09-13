@@ -180,8 +180,8 @@ eNSP-MCP/
     ├── development/            # 开发规范
     ├── modules/                # 模块文档
     ├── api/                    # API 文档
-    ├── best_practices/         # 最佳实践
-    ├── troubleshooting/        # 排错指南
+    ├── troubleshooting/        # 排错记录（含设备清单与扫描报告）
+    ├── superpowers/plans/      # 实施计划
     └── adr/                    # 架构决策记录
 ```
 
